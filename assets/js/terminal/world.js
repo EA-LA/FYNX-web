@@ -141,7 +141,7 @@
       gLanes.style.display = W.layers.lanes ? '' : 'none'; for (const [ls, p] of lanePaths) p.setAttribute('d', path(ls) || '');
       gLights.style.display = W.layers.lights ? '' : 'none';
       for (const [ll, g] of lights) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
-      gChokes.style.display = W.layers.chokes ? '' : 'none'; for (const [ll, g] of chokes) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
+      gChokes.style.display = W.layers.chokes ? '' : 'none'; for (const [ll, g] of chokes) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); const lt = g.querySelector('text'); if (lt) { const flip = x > w - 150; lt.setAttribute('x', flip ? -9 : 9); lt.setAttribute('text-anchor', flip ? 'end' : 'start'); } }
       // Ships are painted on a canvas: thousands of SVG elements made dragging the globe stutter.
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }

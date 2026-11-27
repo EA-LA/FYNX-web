@@ -81,14 +81,28 @@
   const sizeOf = box => ({w: Math.max(120, box.clientWidth || box.parentElement?.clientWidth || 300), h: Math.max(110, box.clientHeight || 200)});
   // Redraw when the panel resizes (only while it is on screen).
   function onResize(box, draw) { let last = ''; const ro = new ResizeObserver(() => { if (!box.isConnected) return ro.disconnect(); const s = sizeOf(box), k = s.w + 'x' + s.h; if (k !== last) { last = k; draw(s); } }); ro.observe(box); }
+  // Labels never spill out of their tile: after the SVG is on screen, each text marked data-fit shrinks to its
+  // width (down to 7 px) and is then shortened with an ellipsis; a label that still cannot fit is hidden.
+  function fitText(sv) {
+    for (const t of sv.querySelectorAll('text[data-fit]')) {
+      const max = Number(t.dataset.fit); if (!(max > 0)) continue;
+      let len = t.getComputedTextLength(); if (len <= max) continue;
+      const fs = Number(t.getAttribute('font-size')) || 10, nfs = Math.max(7, fs * max / len);
+      t.setAttribute('font-size', nfs.toFixed(1)); len = t.getComputedTextLength(); if (len <= max) continue;
+      const full = t.textContent; let lo = 0, hi = full.length;
+      while (lo < hi) { const mid = (lo + hi + 1) >> 1; t.textContent = full.slice(0, mid) + '…'; if (t.getComputedTextLength() <= max) lo = mid; else hi = mid - 1; }
+      if (lo < 2) t.style.display = 'none'; else t.textContent = full.slice(0, lo) + '…';
+      if (!t.querySelector('title')) { const tt = svg('title'); tt.textContent = full; t.append(tt); }
+    }
+  }
   function tileSVG(w, h) { const sv = svg('svg', {viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%', class: 'hm-svg', role: 'img'}); return sv; }
   function tile(sv, r, {label, sub, fill, title, onClick, labelMin = 26}) {
     const g = svg('g', {class: 'hm-tile', tabindex: '0', role: 'button', 'aria-label': title});
     g.append(svg('rect', {x: r.x + 0.5, y: r.y + 0.5, width: Math.max(0, r.w - 1), height: Math.max(0, r.h - 1), fill}));
     if (r.w > labelMin && r.h > 14) {
       const fs = Math.max(9, Math.min(22, Math.min(r.w / Math.max(3, label.length) * 1.5, r.h / 2.6)));
-      const t = svg('text', {x: r.x + r.w / 2, y: r.y + r.h / 2 + (sub && r.h > fs * 2.4 ? -fs * 0.2 : fs * 0.35), 'text-anchor': 'middle', 'font-size': fs.toFixed(1), class: 'hm-l'}); t.textContent = label; g.append(t);
-      if (sub && r.h > fs * 2.4 && r.w > 34) { const s2 = svg('text', {x: r.x + r.w / 2, y: r.y + r.h / 2 + fs * 0.95, 'text-anchor': 'middle', 'font-size': (fs * 0.72).toFixed(1), class: 'hm-s'}); s2.textContent = sub; g.append(s2); }
+      const t = svg('text', {x: r.x + r.w / 2, y: r.y + r.h / 2 + (sub && r.h > fs * 2.4 ? -fs * 0.2 : fs * 0.35), 'text-anchor': 'middle', 'font-size': fs.toFixed(1), class: 'hm-l', 'data-fit': Math.max(0, r.w - 6).toFixed(0)}); t.textContent = label; g.append(t);
+      if (sub && r.h > fs * 2.4 && r.w > 34) { const s2 = svg('text', {x: r.x + r.w / 2, y: r.y + r.h / 2 + fs * 0.95, 'text-anchor': 'middle', 'font-size': (fs * 0.72).toFixed(1), class: 'hm-s', 'data-fit': Math.max(0, r.w - 6).toFixed(0)}); s2.textContent = sub; g.append(s2); }
     }
     const tt = svg('title'); tt.textContent = title; g.append(tt);
     g.addEventListener('click', onClick); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } });
@@ -120,13 +134,13 @@
         const cx = p.x * k + ox, cy = p.y * k + oy, r = p.r * k;
         const g = svg('g', {class: 'hm-tile hm-bubble', tabindex: '0', role: 'button', 'aria-label': `${p.sym} ${p.name}: ${pct(p.chg)}, market value ${big(p.cap)}`});
         g.append(svg('circle', {cx, cy, r: Math.max(1, r - 0.8), fill: heat(p.chg)}));
-        if (r > 11) { const fs = Math.max(8, Math.min(20, r / 2.2)); const t = svg('text', {x: cx, y: cy + (r > 22 ? -fs * 0.15 : fs * 0.35), 'text-anchor': 'middle', 'font-size': fs.toFixed(1), class: 'hm-l'}); t.textContent = p.sym; g.append(t);
+        if (r > 11) { const fs = Math.max(8, Math.min(20, r / 2.2)); const t = svg('text', {x: cx, y: cy + (r > 22 ? -fs * 0.15 : fs * 0.35), 'text-anchor': 'middle', 'font-size': fs.toFixed(1), class: 'hm-l', 'data-fit': (r * 1.7).toFixed(0)}); t.textContent = p.sym; g.append(t);
           if (r > 22) { const s2 = svg('text', {x: cx, y: cy + fs * 0.95, 'text-anchor': 'middle', 'font-size': (fs * 0.72).toFixed(1), class: 'hm-s'}); s2.textContent = pct(p.chg); g.append(s2); } }
         const tt = svg('title'); tt.textContent = `${p.name} (${p.sym}) · ${pct(p.chg)} · ${big(p.cap)} · ${p.industry}`; g.append(tt);
         const go = () => openSym(p.sym, p.name); g.addEventListener('click', go); g.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
         sv.append(g);
       }
-      box.append(sv);
+      box.append(sv); fitText(sv);
     });
     host.append(scaleBar(3, '%'), legend(!large ? `Size = market value · colour = today · ${ago(d.stocks?.asOf || d.generatedAt)}` : `Bubble size = market value, colour = today’s move. ${list.length} largest stocks in FYNX’s rule-based AI theme (exchange industry, company name or a short curated list). ${d.sources?.stocks || 'Nasdaq screener'}, ${ago(d.stocks?.asOf || d.generatedAt)}. Click a bubble to open it.`));
   }
@@ -149,11 +163,11 @@
       for (const sec of squarify(secs, 0, 0, w, h)) {
         const s = sec.item, headH = sec.h > 40 && sec.w > 50 ? 13 : 0;
         sv.append(svg('rect', {x: sec.x, y: sec.y, width: sec.w, height: sec.h, class: 'hm-secbox'}));
-        if (headH) { const t = svg('text', {x: sec.x + 4, y: sec.y + 10, class: 'hm-sech', 'font-size': '9.5'}); t.textContent = `${s.name.toUpperCase()} ${pct(s.wchg)}`; sv.append(t); }
+        if (headH) { const t = svg('text', {x: sec.x + 4, y: sec.y + 10, class: 'hm-sech', 'font-size': '9.5', 'data-fit': Math.max(0, sec.w - 8).toFixed(0)}); t.textContent = `${s.name.toUpperCase()} ${pct(s.wchg)}`; sv.append(t); }
         for (const r of squarify(s.list.map(x => ({...x, value: x.cap})), sec.x + 1, sec.y + headH + 1, sec.w - 2, sec.h - headH - 2))
           tile(sv, r, {label: r.item.sym, sub: pct(r.item.chg), fill: heat(r.item.chg), title: `${r.item.name} (${r.item.sym}) · ${pct(r.item.chg)} · ${big(r.item.cap)} · ${r.item.industry}`, onClick: () => openSym(r.item.sym, r.item.name)});
       }
-      box.append(sv);
+      box.append(sv); fitText(sv);
     });
     host.append(scaleBar(3, '%'), legend(!large ? `Size = market value · ${ago(d.stocks?.asOf || d.generatedAt)}` : `US-listed companies over $10B by exchange-reported sector. Tile size = market value, colour = today’s move; chips show each sector’s cap-weighted move. ${d.sources?.stocks || 'Nasdaq screener'}, ${ago(d.stocks?.asOf || d.generatedAt)}.`));
   }
@@ -238,7 +252,7 @@
       for (const r of squarify(tiles, 0, 0, w, h)) tile(sv, r, {label: r.item.name, sub: `${r.item.value} · ${Math.round(r.item.heat * 100)}% last 3h`, fill: hot(r.item.heat), labelMin: 40,
         title: `${r.item.name}: ${r.item.value} headlines in 24 h, ${r.item.fresh} in the last 3 h`,
         onClick: () => inspect(`${r.item.name} · ${r.item.value} headlines`, body => { for (const hd of r.item.hits.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 25)) body.append(headlineRow(hd)); })});
-      box.append(sv);
+      box.append(sv); fitText(sv);
     });
     const sc = el('div', 'hm-scale'); for (const [v, l] of [[0, 'older'], [0.33, ''], [0.66, ''], [1, 'all last 3h']]) { const s = el('span', '', l); s.style.background = hot(v); sc.append(s); }
     host.append(sc, legend(!large ? `${recent.length} headlines · 24 h · click a topic` : `${recent.length} unique headlines from FYNX’s live news feeds in the last 24 hours, matched to market topics by keywords (one headline can count for several topics). Tile size = headline count, colour = share published in the last 3 hours. Click a topic for its headlines.`));
@@ -276,7 +290,7 @@
     onResize(box, ({w, h}) => {
       box.replaceChildren(); const sv = tileSVG(w, h); sv.setAttribute('aria-label', 'Crypto treemap by market value');
       for (const r of squarify(list.map(c => ({...c, value: c.cap})), 0, 0, w, h)) tile(sv, r, {label: r.item.sym, sub: pct(r.item.chg), fill: heat(r.item.chg, 6), title: `${r.item.name} (${r.item.sym}) · 24h ${pct(r.item.chg)} · 7d ${pct(r.item.chg7)} · ${big(r.item.cap)}`, onClick: () => openSym(r.item.open, r.item.name)});
-      box.append(sv);
+      box.append(sv); fitText(sv);
     });
     host.append(scaleBar(6, '%'), legend(!large ? `Size = market value · 24 h · ${ago(d.crypto?.asOf || d.generatedAt)}` : `Top ${list.length} coins by market value (stablecoins and wrapped tokens left out). Tile size = market value, colour = 24-hour move (±6% full colour). ${d.sources?.crypto || 'CoinGecko'}, ${ago(d.crypto?.asOf || d.generatedAt)}.`));
   }
