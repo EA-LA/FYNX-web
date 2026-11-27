@@ -26,7 +26,7 @@ test('paid research watchlists preserve full notes and reject over-limit notes i
  assert.throws(()=>run('watchlist',{symbols,notes:'x'.repeat(2001)}),/2,000 characters/);
  assert.throws(()=>run('watchlist',{symbols,notes:'a'.repeat(1999)+'😀'}),/2,000 characters/);
 });
-test('Pro process review accepts optional blank notes without weakening other validation',()=>{for(const notes of [undefined,'','   ']){const r=run('review',{notes,plan:true,risk:false});assert.equal(r.notes,'');assert.equal(r.score,20);assert.deepEqual(r.completed,['plan']);assert.deepEqual(r.missing,['risk','event','execution','review']);}assert.equal(run('review',{notes:'  Wait for confirmation  ',plan:true}).notes,'Wait for confirmation');assert.throws(()=>run('review',{notes:'X'.repeat(2001)}),/valid name/);});
+test('Pro process review accepts optional blank notes without weakening other validation',()=>{for(const notes of [undefined,'','   ']){const r=run('review',{notes,plan:true,risk:false});assert.equal(r.notes,'');assert.equal(r.score,20);assert.deepEqual(r.completed,['plan']);assert.deepEqual(r.missing,['risk','event','execution','review']);}assert.equal(run('review',{notes:'  Wait for confirmation  ',plan:true}).notes,'Wait for confirmation');assert.throws(()=>run('review',{notes:'X'.repeat(2001)}),/Trade Review notes must be 2,000 characters or fewer/);});
 test('CSV quotes and blocks spreadsheet formulas',()=>{const r=run('export',{},[{symbol:'=IMPORTXML("x")',pl:-5,notes:'a,b\nline'}]);assert.match(r.csv,/"'=IMPORTXML/);assert.match(r.csv,/"a,b\nline"/);});
 test('Pro journal CSV exports signed realized P/L as spreadsheet numbers',()=>{
  const trades=[{date:'2026-11-22',symbol:'EURUSD',session:'NY',pl:-5.25,notes:'Loss'},{date:'2026-11-22',symbol:'XAUUSD',session:'NY',pl:'-2.5',notes:'Loss'},{date:'2026-11-22',symbol:'SPY',session:'NY',pl:4.5,notes:'Win'}];
@@ -216,4 +216,13 @@ test('Professional simulator counts paths that reach fixed drawdown thresholds',
  const mixed=result({winRate:50,trades:10});
  assert.ok(parseFloat(mixed.pathsReachingTwentyPercentDrawdown)>mixed.lossFrequency,'recovered paths still count');
  assert.match(mixed.notice,/even if they recovered/);
+});
+
+test('paid Trade Review explains the note limit without altering valid content or optional blanks',()=>{
+ const notes='A'.repeat(1989)+'\n\nKeep tail';
+ assert.equal(notes.length,2000);
+ assert.equal(run('review',{notes,plan:true}).notes,notes);
+ assert.throws(()=>run('review',{notes:notes+'!'}),/Shorten your note before running or saving/);
+ assert.throws(()=>run('review',{notes:null}),/Trade Review notes must be text/);
+ assert.equal(run('review',{notes:' '.repeat(2001)}).notes,'');
 });
