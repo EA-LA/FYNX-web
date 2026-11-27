@@ -492,8 +492,8 @@
     const win = t => R.map(r => r.slice(t - LOOK, t));
     // current optimisation on the latest window
     const {S, mu, delta} = covEstimate(win(T_), OV.cov);
-    const fr = frontier(S, mu, OV.cap);
-    const now = Object.fromEntries(METHODS.map(([k]) => [k, weightsFor(k, S, mu, OV.cap, fr)]));
+    const requestedCap = OV.cap, fr = frontier(S, mu, requestedCap);
+    const now = Object.fromEntries(METHODS.map(([k]) => [k, weightsFor(k, S, mu, requestedCap, fr)]));
     const hr = hrp(S);
     // walk-forward: re-optimise every 21 days on the trailing window, pay costs on turnover, measure what happened next
     const curves = Object.fromEntries(METHODS.map(([k]) => [k, []])), turn = Object.fromEntries(METHODS.map(([k]) => [k, []])), w0 = Object.fromEntries(METHODS.map(([k]) => [k, null]));
@@ -506,10 +506,44 @@
     const stats = Object.fromEntries(METHODS.map(([k]) => { const c = [1, ...curves[k]]; const p = perf(Float64Array.from(c), 0, c.length - 1, ann); return [k, {...p, turnover: mean(turn[k]) * 12}]; }));
     const rc = w => { const m = mv(S, w), v = dot(w, m); return w.map((x, i) => v > 0 ? x * m[i] / v : 0); };
     const C = S.map((r, i) => r.map((v, j) => v / Math.sqrt(S[i][i] * S[j][j])));
-    return {A, syms: A.symbols, n, S, mu, delta, fr, now, hr, curves, stats, rc, C, ann, oosDates: A.dates.slice(LOOK), missing: syms.filter(s => !A.symbols.includes(s)), names: d.names};
+    return {A, syms: A.symbols, n, S, mu, delta, fr, now, hr, curves, stats, rc, C, ann, requestedCap, oosDates: A.dates.slice(LOOK), missing: syms.filter(s => !A.symbols.includes(s)), names: d.names};
   }
   let OR = null, oKey = '', oP = null;
   async function oGet() { const k = JSON.stringify([oSyms(), OV.cov, OV.cap, OV.look, OV.costBps]); if (OR && oKey === k) return OR; if (oP && oKey === k) return oP; oKey = k; oP = oCompute(); try { OR = await oP; return OR; } catch (e) { oKey = ''; throw e; } finally { oP = null; } }
+  function optimizerConcentration(weights, symbols, method, requestedCap) {
+    if (!weights.length || weights.length !== symbols.length || !weights.every(w => finite(w) && w >= 0)) return null;
+    const total = weights.reduce((sum, w) => sum + w, 0);
+    if (!(total > 0) || !finite(total)) return null;
+    const normalized = weights.map(w => w / total);
+    const largest = Math.max(...normalized);
+    const leaders = symbols.filter((_, i) => largest - normalized[i] <= 1e-8);
+    const applied = ['minvar', 'maxsharpe', 'maxdiv'].includes(method) && requestedCap < 1;
+    const floor = 1 / symbols.length;
+    return {largest, leaders, effective: 1 / normalized.reduce((sum, w) => sum + w * w, 0),
+      cap: applied ? Math.max(requestedCap, floor) : null, raised: applied && requestedCap < floor};
+  }
+  function optimizerConcentrationCard(r) {
+    const scroll = el('div'); scroll.style.overflowX = 'auto';
+    const table = el('table', 'fx-ql-tbl'), head = el('thead'), body = el('tbody'), header = el('tr');
+    table.setAttribute('aria-label', 'Portfolio concentration by method');
+    for (const name of ['Method', 'Largest weight', 'Effective holdings', 'Model weight cap']) {
+      const th = el('th', '', name); th.scope = 'col'; header.append(th);
+    }
+    head.append(header); table.append(head, body); scroll.append(table);
+    for (const [key, name] of METHODS) {
+      const results = optimizerConcentration(r.now[key], r.syms, key, r.requestedCap);
+      const row = el('tr'), title = el('th', '', name); title.scope = 'row';
+      const largest = !results ? '—' : results.leaders.length > 2 ?
+        `${pct(results.largest)} · ${results.leaders.length} tied` :
+        `${pct(results.largest)} · ${results.leaders.join(' / ')}`;
+      const cap = !results ? '—' : results.cap !== null ? pct(results.cap, 2) + (results.raised ? ' (minimum feasible)' : '') : 'Not applied';
+      row.append(title, el('td', '', largest), el('td', '', results ? num(results.effective, 1) : '—'), el('td', '', cap));
+      body.append(row);
+    }
+    return card('CONCENTRATION · LATEST OPTIMIZED WEIGHTS', scroll,
+      note('Effective holdings show how many equally weighted assets would give the same weight concentration. Equal weights score the actual holding count; a more concentrated portfolio scores lower. This is not a measure of correlation or risk.'),
+      note('Only minimum variance, maximum Sharpe and maximum diversification use the selected weight cap. A fully invested portfolio cannot put less than 1 divided by its usable asset count in its largest position.'));
+  }
   function weightBars(box, syms, w, colors) {
     const t = el('table', 'fx-qr-mini fx-sl-wt'); syms.forEach((s, i) => { const tr = el('tr'), bar = el('td'), b = el('span', 'fx-qr-bar'), f = el('i'); b.style.width = '120px'; f.style.left = '0'; f.style.width = Math.min(100, w[i] * 100 / Math.max(...w, 0.0001)) + '%'; f.style.background = colors || '#ffb000'; b.append(f); bar.append(b); tr.append(el('td', '', s), bar, el('td', '', pct(w[i], 1))); t.append(tr); }); box.replaceChildren(t);
   }
@@ -561,7 +595,7 @@
     out.append(grid2);
     const wt = el('table', 'fx-ql-tbl'), wh = el('tr'); wh.append(el('th', '', 'ASSET')); METHODS.forEach(m => wh.append(el('th', '', m[0].toUpperCase()))); wt.append(wh);
     r.syms.forEach((s, i) => { const tr = el('tr'); tr.append(el('td', '', s)); METHODS.forEach(([k]) => { const v2 = r.now[k][i], c = el('td'), sp = el('span', 'fx-sl-cell', pct(v2, 0)); sp.style.background = `rgba(255,176,0,${Math.min(0.75, v2 * 1.6)})`; sp.style.color = v2 > 0.3 ? '#000' : 'var(--tx)'; c.append(sp); tr.append(c); }); wt.append(tr); });
-    const wtc = card('ALL METHODS · TODAY’S WEIGHTS', wt); wtc.style.overflowX = 'auto'; out.append(wtc);
+    const wtc = card('ALL METHODS · TODAY’S WEIGHTS', wt); wtc.style.overflowX = 'auto'; out.append(wtc, optimizerConcentrationCard(r));
     out.append(card('METHODS', ...['Equal weight and inverse volatility need no optimiser. Minimum variance and maximum Sharpe solve the long-only mean–variance problem with a weight cap (projected gradient). Maximum diversification maximises weighted volatility over portfolio volatility. Risk parity (ERC) gives each asset the same risk contribution. HRP (López de Prado, 2016) clusters assets by correlation and splits weight top-down along the cluster tree by cluster variance, which avoids inverting the covariance matrix.', 'Ledoit–Wolf (2004) shrinks the sample covariance toward a scaled identity by the amount that minimises expected estimation error. Expected returns are the trailing sample means, which are noisy; this is why maximum Sharpe often disappoints out of sample.', 'Daily adjusted closes from Yahoo Finance. Walk-forward: every 21 trading days each method is re-optimised on the previous window only, weights drift with prices between rebalances, and turnover pays the cost you selected. Inspired by the open-source skfolio library.'].map(note)));
     requestAnimationFrame(() => {
       lineChart(ec, {series: METHODS.map(([k, nm, col]) => ({v: [1, ...r.curves[k]], color: col, width: k === OV.sel ? 2.4 : 1.2, name: nm})), xs: [r.oosDates[0], ...r.oosDates], log: true, yfmt: v => v.toFixed(2) + '×', aria: 'Out-of-sample growth of each method'});
@@ -703,5 +737,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s3 s4 s4 s4']}};
     const qi = T.DESK_ORDER.indexOf('quant'); T.DESK_ORDER.splice(qi >= 0 ? qi + 1 : 1, 0, 'strategy');
   }
-  T.StrategyLab = {tradeCsv, significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
+  T.StrategyLab = {optimizerConcentration, tradeCsv, significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
 });
