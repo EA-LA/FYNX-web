@@ -1,0 +1,9 @@
+viewport 390x844 · boot 7142ms · 16 desks · 94 panels · 98 pages · heap 72.8MB · DOM 4891
+ticker: {"items":1,"overlaps":0,"inner":0,"sample":""}
+page errors: 0
+console errors: 5
+  Failed to load resource: the server responded with a status of 400 ()
+failed hosts: us-central1-fynx-c7a28.cloudfunctions.net(7)
+problems: 1
+page journal: stuck-loading: ◀ Back JRNL Your trading journal Your saved trades, synced from your FYNX account Desk ✕ Loading you
+
