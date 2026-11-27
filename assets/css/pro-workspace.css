@@ -10,3 +10,6 @@
 
 /* Keep long broker symbols readable on narrow screens in paid Watchlist results. */
 #workbench #result > ul > li > a{overflow-wrap:anywhere}
+
+/* Keep the paid Journal download as one target when the label wraps on phones. */
+#workbench #result > a[download]{display:inline-block;max-width:100%}
