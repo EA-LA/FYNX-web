@@ -133,6 +133,39 @@ console.log('Market Holidays heatmap regression checks passed');
     marketOnly('all');
     impact.click();
     assert.deepEqual(namesOn(26), [stockHoliday], 'high impact filter omits the medium FX warning');
+
+    const title = get('timelineTitle');
+    const prev = get('prevMonth');
+    const next = get('nextMonth');
+    assert.equal(title.getAttribute('role'), 'status', 'the visible month can be announced when it changes');
+    assert.equal(prev.getAttribute('aria-label'), 'Previous month');
+    assert.equal(next.getAttribute('aria-label'), 'Next month');
+
+    next.focus();
+    next.click();
+    assert.equal(title.textContent, 'December 2026');
+    assert.equal(next.getAttribute('aria-disabled'), 'true');
+    assert.equal(next.disabled, false, 'December does not remove the focused button from the tab order');
+    assert.equal(doc.activeElement, next);
+    const dayAtEnd = get('timelineGrid').firstElementChild;
+    next.click();
+    assert.equal(get('timelineGrid').firstElementChild, dayAtEnd, 'extra activation at December does not redraw');
+
+    prev.focus();
+    for (let i = 0; i < 11; i++) prev.click();
+    assert.equal(title.textContent, 'January 2026');
+    assert.equal(prev.getAttribute('aria-disabled'), 'true');
+    assert.equal(prev.disabled, false, 'January does not remove the focused button from the tab order');
+    assert.equal(doc.activeElement, prev);
+    prev.click();
+    assert.equal(title.textContent, 'January 2026');
+    next.click();
+    assert.equal(title.textContent, 'February 2026', 'the opposite arrow remains usable');
+    year.value = '2025';
+    year.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(title.textContent, 'January 2025');
+    assert.equal(next.getAttribute('aria-disabled'), 'false');
+
   } finally {
     dom.window.close();
   }

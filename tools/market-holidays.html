@@ -210,7 +210,10 @@
     .timelineHead{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
     .timelineTitle{font-size:1.5rem;font-weight:300}
     .iconBtn{padding:.55rem .7rem;border-radius:12px}
-    .iconBtn[disabled]{opacity:.35;cursor:not-allowed}
+    .iconBtn[aria-disabled="true"]{cursor:not-allowed}
+    .iconBtn[aria-disabled="true"] i{opacity:.35}
+    .iconBtn:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    @media (pointer:coarse){.iconBtn{min-width:44px;min-height:44px}}
     #timelineGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem}
     @media(max-width:540px){#timelineGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .dayCell{
@@ -528,10 +531,10 @@
     <!-- Timeline -->
     <div class="section hidden" id="secTimeline">
       <div class="timelineHead">
-        <div class="timelineTitle" id="timelineTitle">—</div>
+        <div class="timelineTitle" id="timelineTitle" role="status">—</div>
         <div style="display:flex;gap:.5rem">
-          <button class="iconBtn" id="prevMonth" type="button" title="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
-          <button class="iconBtn" id="nextMonth" type="button" title="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+          <button class="iconBtn" id="prevMonth" type="button" title="Previous month" aria-label="Previous month" aria-controls="timelineGrid"><i aria-hidden="true" class="fa-solid fa-chevron-left"></i></button>
+          <button class="iconBtn" id="nextMonth" type="button" title="Next month" aria-label="Next month" aria-controls="timelineGrid"><i aria-hidden="true" class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
       <div class="grid7" id="timelineGrid"></div>
@@ -1036,9 +1039,11 @@
 
     /* ------------------------------ Render: timeline ------------------------------ */
     function renderTimeline(items) {
-      timelineTitle.textContent = `${monthNames[state.month]} ${state.year}`;
-      prevMonth.disabled = (state.month === 0);
-      nextMonth.disabled = (state.month === 11);
+      const label = `${monthNames[state.month]} ${state.year}`;
+      if (timelineTitle.textContent !== label) timelineTitle.textContent = label;
+      // Keep the month control focused at year boundaries rather than dropping focus.
+      prevMonth.setAttribute("aria-disabled", String(state.month === 0));
+      nextMonth.setAttribute("aria-disabled", String(state.month === 11));
 
       const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
       const eventsByDay = new Map();
@@ -1161,8 +1166,14 @@
         calendarExportStatus.textContent = 'Calendar download could not start. Please try another browser or save the dates manually.';
       }
     });
-    prevMonth.addEventListener("click", () => { state.month = Math.max(0, state.month - 1); render(); });
-    nextMonth.addEventListener("click", () => { state.month = Math.min(11, state.month + 1); render(); });
+    function moveMonth(offset) {
+      const next = state.month + offset;
+      if (next < 0 || next > 11) return;
+      state.month = next;
+      render();
+    }
+    prevMonth.addEventListener("click", () => moveMonth(-1));
+    nextMonth.addEventListener("click", () => moveMonth(1));
 
     /* ------------------------------ Utilities ------------------------------ */
     function escapeHtml(str) {
