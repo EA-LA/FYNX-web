@@ -248,6 +248,40 @@
     hd.firstChild.style.color = hot ? '#ff5a4f' : '#3ecf8e'; hd.firstChild.style.fontSize = '14px';
     w.append(hd, vScanTable(list, {compact: true}), note('Large moves follow large moves: when α+β is near 1 a volatility shock fades slowly. Click a market for the full test.'));
   }
+  function fittedBandCoverage(returns, dailyVol, center, span) {
+    if (!finite(center) || !Number.isInteger(span) || span < 1 || returns.length < span) return null;
+    let n = 0, above = 0, below = 0;
+    for (let i = returns.length - span; i < returns.length; i++) {
+      const vol = dailyVol[i], ret = returns[i];
+      if (!(vol > 0) || !finite(vol) || !finite(ret)) continue;
+      n++;
+      if (ret > center + 2 * vol) above++;
+      else if (ret < center - 2 * vol) below++;
+    }
+    return n ? {n, above, below, inside: n - above - below} : null;
+  }
+  function fittedBandCard(a) {
+    const scroll = el('div'); scroll.style.overflowX = 'auto';
+    const table = el('table', 'fx-ql-tbl'), head = el('thead'), h = el('tr'), body = el('tbody');
+    table.setAttribute('aria-label', 'Fitted volatility band coverage');
+    for (const caption of ['Recent observations', 'Usable', 'Inside band', 'Above band', 'Below band']) {
+      const th = el('th', '', caption); th.scope = 'col'; h.append(th);
+    }
+    head.append(h); table.append(head, body); scroll.append(table);
+    for (const span of [21, 63, 252]) {
+      const result = fittedBandCoverage(a.r, a.condVol, a.g.mean, span);
+      const tr = el('tr'), label = el('th', '', `Last ${span}`); label.scope = 'row'; tr.append(label);
+      if (result) tr.append(el('td', '', `${result.n} / ${span}`), el('td', '', `${result.inside} (${pct(result.inside / result.n)})`),
+        el('td', '', String(result.above)), el('td', '', String(result.below)));
+      else {
+        const td = el('td', '', a.r.length < span ? 'Not enough history' : 'No usable model bands');
+        td.colSpan = 4; tr.append(td);
+      }
+      body.append(tr);
+    }
+    return card('HOW OFTEN THE FITTED ±2σ BAND HELD', scroll,
+      note('Counts use the same daily returns and bands as the chart. The model was fitted on the full history, so this is a historical check, not an out-of-sample forecast success rate.'));
+  }
   async function renderVclustPage(host, arg) {
     if (arg && SYM_RE.test(String(arg).toUpperCase())) { vSym = String(arg).toUpperCase(); store.set('vclust-sym', vSym); }
     PG.setHead('VCLUST', 'Volatility clustering detector', `${vSym} · do big moves follow big moves? Autocorrelation, Ljung–Box and GARCH(1,1) on 10 years of daily returns`);
@@ -271,6 +305,7 @@
       : `No significant clustering in this sample: the autocorrelation of |returns| is ${num(a.rhoAbs[1], 3)} at lag 1 with Ljung–Box p = ${pFmt(a.lbA.p)}.`;
     out.append(verdict);
     const c1 = chartBox(260); out.append(card('DAILY RETURNS AND THE GARCH ±2σ ENVELOPE (LAST 3 YEARS)', c1, note('Grey bars are daily returns. The amber band is ±2 conditional standard deviations from the fitted GARCH(1,1): it widens after big moves and narrows in calm spells, which is what clustering looks like.')));
+    out.append(fittedBandCard(a));
     const two = el('div', 'fx-qr-two'), c2 = chartBox(240), c3 = chartBox(240);
     two.append(card('AUTOCORRELATION: RETURNS VS |RETURNS|', c2, note(`Lag in trading days. Returns (grey) sit inside the noise band, so direction is hard to predict. |Returns| (amber) stay positive for months: size is predictable.`)),
       card('VOLATILITY FORECAST (NEXT 63 DAYS)', c3, note(`From today’s ${pct(a.vNow)} toward the long-run ${pct(a.vLong)} at the speed set by α+β = ${a.g.pers.toFixed(3)}.`)));
@@ -658,5 +693,5 @@
     T.PAGE_NAMES.push('VCLUST', 'GARCH', 'ISEAS', 'SEASONALITY', 'FACTOR', 'RMOM', 'MOMENTUM');
   }
   if (T.DESK_DEFS?.quant) Object.assign(T.DESK_DEFS.quant, {slots: ['oflow', 'panic', 'mcvar', 'vclust', 'iseas', 'factor', 'rmom'], grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s4 s5 s5', 's6 s6 s6 s7 s7 s7']}});
-  T.QuantResearch = {acf, garch, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
+  T.QuantResearch = {acf, garch, fittedBandCoverage, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
 });
