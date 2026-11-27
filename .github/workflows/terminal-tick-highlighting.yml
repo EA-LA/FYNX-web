@@ -9,6 +9,9 @@ on:
       - 'assets/js/terminal/scanner.js'
       - 'assets/js/terminal/orderflow.js'
       - 'assets/js/terminal/world.js'
+      - 'assets/js/terminal/world-intel.js'
+      - 'assets/js/terminal/satellite-map.js'
+      - 'assets/css/terminal-satellite.css'
       - 'assets/js/terminal/builder-core.js'
       - 'assets/js/terminal/builder.js'
       - 'assets/css/terminal-all.css'
@@ -60,4 +63,8 @@ jobs:
       - run: node --check assets/js/terminal/markets-dash.js && node --check scripts/refresh-equities.cjs && node --check fn/market.js
       - run: node --test scripts/test-terminal-dashboard-e2e.cjs
       - run: node --check assets/js/terminal/markets-plus.js && node --check scripts/refresh-sentiment.cjs
+      - name: MapLibre engine for the WORLD satellite tests (same version the page loads)
+        run: npm install --no-save --ignore-scripts --prefix "$RUNNER_TEMP/mlib" maplibre-gl@4.7.1
       - run: node --test scripts/test-terminal-markets-plus-e2e.cjs
+        env:
+          MAPLIBRE_DIR: ${{ runner.temp }}/mlib/node_modules/maplibre-gl/dist

@@ -20,12 +20,12 @@ const path = require('node:path');
       </div>
     </body></html>`);
     await page.evaluate(() => {
-      const W = { flat:false, scale:1, layers:{quakes:true}, intelData:{haz:{quakes:[{lon:1,lat:2,place:'<img src=x onerror=alert(1)>',mag:4}]},ref:{layers:{}},events:[]}, ships:{vessels:[]} };
+      const W = { flat:false, scale:1, layers:{quakes:true}, intelData:{haz:{quakes:[{lon:1,lat:2,place:'<img src=x onerror=alert(1)>',mag:4}]},ref:{layers:{}},events:[]}, ships:{vessels:[{name:'EVER GIVEN',mmsi:353136000,kind:'cargo',lon:32.5,lat:30,sog:11.2,dest:'ROTTERDAM'}],chokepoints:{'Strait of Hormuz':[[26,56],[27,57]]},counts:{'Strait of Hormuz':{ships:7,tankers:5,cargo:2}}} };
       W.feats=[{type:'Feature',properties:{name:'Testland',iso2:'TL'},geometry:{type:'Polygon',coordinates:[[[0,0],[2,0],[2,2],[0,0]]]}}];
       W.centroidOf=()=>[1,1]; W.statusOf=()=>({level:'green'});
       W.mainSeaRoutes=[[[0,0],[2,2]]];
       W.intelData.ref.layers.pipelines=[{n:'test gas pipeline',k:'gas',paths:[[[0,0],[2,2]]]}];
-      W.intel={isOn:key=>key==='pipelines'?true:key==='lights'?true:key==='lanes'?true:key==='quakes'};
+      W.intel={isOn:key=>['pipelines','lights','lanes','quakes','cargo','chokes','zones'].includes(key)};
       window.__W=W; window.__maps=[];
       window.FYNX_SATELLITE_STYLE={version:8,sources:{},layers:[]};
       window.FynxTerminalPlugins=[];
@@ -79,9 +79,29 @@ const path = require('node:path');
     await page.locator('#map-reset').click();
     assert.deepEqual(await page.evaluate(()=>[window.__maps[0].zoomedIn,window.__maps[0].zoomedOut,window.__maps[0].lastFly?.zoom]),[1,1,1.5]);
     stage = 'country name lookup';
-    await page.locator('.fx-sat-search').fill('Testland');
-    await page.locator('.fx-sat-search').press('Enter');
+    await page.locator('.fx-wsearch-in').fill('Testland');
+    await page.locator('.fx-wsearch-in').press('Enter');
     assert.deepEqual(await page.evaluate(()=>window.__maps[0].lastFly?.center),[1,1]);
+    stage = 'world search';
+    const found=await page.evaluate(()=>({ship:window.__W.searchWorld('ever given'),mmsi:window.__W.searchWorld('353136000'),choke:window.__W.searchWorld('hormuz'),none:window.__W.searchWorld('zzqx')}));
+    assert.equal(found.ship[0]?.group,'Ships');
+    assert.deepEqual(found.ship[0]?.ll,[32.5,30]);
+    assert.equal(found.mmsi[0]?.title,'EVER GIVEN');
+    assert.equal(found.choke[0]?.group,'Chokepoints');
+    assert.match(found.choke[0]?.sub,/7 ships/);
+    assert.equal(found.none.length,0);
+    await page.locator('.fx-wsearch-in').fill('hormuz');
+    await page.waitForSelector('.fx-wsearch-r',{timeout:3000});
+    assert.equal(await page.locator('.fx-wsearch-h').first().textContent(),'Chokepoints');
+    await page.locator('.fx-wsearch-in').fill('');
+    stage = 'globe-parity layers';
+    const parity=await page.evaluate(()=>{const m=window.__maps[0];return {ships:m.sources.shipping.data.features.length,chokes:m.sources.chokes.data.features[0]?.properties.label,cluster:Object.values(m.sources).some(x=>x.cluster),icon:m.sources.intel.data.features[0]?.properties.icon,zones:!!m.sources.zones};});
+    assert.equal(parity.ships,1);
+    assert.equal(parity.chokes,'Strait of Hormuz · 7');
+    assert.equal(parity.cluster,false);
+    assert.equal(parity.icon,'fx-quakes');
+    assert.equal(parity.zones,true);
+    assert.equal(await page.locator('.fx-sat-style').isHidden(),true);
     assert.equal(await page.locator('.fx-sat-fullscreen').count(),1);
     stage = 'flat mode';
     await page.getByRole('button',{name:'FLAT',exact:true}).click();
@@ -103,21 +123,12 @@ const path = require('node:path');
         lngLat:{lng:1,lat:2}
       });
     });
-    stage = 'cluster expansion';
-    await page.evaluate(()=>{
-      const map=window.__maps[1];
-      map.sources.intel.getClusterExpansionZoom=async()=>6;
-      map.handlers['click:clusters']({
-        features:[{properties:{cluster_id:42},geometry:{coordinates:[1,2]}}]
-      });
-    });
-    await page.waitForFunction(()=>window.__maps[1].lastEase?.zoom===6,null,{timeout:3000});
     stage = 'popup validation';
     const html=await page.evaluate(()=>window.__popupHTML);
     assert.ok(html.includes('&lt;img'));
     assert.ok(!html.includes('href="javascript:'));
     assert.deepEqual(failures,[]);
-    console.log('Satellite browser smoke test passed: modes, layer parity, country labels, zoom controls, marker, popup safety');
+    console.log('Satellite browser smoke test passed: modes, globe-parity layers, world search, country labels, zoom controls, marker, popup safety');
   } catch (error) {
     console.error('::error title=Satellite browser smoke test failed::' + stage + ': ' + error.message.replace(/\n/g, ' '));
     throw error;

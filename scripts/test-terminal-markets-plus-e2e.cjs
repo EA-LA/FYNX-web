@@ -192,10 +192,11 @@ function fakeBridge(cfg) {
     terminalList: () => [...st.followed], saveTerminalList: async l => { st.saved.push(l); st.followed = l; acb.forEach(cb => cb(acct())); }
   };
 }
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = '', phone = false, account = null, seed = null} = {}) {
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = '', phone = false, account = null, seed = null, intercept = null, init = null} = {}) {
   const ctx = await browser.newContext(phone ? {viewport: {width, height}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'} : {viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
   if (bridge) await page.addInitScript(fakeBridge, bridge);
+  if (init) await page.addInitScript(init);
   // Settings already on this device before the page starts (written once, before any FYNX script runs).
   if (seed) await page.addInitScript(seed => { if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1'); for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, v); }, seed);
   if (account) {
@@ -209,6 +210,7 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
   const seen = [];
   await page.route('**/*', route => {
     const url = new URL(route.request().url()); seen.push(url.href);
+    if (intercept && intercept(url, route, json)) return;
     if (url.origin === ORIGIN && url.pathname === '/fn/research.js') {
       if (url.searchParams.get('action') !== 'filings') return json(route, {error: 'unknown'}, 400);
       return filingsDown ? json(route, {error: 'SEC down'}, 502) : json(route, FILINGS);
@@ -1230,5 +1232,120 @@ test('FOCUS: an old saved FOCUS layout with only a few boxes does not leave the 
   const b = await focusBoxes(page);
   assert.ok(Object.keys(b).length >= 20, `full workspace (${Object.keys(b).length} boxes), not one chart`);
   assert.equal(await page.evaluate(() => localStorage.getItem('fx-term-layout-sym-stock')), JSON.stringify(['range', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]), 'the saved layout is not deleted');
+  assert.deepEqual(errors, []); await ctx.close();
+});
+
+// World desk on the real MapLibre engine: style menu with MapTiler fallbacks, every Globe layer drawn, world search.
+const MAPLIBRE_DIR = process.env.MAPLIBRE_DIR || path.join(root, 'node_modules/maplibre-gl/dist');
+const SHIPS = {version: 1, generatedAt: '2026-11-26T17:00:00Z', total: 3,
+  vessels: [{name: 'EVER GIVEN', mmsi: 353136000, kind: 'cargo', lat: 30.0, lon: 32.55, sog: 10.4, dest: 'ROTTERDAM', eta: '12-05 06:00'},
+    {name: 'FRONT ALTAIR', mmsi: 538005492, kind: 'tanker', lat: 26.5, lon: 56.4, sog: 0.1, dest: 'FUJAIRAH'},
+    {name: 'PILOT 7', mmsi: 247000001, kind: 'other', lat: 44.4, lon: 8.9, sog: 4}],
+  chokepoints: {'Strait of Hormuz': [[25.8, 55.8], [27.2, 57.2]], 'Suez Canal': [[29.8, 32.2], [31.4, 32.7]]},
+  counts: {'Strait of Hormuz': {ships: 41, tankers: 29, cargo: 12, waiting: 6}, 'Suez Canal': {ships: 18, tankers: 4, cargo: 14, waiting: 2}}};
+const mapStyle = id => ({version: 8, name: id, glyphs: 'https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=TESTKEY', sources: {},
+  layers: [{id: 'bg-' + id, type: 'background', paint: {'background-color': id.startsWith('dataviz') ? '#101418' : '#1b2a22'}}]});
+const satelliteRoutes = calls => (url, route, json) => {
+  if (url.hostname === 'unpkg.com' && url.pathname.includes('maplibre-gl')) {
+    const f = path.join(MAPLIBRE_DIR, path.basename(url.pathname));
+    route.fulfill({contentType: f.endsWith('.css') ? 'text/css' : 'text/javascript', body: fs.readFileSync(f)}); return true;
+  }
+  if (url.pathname === '/assets/config/satellite.json') { json(route, {key: 'TESTKEY'}); return true; }
+  if (url.hostname === 'raw.githubusercontent.com' && url.pathname.endsWith('/ships.json')) { json(route, SHIPS); return true; }
+  if (url.hostname === 'api.maptiler.com') {
+    calls.push(url.pathname);
+    const m = url.pathname.match(/^\/maps\/([^/]+)\/style\.json$/);
+    // This key has the old satellite id, the new dark id, and no Toner at all.
+    if (m) { const ok = ['satellite', 'hybrid-v4', 'dataviz-v4-dark', 'ocean'].includes(m[1]); route.fulfill(ok ? {contentType: 'application/json', body: JSON.stringify(mapStyle(m[1]))} : {status: 404, body: '{}'}); return true; }
+    if (url.pathname.startsWith('/geocoding/')) { json(route, {features: [{text: 'Rotterdam', place_name: 'Rotterdam, South Holland, Netherlands', center: [4.48, 51.92], place_type: ['municipality']}]}); return true; }
+    route.fulfill({status: 404, body: ''}); return true;
+  }
+  return false;
+};
+
+test('WORLD satellite: base-map menu, Globe-parity layers on the real engine, world search', {skip: !fs.existsSync(path.join(MAPLIBRE_DIR, 'maplibre-gl.js')) && 'maplibre-gl not installed (MAPLIBRE_DIR)'}, async () => {
+  const calls = [];
+  const {ctx, page, errors} = await boot({intercept: satelliteRoutes(calls), url: '?desk=world', init: () => { window.__log = []; const ow = console.warn; console.warn = (...a) => { window.__log.push('WARN ' + a.map(x => x?.stack || x?.message || String(x)).join(' ')); ow(...a); }; const mon = {report: (a, b, e) => window.__log.push('REPORT ' + b + ' ' + (e?.stack || e))}; Object.defineProperty(window, 'FynxMonitor', {get: () => mon, set() {}}); }});
+  for (let i = 0; i < 40 && !(await page.$('.fx-gstage .fx-sat-modes button')); i++) { await page.clock.runFor(500); await page.waitForTimeout(25); }
+  await page.waitForSelector('.fx-gstage .fx-sat-modes button', {timeout: 5000});
+  await page.clock.runFor(3000);
+  await page.click('.fx-sat-modes button[data-mode="satellite"]');
+  const probe = () => page.evaluate(() => {
+    const m = document.querySelector('.fx-sat-map')?.fxMap; if (!m || !m.isStyleLoaded() || !m.getSource('intel')) return null;
+    const n = k => m.getSource(k)?._data?.features?.length ?? m.getSource(k)?.serialize?.().data?.features?.length ?? null;
+    const props = k => (m.getSource(k)?.serialize?.().data?.features || []).map(f => f.properties);
+    return {style: m.getStyle().name, layers: m.getStyle().layers.map(l => l.id), ships: n('shipping'), chokes: props('chokes').map(p => p.label), intel: n('intel'),
+      lights: n('lights'), zones: n('zones'), pipes: n('pipelines'), layersOn: props('intel').map(p => p.layer),
+      icons: ['fx-conflict', 'fx-nuclear', 'fx-chokes', 'fx-hatch', 'fx-bases'].filter(x => m.hasImage(x)), cluster: !!m.getSource('intel').serialize().cluster};
+  });
+  const until = async (fn, what) => { for (let i = 0; i < 80; i++) { await page.clock.runFor(250); await page.waitForTimeout(25); const v = await fn(); if (v) return v; } throw new Error('timed out: ' + what); };
+  let st = await until(probe, 'satellite map with overlays');
+  assert.equal(st.style, 'satellite', 'satellite-v4 is missing for this key, so the older id is used');
+  for (const id of ['sat-conflict-hatch', 'sat-zones-line', 'sat-pipelines', 'sat-country-status', 'sat-ships', 'sat-chokes', 'intel-halo', 'intel-icons', 'intel-labels']) assert.ok(st.layers.includes(id), 'layer ' + id);
+  assert.equal(st.ships, 2, 'every tanker and cargo ship ("other" is off by default, as on the Globe), no clustering');
+  assert.equal(st.cluster, false);
+  assert.deepEqual(st.chokes.sort(), ['Strait of Hormuz · 41', 'Suez Canal · 18']);
+  assert.ok(st.lights > 150, 'country lights for every country'); assert.ok(st.zones > 5, 'long-running conflict areas');
+  // Layer switches drive the satellite map too: pipelines and nuclear sites are off by default, switch them on.
+  for (const k of ['pipelines', 'nuclear']) if (!(await page.isChecked('#ilp-' + k))) await page.click('#ilp-' + k);
+  st = await until(async () => { const p = await probe(); return p && p.pipes > 10 && p.layersOn.includes('nuclear') && p; }, 'pipelines and nuclear sites drawn');
+  assert.equal(st.icons.length, 5, 'the Globe icon set is registered: ' + st.icons);
+  // Base-map menu: Toner is not enabled for this key, Intelligence dark is (new id), and the overlays come back.
+  await page.click('.fx-sat-stylebtn');
+  assert.equal(await page.isVisible('.fx-sat-stylelist'), true);
+  assert.ok((await page.$$eval('.fx-sat-stylelist button', b => b.length)) >= 14, 'every MapTiler style offered');
+  await page.click('.fx-sat-stylelist button[data-style="toner"]');
+  await until(() => page.$eval('.fx-sat-stylelist button[data-style="toner"]', b => b.disabled), 'toner marked unavailable');
+  assert.equal(await page.evaluate(() => document.querySelector('.fx-sat-map').fxMap.getStyle().name), 'satellite', 'an unavailable style leaves the map as it was');
+  await page.click('.fx-sat-stylebtn'); await page.click('.fx-sat-stylelist button[data-style="dark"]');
+  st = await until(async () => { const p = await probe(); return p && p.style === 'dataviz-v4-dark' && p; }, 'dark style with overlays');
+  assert.equal(st.ships, 2); assert.ok(st.layers.includes('intel-icons') && st.layers.includes('sat-chokes'), 'overlays redrawn on the new style');
+  assert.match(await page.textContent('.fx-sat-stylebtn'), /Intelligence dark/);
+  await shot(page, 'world-satellite-dark.png');
+  assert.deepEqual(await page.evaluate(() => window.__log.filter(x => /^WARN Satellite/.test(x))), [], 'MapLibre accepted every layer');
+  assert.equal(await page.evaluate(() => localStorage.getItem('fx-term-world-map-style')), 'dark', 'choice saved (and synced with the account)');
+  // World search: ship by name, chokepoint, place worldwide, and an honest "nothing in FYNX data".
+  await page.fill('.fx-wsearch-in', 'ever given'); await page.clock.runFor(400);
+  await until(() => page.$('.fx-wsearch-r'), 'ship result');
+  assert.equal(await page.textContent('.fx-wsearch-h'), 'Ships');
+  await page.press('.fx-wsearch-in', 'Enter');
+  const center = await until(async () => { const c = await page.evaluate(() => { const m = document.querySelector('.fx-sat-map').fxMap; return m.getZoom() > 6 ? m.getCenter().toArray() : null; }); return c; }, 'fly to ship');
+  assert.ok(Math.abs(center[0] - 32.55) < 0.5 && Math.abs(center[1] - 30) < 0.5, 'map flew to the ship: ' + center);
+  await until(() => page.$('.maplibregl-popup'), 'ship card');
+  assert.match(await page.textContent('.maplibregl-popup'), /EVER GIVEN[\s\S]*Destination: ROTTERDAM[\s\S]*MMSI 353136000/);
+  await page.fill('.fx-wsearch-in', 'hormuz'); await page.clock.runFor(400); await until(() => page.$('.fx-wsearch-r'), 'chokepoint');
+  assert.match(await page.textContent('.fx-wsearch-list'), /Chokepoints[\s\S]*Strait of Hormuz[\s\S]*41 ships inside now/);
+  await page.fill('.fx-wsearch-in', 'rotterdam port authority'); await page.clock.runFor(400);
+  await until(() => page.evaluate(() => /Places worldwide/.test(document.querySelector('.fx-wsearch-list')?.textContent || '')), 'geocoder results');
+  assert.match(await page.textContent('.fx-wsearch-none'), /Nothing in FYNX’s world data matches/);
+  assert.ok(calls.some(c => c.startsWith('/geocoding/')), 'MapTiler geocoding used with the deployed key');
+  // Search from the Globe too: a nuclear site opens the Globe's own event card.
+  await page.click('.fx-sat-modes button[data-mode="globe"]');
+  await page.fill('.fx-wsearch-in', 'zaporizhzhia'); await page.clock.runFor(400); await until(() => page.$('.fx-wsearch-r'), 'site result');
+  await page.press('.fx-wsearch-in', 'Enter');
+  await until(() => page.isVisible('.fx-icard'), 'globe event card');
+  assert.match(await page.textContent('.fx-icard'), /Zaporizhzhia/i);
+  assert.equal(await page.$('.fx-sat-map'), null, 'stays on the Globe');
+  await shot(page, 'world-search.png');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('WORLD satellite on iPhone: search and map menu fit the toolbar', {skip: !fs.existsSync(path.join(MAPLIBRE_DIR, 'maplibre-gl.js')) && 'maplibre-gl not installed (MAPLIBRE_DIR)'}, async () => {
+  const calls = [];
+  const {ctx, page, errors} = await boot({intercept: satelliteRoutes(calls), url: '?desk=world', phone: true, width: 390, height: 844});
+  for (let i = 0; i < 40 && !(await page.$('.fx-gstage .fx-sat-modes button')); i++) { await page.clock.runFor(500); await page.waitForTimeout(25); }
+  await page.locator('.fx-gstage').scrollIntoViewIfNeeded();
+  await page.click('.fx-sat-modes button[data-mode="satellite"]');
+  for (let i = 0; i < 40 && !(await page.evaluate(() => !!document.querySelector('.fx-sat-map')?.fxMap?.getSource('intel'))); i++) { await page.clock.runFor(500); await page.waitForTimeout(25); }
+  const box = await page.evaluate(() => { const r = e => e.getBoundingClientRect(); const s = r(document.querySelector('.fx-gstage')), q = r(document.querySelector('.fx-wsearch-in')), m = r(document.querySelector('.fx-sat-stylebtn'));
+    return {stageW: s.width, q: [q.left - s.left, q.right - s.left, q.height], m: [m.left - s.left, m.right - s.left]}; });
+  assert.ok(box.q[0] >= 0 && box.q[1] <= box.stageW + 1 && box.q[2] >= 36, 'search box fits and is a 36px+ touch target: ' + JSON.stringify(box));
+  assert.ok(box.m[0] >= 0 && box.m[1] <= box.stageW + 1, 'map menu fits: ' + JSON.stringify(box));
+  await shot(page, 'world-satellite-phone-map.png');
+  await page.fill('.fx-wsearch-in', 'suez'); await page.clock.runFor(400); await page.waitForSelector('.fx-wsearch-r');
+  const list = await page.evaluate(() => { const r = document.querySelector('.fx-wsearch-list').getBoundingClientRect(); return [r.left, r.right, innerWidth]; });
+  assert.ok(list[0] >= 0 && list[1] <= list[2] + 1, 'results fit the screen: ' + list);
+  await shot(page, 'world-satellite-phone.png');
   assert.deepEqual(errors, []); await ctx.close();
 });
