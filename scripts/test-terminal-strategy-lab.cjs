@@ -51,6 +51,17 @@ const blk = [[1, .9, .9, 0], [.9, 1, .9, 0], [.9, .9, 1, 0], [0, 0, 0, 1]]; cons
 let s = 9; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647, gs = () => Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd());
 const X = Array.from({length: 10}, () => Array.from({length: 60}, () => 0.01 * gs()));
 const lw = S.covEstimate(X, 'lw'); ok(lw.delta > 0 && lw.delta <= 1, 'Ledoit-Wolf shrinkage in (0,1]: ' + lw.delta.toFixed(3));
+const symbols = ['A', 'B', 'C', 'D'];
+const balanced = S.optimizerConcentration([.25, .25, .25, .25], symbols, 'minvar', .2);
+ok(balanced.effective === 4 && balanced.largest === .25 && balanced.leaders.length === 4 &&
+  balanced.cap === .25 && balanced.raised, 'equal weights and the feasible cap floor are shown correctly');
+const tilted = S.optimizerConcentration([.7, .1, .1, .1], symbols, 'hrp', .2);
+ok(Math.abs(tilted.effective - 1 / .52) < 1e-9 && Math.abs(tilted.largest - .7) < 1e-9 && tilted.leaders[0] === 'A' &&
+  tilted.cap === null && !tilted.raised, 'concentration distinguishes a large allocation and a method without a cap');
+ok(S.optimizerConcentration([1, 0], ['A', 'B'], 'maxsharpe', 1).cap === null &&
+  S.optimizerConcentration([.5, .5], ['A', 'B'], 'maxdiv', .5).raised === false, 'no-cap and exact feasible-cap selections are distinct');
+ok(S.optimizerConcentration([0, 0], ['A', 'B'], 'ew', .5) === null &&
+  S.optimizerConcentration([.3, NaN], ['A', 'B'], 'ew', .5) === null, 'invalid weights never show fabricated concentration');
 // ---- forecaster: a periodic series is forecastable; check no look-ahead in candidate set
 const P = {o: [], h: [], l: [], c: [], v: [], t: [], day: []}; let q = 100;
 for (let i = 0; i < 1500; i++) { const o = q; q = o * Math.exp(0.01 * Math.sin(2 * Math.PI * i / 25)); P.o.push(o); P.c.push(q); P.h.push(Math.max(o, q) * 1.001); P.l.push(Math.min(o, q) * 0.999); P.v.push(100); P.t.push(i); P.day.push('d' + i); }
