@@ -16,6 +16,7 @@ function setup() {
     <input id="amount" type="number">
     <select id="fromCurrency"></select><select id="toCurrency"></select>
     <input id="customRate" type="number">
+    <input id="referenceRate" type="number">
     <button id="calculateBtn">Calculate</button>
     <button id="clearBtn">Clear</button>
     <button id="swapBtn">Swap</button>

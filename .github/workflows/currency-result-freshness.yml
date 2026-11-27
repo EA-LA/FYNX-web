@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'tools/currency.html'
+      - 'assets/js/currency-offer-compare.js'
+      - 'scripts/test-currency-offer-compare.cjs'
       - 'scripts/test-currency-result-freshness.cjs'
       - '.github/workflows/currency-result-freshness.yml'
   push:
@@ -19,4 +21,4 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: node --test scripts/test-currency-result-freshness.cjs
+      - run: node --test scripts/test-currency-result-freshness.cjs scripts/test-currency-offer-compare.cjs scripts/test-currency-check.cjs

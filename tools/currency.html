@@ -404,6 +404,8 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
 <script src="/assets/js/currency-check.js?v=20261126-site-qa-113" defer></script>
+<script src="/assets/vendor/decimal.js" defer></script>
+<script src="/assets/js/currency-offer-compare.js?v=20261127" defer></script>
 <script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/currency.html">
 <meta property="og:title" content="Currency Conversion Calculator: Manual Rates | FYNX">
@@ -453,6 +455,7 @@
       <div class="panel-grid">
         <div class="panel">
           <h2>INPUTS</h2>
+          <p class="mini-note"><a href="#currency-offers">Compare two offers including fees ↓</a></p>
           <div class="muted">
             Enter the amount, choose the base and target currencies, and enter the destination currency received for one unit of the base currency.
           </div>
@@ -517,6 +520,36 @@
         Logic: source amount × your entered rate. Results exclude provider fees and spreads. The calculator does not supply or verify market rates.
       </div>
     </section>
+  <section id="currency-offers" class="tool-explainer" aria-labelledby="currency-offers-title" style="scroll-margin-top:6rem">
+    <div class="discovery-kicker">MANUAL OFFER COMPARISON</div>
+    <h2 id="currency-offers-title">Compare what two offers would deliver</h2>
+    <p>Use the amount and currencies above as one total budget. Compare two provider quotes with a fixed fee deducted from that budget before conversion.</p>
+    <form id="currency-offer-form" aria-describedby="currency-offer-basis">
+      <p id="currency-offer-basis"></p>
+      <div class="form-grid" style="margin:.8rem 0">
+        <fieldset style="border:0;padding:0;min-width:0;display:grid;gap:.5rem" id="currency-offer-a" disabled>
+          <legend>Offer A</legend>
+          <div class="field-group"><label for="offer-a-rate">Offer A rate</label><input id="offer-a-rate" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.93"></div>
+          <div class="field-group"><label for="offer-a-fee">Offer A fee</label><input id="offer-a-fee" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter 0 if none"></div>
+        </fieldset>
+        <fieldset style="border:0;padding:0;min-width:0;display:grid;gap:.5rem" id="currency-offer-b" disabled>
+          <legend>Offer B</legend>
+          <div class="field-group"><label for="offer-b-rate">Offer B rate</label><input id="offer-b-rate" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.92"></div>
+          <div class="field-group"><label for="offer-b-fee">Offer B fee</label><input id="offer-b-fee" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter 0 if none"></div>
+        </fieldset>
+      </div>
+      <div class="actions"><button type="submit" id="currency-offer-run" disabled>Compare offers</button></div>
+    </form>
+    <div role="status" aria-live="polite" aria-atomic="true" style="margin:.7rem 0;overflow-wrap:anywhere">
+      <p id="currency-offer-status"></p>
+      <dl id="currency-offer-results" hidden>
+        <div><dt>Offer A delivery</dt><dd id="offer-a-net"></dd></div>
+        <div><dt>Offer B delivery</dt><dd id="offer-b-net"></dd></div>
+      </dl>
+    </div>
+    <p class="mini-note">Use fees in the sending currency and enter 0 for no fee. Only the entered rates and fees are included; receiving fees, rate changes, rounding by providers and other charges may differ. Offer inputs stay on this page until it’s closed or reloaded and are not included in scenario links.</p>
+    <noscript><p>This comparison requires JavaScript.</p></noscript>
+  </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Convert with a rate you can verify</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a manual rate from your chosen provider and verify its direction. Fixed examples in this tool are not current quotes.</p><h3>The calculation or concept</h3><p>Converted amount = source amount × exchange rate when the rate is expressed as destination currency per source unit.</p></div><div class="tool-example"><h3>Worked example</h3><p>At an illustrative rate of 1.10 USD per EUR, €250 converts to $275 before provider fees. The inverse rate is needed to convert in the opposite direction.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Banks and brokers may apply spreads, fees and different execution rates. Recheck the rate and timestamp before making a real conversion.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
