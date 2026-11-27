@@ -31,6 +31,30 @@
       .catch(()=>{indexPromise=null;return [];})
       .finally(()=>clearTimeout(timeoutId));
   })();
+  // Both Explore and Home use the publisher's URL-only inventory, not the full story data.
+  const storyPath=url=>typeof url==='string'&&url.match(/^(\/intelligence\/[a-z0-9-]+\/)(?:index\.html)?$/)?.[1];
+  let storyIndexPromise;
+  const currentStoryPaths=()=>storyIndexPromise ||= (()=>{
+    const controller=typeof AbortController==='function'?new AbortController():null;
+    let timeoutId;
+    const request=Promise.resolve().then(()=>fetch('/intelligence/sitemap.xml',{cache:'no-cache',signal:controller?.signal})).then(r=>{
+      if(!r.ok)throw Error('Intelligence index unavailable');
+      return r.text();
+    });
+    const timeout=new Promise((_,reject)=>{
+      timeoutId=setTimeout(()=>{
+        controller?.abort();reject(Error('Intelligence index timed out'));
+      },4000);
+    });
+    return Promise.race([request,timeout]).then(xml=>{
+      const doc=new DOMParser().parseFromString(xml,'application/xml');
+      if(doc.documentElement.localName!=='urlset'||doc.querySelector('parsererror'))throw Error('Invalid Intelligence index');
+      const publisher='https://www.fynxfinanceworld.com';
+      const entries=[...doc.querySelectorAll('url > loc')].map(node=>node.textContent.trim());
+      if(!entries.includes(publisher+'/intelligence/'))throw Error('Invalid Intelligence index');
+      return new Set(entries.filter(url=>url.startsWith(publisher+'/')).map(url=>storyPath(url.slice(publisher.length))).filter(Boolean));
+    }).catch(error=>{storyIndexPromise=null;throw error;}).finally(()=>clearTimeout(timeoutId));
+  })();
   const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
   let notice;
   function announce(message){
@@ -75,8 +99,6 @@
   if(library){
     const input=document.getElementById('resource-query'), form=input.closest('form'), cards=[...library.querySelectorAll('.discovery-card')],buttons=[...library.querySelectorAll('[data-filter]')];
     const allowed=new Set(buttons.map(b=>b.dataset.filter));let selected='All';
-    // Use the publisher's small URL-only inventory, not the multi-MB story data.
-    const storyPath=url=>typeof url==='string'&&url.match(/^(\/intelligence\/[a-z0-9-]+\/)(?:index\.html)?$/)?.[1];
     const storyCards=new Map(cards.map(card=>[card,storyPath(card.dataset.resourceUrl)]).filter(([,url])=>url));
     const verifiedStories=new Set();
     const isPublished=card=>!storyCards.has(card)||verifiedStories.has(storyCards.get(card));
@@ -165,22 +187,7 @@
     document.querySelector('[data-discovery-reset]')?.addEventListener('click',()=>{selected='All';input.value='';urlUpdate();input.focus();});
     window.addEventListener('popstate',()=>{restore();filterLibrary();});restore();filterLibrary();
     if(storyCards.size){
-      const controller=typeof AbortController==='function'?new AbortController():null;
-      let timeoutId;
-      const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>{
-        controller?.abort();reject(Error('Intelligence index timed out'));
-      },4000);});
-      const request=Promise.resolve().then(()=>fetch('/intelligence/sitemap.xml',{cache:'no-cache',signal:controller?.signal})).then(r=>{
-        if(!r.ok)throw Error('Intelligence index unavailable');
-        return r.text();
-      });
-      Promise.race([request,timeout]).then(xml=>{
-        const indexDoc=new DOMParser().parseFromString(xml,'application/xml');
-        if(indexDoc.documentElement.localName!=='urlset'||indexDoc.querySelector('parsererror'))throw Error('Invalid Intelligence index');
-        const publisher='https://www.fynxfinanceworld.com';
-        const entries=[...indexDoc.querySelectorAll('url > loc')].map(node=>node.textContent.trim());
-        if(!entries.includes(publisher+'/intelligence/'))throw Error('Invalid Intelligence index');
-        const current=new Set(entries.filter(url=>url.startsWith(publisher+'/')).map(url=>storyPath(url.slice(publisher.length))).filter(Boolean));
+      currentStoryPaths().then(current=>{
         storyCards.forEach((canonical,card)=>{
           if(!current.has(canonical))return;
           verifiedStories.add(canonical);
@@ -191,7 +198,7 @@
         refreshVocabulary();
       }).catch(()=>{storyStatus.textContent='Could not verify direct Intelligence links here. ';})
         .finally(()=>{
-          clearTimeout(timeoutId);checkingStories=false;
+          checkingStories=false;
           if(!library.isConnected)return;
           const focus=document.activeElement;
           filterLibrary();
@@ -199,37 +206,58 @@
         });
     }
   }
+  let workspaceRender=0;
   async function renderWorkspace(retryButton){
     const host=document.querySelector('[data-workspace-saved]');if(!host)return;
-    const recent=document.querySelector('[data-workspace-recent]');
+    const recent=document.querySelector('[data-workspace-recent]'), generation=++workspaceRender;
+    const savedURLs=[...saved], recentURLs=recent?read(recentKey):[];
     const rows=await index();const byURL=new Map(rows.map(r=>[r.url,r]));
+    const hasStories=savedURLs.some(storyPath)||recentURLs.some(storyPath);
+    const current=rows.length&&hasStories?await currentStoryPaths().catch(()=>null):null;
+    if(generation!==workspaceRender)return;
+    const byStory=new Map(rows.filter(r=>storyPath(r.url)).map(r=>[storyPath(r.url),r]));
     const focusHost=retryButton&&document.activeElement===retryButton?retryButton.parentElement:null;
+    const retryControl=()=>{
+      const button=document.createElement('button');button.type='button';button.textContent='Retry loading resources';
+      button.addEventListener('click',()=>{
+        if(button.getAttribute('aria-disabled')==='true')return;
+        button.setAttribute('aria-disabled','true');button.textContent='Loading resources…';
+        renderWorkspace(button);
+      });
+      return button;
+    };
     const render=(node,urls,empty)=>{
       if(!node)return;
       node.replaceChildren();
       if(!rows.length&&urls.length){
         // A failed index lookup is not an empty saved list. Keep stored paths intact and offer recovery.
         const p=document.createElement('p');p.setAttribute('role','status');p.textContent='Your resources could not be loaded. Try again.';
-        const button=document.createElement('button');button.type='button';button.textContent='Retry loading resources';
-        button.addEventListener('click',()=>{
-          if(button.getAttribute('aria-disabled')==='true')return;
-          button.setAttribute('aria-disabled','true');button.textContent='Loading resources…';
-          renderWorkspace(button);
-        });
-        node.append(p,button);
+        node.append(p,retryControl());
       }else{
-        const valid=urls.map(url=>byURL.get(url)).filter(Boolean).slice(0,6);
-        if(!valid.length){const p=document.createElement('p');p.textContent=empty;node.append(p);}
-        else valid.forEach(r=>{const a=document.createElement('a');a.href=r.url;a.textContent=r.title;node.append(a);});
+        const links=new Map();
+        let hiddenStory=false;
+        urls.forEach(url=>{
+          const canonical=storyPath(url);
+          if(canonical&&!current?.has(canonical)){hiddenStory=true;return;}
+          const row=byURL.get(url)||(canonical&&byStory.get(canonical));
+          if(row&&!links.has(canonical||url))links.set(canonical||url,row.title);
+        });
+        [...links].slice(0,6).forEach(([href,title])=>{const a=document.createElement('a');a.href=href;a.textContent=title;node.append(a);});
+        if(hiddenStory){
+          const p=document.createElement('p');p.setAttribute('role','status');
+          p.textContent=current?'Some saved stories are no longer listed in Intelligence.':'Saved story links could not be verified. Try again.';
+          if(!current)node.append(p,retryControl());
+          else node.append(p);
+          const a=document.createElement('a');a.href='/intelligence/';a.textContent='Browse current Intelligence stories';node.append(a);
+        }else if(!links.size){const p=document.createElement('p');p.textContent=empty;node.append(p);}
       }
       if(node===focusHost){
-        const target=node.querySelector('button, a, p');
-        const control=node.querySelector('button, a')||target;
+        const control=node.querySelector('button, a')||node.querySelector('p');
         if(control){if(control.tagName==='P')control.tabIndex=-1;control.focus();}
       }
     };
-    render(host,[...saved],'Save tools and lessons from the resource library to keep them here.');
-    render(recent,read(recentKey),'Your recently opened resources will appear here.');
+    render(host,savedURLs,'Save tools and lessons from the resource library to keep them here.');
+    render(recent,recentURLs,'Your recently opened resources will appear here.');
   }
   // Store resource paths only. Never record account pages, queries, inputs or trade data.
   const pathname=location.pathname;

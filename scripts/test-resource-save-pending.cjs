@@ -160,13 +160,13 @@ test('index entries with unsafe off-site paths fail closed and can recover', asy
   dom.window.close();
 });
 
-function setupWorkspace({ stored = true } = {}) {
+function setupWorkspace({ stored = true, savedPaths = [resource], recentPaths = [secondResource] } = {}) {
   const dom = new JSDOM('<main><div data-workspace-saved></div><div data-workspace-recent></div></main>', {
     url: 'https://www.fynxfinanceworld.com/home.html', runScripts: 'outside-only'
   });
   if (stored) {
-    dom.window.localStorage.setItem(key, JSON.stringify([resource]));
-    dom.window.localStorage.setItem('fynx.recent-resources.v1', JSON.stringify([secondResource]));
+    dom.window.localStorage.setItem(key, JSON.stringify(savedPaths));
+    dom.window.localStorage.setItem('fynx.recent-resources.v1', JSON.stringify(recentPaths));
   }
   const requests = [];
   dom.window.fetch = url => new Promise(resolve => requests.push({url, resolve}));
@@ -230,5 +230,62 @@ test('home with no stored resource paths retains truthful empty states on index 
     assert.match(recent.textContent, /recently opened resources will appear/);
     assert.equal(saved.querySelector('button'), null);
     assert.equal(recent.querySelector('button'), null);
+  } finally { dom.window.close(); }
+});
+
+const story = '/intelligence/current-saved-story/';
+const retiredStory = '/intelligence/retired-saved-story/';
+const storyRows = [
+  {url: story + 'index.html', title: 'Current article'},
+  {url: retiredStory + 'index.html', title: 'Retired article'},
+  {url: resource, title: 'Position size'}
+];
+const sitemapResponse = (paths, includeHub=true) => ({ok: true, text: async () => '<urlset>'
+  + [...(includeHub?['/intelligence/']:[]),...paths].map(href=>'<url><loc>'+(href.startsWith('/')?'https://www.fynxfinanceworld.com':'')+href+'</loc></url>').join('')
+  + '</urlset>'});
+const currentSitemap = () => sitemapResponse([story, 'https://other.example' + retiredStory]);
+const hrefs = node => [...node.querySelectorAll('a')].map(a=>a.getAttribute('href'));
+
+test('home suppresses retired saved links, canonicalizes current aliases and leaves stored IDs untouched', async () => {
+  const savedPaths = [retiredStory + 'index.html', story + 'index.html', story, resource];
+  const {dom, requests, saved, recent} = setupWorkspace({savedPaths, recentPaths: []});
+  try {
+    requests[0].resolve({ok: true, json: async () => storyRows});
+    await flush();
+    assert.deepEqual(requests.map(r=>r.url), ['/assets/resource-index.json','/intelligence/sitemap.xml']);
+    requests[1].resolve(currentSitemap());
+    await flush();
+    assert.deepEqual(hrefs(saved), [story, resource, '/intelligence/']);
+    assert.match(saved.textContent, /no longer listed/);
+    assert.doesNotMatch(saved.textContent, /Retired article/);
+    assert.equal(saved.querySelector('button'), null);
+    assert.match(recent.textContent, /recently opened resources will appear/);
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), savedPaths);
+  } finally { dom.window.close(); }
+});
+
+test('home can recheck a failed or malformed story inventory without hiding stored tools or changing IDs', async () => {
+  const savedPaths = [story + 'index.html', resource];
+  const {dom, requests, saved} = setupWorkspace({savedPaths, recentPaths: []});
+  try {
+    requests[0].resolve({ok: true, json: async () => storyRows});
+    await flush();
+    requests[1].resolve(sitemapResponse([story],false));
+    await flush();
+    assert.deepEqual(hrefs(saved), [resource, '/intelligence/']);
+    assert.match(saved.textContent, /could not be verified/);
+    const retry = saved.querySelector('button');
+    retry.focus();
+    retry.click();
+    retry.click();
+    await flush();
+    assert.equal(requests.length, 3);
+    assert.equal(retry.getAttribute('aria-disabled'), 'true');
+    requests[2].resolve(currentSitemap());
+    await flush();
+    assert.deepEqual(hrefs(saved), [story, resource]);
+    assert.equal(dom.window.document.activeElement, saved.querySelector('a'));
+    assert.equal(saved.querySelector('button'), null);
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), savedPaths);
   } finally { dom.window.close(); }
 });
