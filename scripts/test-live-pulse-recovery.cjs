@@ -35,6 +35,8 @@ function setup(mode = 'ok', {withoutAbort = false} = {}) {
       pendingSignal = options.signal;
       resolveLateBody = () => resolve({...quote, items: [{...quote.items[0], price: 9999}]});
     })});
+    if (mode === 'different-symbol') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], symbol: 'BTC-USD', label: 'Bitcoin'}]})});
     if (mode === 'fail') return Promise.reject(new Error('offline'));
     if (mode === 'empty') return Promise.resolve({ok: true, json: async () => ({items: []})});
     if (mode === 'stall') return new Promise((_, reject) => {
@@ -318,4 +320,52 @@ test('a stalled JSON body releases retry even without AbortController and a late
       assert.equal(app.strip().querySelector('.lp-feedback').hidden, true);
     } finally { app.close(); }
   }
+});
+
+
+test('quote refresh preserves keyboard focus on the real matching market link', async () => {
+  const app = setup();
+  try {
+    await settle();
+    const strip = app.strip(), original = strip.querySelector('.lp-item');
+    original.focus();
+    assert.equal(app.w.document.activeElement, original);
+    app.w.document.dispatchEvent(new app.w.CustomEvent('fynx:terminal-quotes', {
+      detail: {status: 'ok', quotes: {
+        '^GSPC': {price: 7520.25, asOf: new Date(Date.now() - 60000).toISOString()}
+      }}
+    }));
+    const updated = strip.querySelector('.lp-item');
+    assert.notEqual(updated, original);
+    assert.equal(app.w.document.activeElement, updated);
+    assert.equal(updated.hasAttribute('aria-hidden'), false);
+    assert.match(updated.textContent, /7,520/);
+  } finally { app.close(); }
+});
+
+test('a removed market retains focus within the strip without selecting another instrument', async () => {
+  const app = setup();
+  try {
+    await settle();
+    const strip = app.strip();
+    strip.querySelector('.lp-item').focus();
+    app.setMode('different-symbol'); app.intervals[0]();
+    await settle();
+    assert.equal(app.w.document.activeElement, strip);
+    assert.equal(strip.getAttribute('tabindex'), '-1');
+    assert.match(strip.querySelector('.lp-item').textContent, /Bitcoin/);
+  } finally { app.close(); }
+});
+
+test('automatic refresh does not steal focus from outside the market strip', async () => {
+  const app = setup();
+  try {
+    await settle();
+    const button = app.w.document.createElement('button');
+    app.w.document.body.append(button);
+    button.focus();
+    app.intervals[0]();
+    await settle();
+    assert.equal(app.w.document.activeElement, button);
+  } finally { app.close(); }
 });

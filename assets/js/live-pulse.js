@@ -109,7 +109,20 @@
         + (olderQuote(i) ? '<span class="lp-age">Older</span>' : '') + spark(s, up) + '</a>';
     }).join('');
     const track = strip.querySelector('.lp-track');
+    // A quote refresh replaces the links. Keep keyboard users on the same
+    // instrument rather than dropping focus back to the document body.
+    const active = document.activeElement;
+    const focusedHref = active && track.contains(active) && active.matches('.lp-item:not([aria-hidden="true"])')
+      ? active.getAttribute('href') : null;
     track.innerHTML = html + html.replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ');
+    if (focusedHref !== null) {
+      const next = Array.from(track.querySelectorAll('.lp-item:not([aria-hidden="true"])'))
+        .find(link => link.getAttribute('href') === focusedHref);
+      // If the instrument disappeared, retain a meaningful position in the
+      // document without silently focusing a different market.
+      if (!next) strip.setAttribute('tabindex', '-1');
+      (next || strip).focus({preventScroll: true});
+    }
     track.style.setProperty('--lp-dur', Math.max(40, items.length * 5) + 's');
     lastSourceAt = data.generatedAt;
     const state = snapshotStatus(data.generatedAt, data.stale === true || items.some(i => i.stale === true));
