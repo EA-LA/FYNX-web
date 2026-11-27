@@ -270,6 +270,52 @@
     return {R, B, res, ann, N, s0, cut, bh, sig: significance(res.eq, bh, res.pos, s0, N - 1, ann), all: perf(res.eq, s0, N - 1, ann), is: perf(res.eq, s0, cut, ann), oos: perf(res.eq, cut, N - 1, ann), bhAll: perf(bh, s0, N - 1, ann), bhOos: perf(bh, cut, N - 1, ann),
       tstats: {n: closed.length, win: closed.length ? wins.length / closed.length : NaN, avgW: wins.length ? mean(wins.map(t => t.ret)) : NaN, avgL: losses.length ? mean(losses.map(t => t.ret)) : NaN, pf: gl > 0 ? gp / gl : NaN, exposure: inMkt / (N - s0), avgBars: closed.length ? mean(closed.map(t => t.bars)) : NaN}};
   }
+  function tradeCsv(trades, time, sym, tf) {
+    const headers = ['trade', 'symbol', 'interval', 'side', 'status', 'entry_bar_utc', 'entry_price', 'exit_bar_utc', 'exit_price', 'bars_held', 'closed_return_pct', 'exit_reason'];
+    const csvCell = v => {
+      // Numeric negatives are legitimate data; protect untrusted text from evaluation by spreadsheets.
+      if (typeof v === 'number') return finite(v) ? String(v) : '';
+      let text = String(v ?? '');
+      if (/^[\s]*[=+@-]|^[\t\r\n]/.test(text)) text = "'" + text;
+      return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    };
+    const utc = i => {
+      const t = time?.[i], date = finite(t) ? new Date(t * 1000) : null;
+      return date && finite(date.getTime()) ? date.toISOString() : '';
+    };
+    const rows = trades.map((t, i) => [
+      i + 1, sym, tf, t.side > 0 ? 'long' : 'short', t.open ? 'open' : 'closed',
+      utc(t.entryI), t.entry, t.open ? '' : utc(t.exitI), t.open ? '' : t.exit,
+      t.bars, t.open || !finite(t.ret) ? '' : t.ret * 100, t.open ? '' : t.why
+    ]);
+    return [headers, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  }
+  function tradeExportCard(r, table, sym, tf) {
+    const tools = el('div', 'fx-ql-row'), status = note('');
+    status.setAttribute('role', 'status');
+    const download = btn('Download all trades (CSV)', 'fx-ql-btn', () => {
+      let url, link;
+      try {
+        url = URL.createObjectURL(new Blob([tradeCsv(r.res.trades, r.B.t, sym, tf)], {type: 'text/csv;charset=utf-8'}));
+        link = el('a');
+        link.href = url; link.download = `fynx-backtest-${sym.replace(/[^A-Z0-9._-]/gi, '_')}-${tf}.csv`;
+        document.body.append(link); link.click();
+        status.textContent = 'CSV download requested.';
+      } catch (_) {
+        status.textContent = 'The browser could not start the CSV download.';
+      } finally {
+        link?.remove();
+        if (url) setTimeout(() => URL.revokeObjectURL(url), 30000);
+      }
+    });
+    download.type = 'button';
+    download.style.minHeight = '44px';
+    download.disabled = !r.res.trades.length;
+    tools.append(download);
+    const scroll = el('div'); scroll.style.overflowX = 'auto'; scroll.append(table);
+    return card(`TRADES (LAST ${Math.min(40, r.res.trades.length)} OF ${r.res.trades.length})`, tools,
+      note(r.res.trades.length ? 'CSV includes every simulated trade in this run. Timestamps identify bars in UTC. Open positions have no exit or closed return.' : 'No simulated trades to export.'), status, scroll);
+  }
   function ruleChips(R) {
     const box = el('div', 'fx-sl-chips'), add = (k, v) => { const c = el('span', 'fx-sl-chip'); c.append(el('b', '', k), document.createTextNode(v)); box.append(c); };
     if (R.long) add('BUY', showCond(R.long)); if (R.exitLong) add('SELL', showCond(R.exitLong)); if (R.short) add('SHORT', showCond(R.short)); if (R.cover) add('COVER', showCond(R.cover));
@@ -346,6 +392,7 @@
     help.append(hs, ul);
     rc.append(ta, parsed, opts, help); wrap.append(rc); preview();
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note('Downloading bars and running the backtest…'));
+    const exportSym = BV.sym, exportTf = BV.tf;
     let r; try { r = await runBtest(); } catch (e) { out.replaceChildren(el('div', 'fx-sl-err', e.message || 'Backtest unavailable right now.')); return; }
     if (!out.isConnected) return; out.replaceChildren();
     const beat = (r.oos?.sharpe ?? -9) > (r.bhOos?.sharpe ?? 9), hd = el('div', 'fx-ql-head'), stt = el('span', 'fx-ql-state', !r.tstats.n ? 'NO TRADES' : beat ? 'BETTER RISK-ADJUSTED THAN BUY & HOLD (OUT OF SAMPLE)' : 'NOT BETTER THAN BUY & HOLD (OUT OF SAMPLE)');
@@ -370,7 +417,7 @@
     grid.append(card('LAST 160 BARS · ▲ ENTRY ▼ EXIT', pc), card('MONTHLY RETURNS (%)', mc)); out.append(grid);
     const tbl = el('table', 'fx-ql-tbl'), th = el('tr'); ['#', 'SIDE', 'ENTRY', 'EXIT', 'BARS', 'RETURN', 'EXIT REASON'].forEach(x => th.append(el('th', '', x))); tbl.append(th);
     r.res.trades.slice(-40).reverse().forEach((t, k) => { const tr = el('tr'), rc2 = el('td', '', spct(t.ret, 2)); rc2.style.color = t.ret >= 0 ? '#3ecf8e' : '#ff5a4f'; tr.append(el('td', '', String(r.res.trades.length - k)), el('td', '', t.side > 0 ? 'LONG' : 'SHORT'), el('td', '', `${r.B.day[t.entryI]} @ ${num(t.entry, t.entry < 10 ? 4 : 2)}`), el('td', '', t.open ? 'open' : `${r.B.day[t.exitI]} @ ${num(t.exit, t.exit < 10 ? 4 : 2)}`), el('td', '', String(t.bars)), rc2, el('td', '', t.why)); tbl.append(tr); });
-    const tc = card(`TRADES (LAST ${Math.min(40, r.res.trades.length)} OF ${r.res.trades.length})`, tbl); tc.style.overflowX = 'auto'; out.append(tc);
+    out.append(tradeExportCard(r, tbl, exportSym, exportTf));
     out.append(card('HOW THE ENGINE WORKS', ...['Event-driven and bar by bar: rules are checked at each bar’s close, market orders fill at the next bar’s open, so there is no look-ahead. Stops and targets trigger inside the bar; a gap through the level fills at the open; if both are touched in one bar the stop is assumed (conservative).', 'Prices are Yahoo Finance bars (daily bars adjusted for splits and dividends). Each fill pays the selected fee and slippage. Volatility sizing scales exposure to a 15% annual target (max 1.5×) using the last 20 bars.', 'Out-of-sample = the last part of history, shown separately because rules tuned on the full history usually look better than they will be. The probabilistic Sharpe ratio (Bailey & López de Prado) estimates the chance the true Sharpe is above zero.', 'Research only: FYNX does not send orders. For FX lots, prop-firm rules and MT5/cTrader code, use the full Quant Analyst.'].map(note)));
     const ql = el('a', 'fx-ql-btn', 'Open Quant Analyst ↗'); ql.href = `/quant-analyst.html?symbol=${encodeURIComponent(BV.sym)}`; ql.target = '_blank'; ql.rel = 'noopener'; ql.style.cssText = 'align-self:flex-start;display:inline-flex;align-items:center;text-decoration:none'; out.append(ql);
     requestAnimationFrame(() => {
@@ -656,5 +703,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s3 s4 s4 s4']}};
     const qi = T.DESK_ORDER.indexOf('quant'); T.DESK_ORDER.splice(qi >= 0 ? qi + 1 : 1, 0, 'strategy');
   }
-  T.StrategyLab = {significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
+  T.StrategyLab = {tradeCsv, significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
 });
