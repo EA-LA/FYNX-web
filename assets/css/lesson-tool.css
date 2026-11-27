@@ -32,3 +32,9 @@
 .lesson-layout>.lesson-article{min-width:0}
 .lesson-tool-table.dur-table thead th{white-space:normal;vertical-align:bottom}
 @media(max-width:360px){.lesson-tool-table.dur-table{font-size:12px}.lesson-tool-table.dur-table th,.lesson-tool-table.dur-table td{padding:8px 3px}}
+/* site-qa run 121: perpetual funding lesson */
+.lesson-tool-table tr.lesson-yours th,.lesson-tool-table tr.lesson-yours td{font-weight:700;background:var(--fynx-panel-2,rgba(127,127,127,.12))}
+@media(max-width:400px){.lesson-tool-table.fund-table th:nth-child(4),.lesson-tool-table.fund-table td:nth-child(4){display:table-cell}}
+.lesson-tool-table.fund-table thead th{white-space:normal;vertical-align:bottom}
+@media(max-width:440px){.lesson-tool-table.fund-table tbody th{white-space:normal;min-width:4.5em}}
+@media(max-width:360px){.lesson-tool-table.fund-table{font-size:12px}.lesson-tool-table.fund-table th,.lesson-tool-table.fund-table td{padding:8px 3px}}
