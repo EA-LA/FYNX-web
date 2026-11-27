@@ -146,6 +146,31 @@ assert.equal(timeouts.size,0,'aborted requests clear their timers');
 assert.match(w2.document.querySelector('#cotStatus').textContent,/Refresh failed/);
 assert.equal(w2.document.querySelector('#cotRefresh').disabled,false);
 assert.equal(w2.document.querySelector('#cotExport').disabled,false,'previous verified report remains exportable');
+// A transport that ignores abort must still release the refresh button and keep the verified report.
+for(const supportsAbort of [true,false]){
+ const originalController=w2.AbortController;
+ if(!supportsAbort)w2.AbortController=undefined;
+ let resolveLate;
+ w2.fetch=async()=>({ok:true,json:()=>new Promise(resolve=>{resolveLate=resolve;})});
+ w2.document.querySelector('#cotRefresh').click();
+ await tick();
+ assert.equal(timeouts.size,1,'deadline is scheduled even without AbortController');
+ [...timeouts.values()][0]();
+ await tick();await tick();
+ assert.equal(timeouts.size,0,'deadline is cleared after failure');
+ assert.match(w2.document.querySelector('#cotStatus').textContent,/Refresh failed/);
+ assert.equal(w2.document.querySelector('#cotRefresh').disabled,false,'retry is available even when transport ignores abort');
+ assert.equal(w2.document.querySelector('#cotExport').disabled,false,'verified snapshot remains exportable');
+ w2.AbortController=originalController;
+ w2.fetch=async url=>new URL(url).searchParams.get('$limit')==='1'?{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]}:{ok:true,json:async()=>[row]};
+ w2.document.querySelector('#cotRefresh').click();
+ await tick();await tick();
+ assert.doesNotMatch(w2.document.querySelector('#cotStatus').textContent,/Refresh failed/);
+ const recovered=w2.document.querySelector('#cotStatus').textContent;
+ resolveLate([]);
+ await tick();await tick();
+ assert.equal(w2.document.querySelector('#cotStatus').textContent,recovered,'late body cannot overwrite a recovered report');
+}
 dom2.window.close();
 
 const dom3=new JSDOM('<table><tbody id="cotRows"></tbody></table><p id="cotStatus"></p><input id="cotSearch"><button id="cotRefresh"></button><button id="cotExport" disabled></button><p id="cotExportStatus"></p><input type="checkbox" id="cotSavedOnly"><p id="cotSavedStatus"></p>',{runScripts:'outside-only',url:'https://www.fynxfinanceworld.com/markets/cot.html'}),w3=dom3.window;
