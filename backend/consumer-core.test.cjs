@@ -245,3 +245,21 @@ test('recent Journal stats use the available sample and do not imply zero win ra
  const empty=run('analytics',{},[{pl:null}]);
  assert.deepEqual([empty.recentTrades,empty.recentWinRate,empty.recentNetPL],[0,null,null]);
 });
+
+test('paid Journal Intelligence distinguishes average payoff from aggregate profit factor',()=>{
+ const result=run('analytics',{},[90,'30',-20,-10,-30,0,null,''].map(pl=>({pl})));
+ assert.equal(result.averageWin,60);
+ assert.equal(result.averageLoss,-20);
+ assert.equal(result.payoffRatio,3);
+ assert.equal(result.profitFactor,2);
+ assert.equal(result.trades,6);
+ assert.match(result.notice,/requires at least one of each/);
+});
+
+test('paid Journal payoff reports unavailable for a missing side and omits flat or bad records from side averages',()=>{
+ const view=pl=>{const r=run('analytics',{},pl.map(pl=>({pl})));return [r.averageWin,r.averageLoss,r.payoffRatio]};
+ assert.deepEqual(view([0,null,'  ']),[null,null,null]);
+ assert.deepEqual(view([10,'2',0]),[6,null,null]);
+ assert.deepEqual(view([-10,'-2',0]),[null,-6,null]);
+ assert.deepEqual(view([0.5,-0.25]),[0.5,-0.25,2]);
+});

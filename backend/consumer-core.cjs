@@ -15,11 +15,14 @@ function analytics(trades){
   return equity;
  });
  const wins=values.filter(x=>x>0),losses=values.filter(x=>x<0),grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=-losses.reduce((a,b)=>a+b,0);
+ const averageWin=wins.length&&Number.isFinite(grossWin)?grossWin/wins.length:null;
+ const averageLoss=losses.length&&Number.isFinite(grossLoss)?-grossLoss/losses.length:null;
+ const payoffRatio=averageWin!==null&&averageLoss<0?averageWin/-averageLoss:null;
  // The callable supplies dated history oldest-first; exclude invalid P/L before taking the recent sample.
  const recent=values.slice(-20),recentTrades=recent.length;
  const recentWinRate=recentTrades?Number((recent.filter(pl=>pl>0).length*100/recentTrades).toFixed(1))+'%':null;
  const recentNetPL=recentTrades?recent.reduce((sum,pl)=>sum+pl,0):null;
- return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,maxDrawdown:drawdown,longestWinStreak,longestLossStreak,recentTrades,recentWinRate,recentNetPL,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed. A break-even trade ends a streak. Recent metrics cover up to the last 20 dated trades with valid realized P/L.'+(values.length<trades.length?' Records with invalid realized P/L were omitted.':'')};
+ return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,averageWin,averageLoss,payoffRatio:Number.isFinite(payoffRatio)?payoffRatio:null,maxDrawdown:drawdown,longestWinStreak,longestLossStreak,recentTrades,recentWinRate,recentNetPL,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed. A break-even trade ends a streak. Recent metrics cover up to the last 20 dated trades with valid realized P/L. Payoff ratio is the average win divided by the size of the average loss and requires at least one of each.'+(values.length<trades.length?' Records with invalid realized P/L were omitted.':'')};
 }
 const MAX_RISK_PCT=100;
 // Validate the customer's base risk before applying an internal scenario multiplier.
