@@ -263,3 +263,26 @@ test('paid Journal payoff reports unavailable for a missing side and omits flat 
  assert.deepEqual(view([-10,'-2',0]),[null,-6,null]);
  assert.deepEqual(view([0.5,-0.25]),[0.5,-0.25,2]);
 });
+
+test('paid Trade Review distinguishes preparation and follow-through even at the same score',()=>{
+ const reviewed=run('review',{notes:'Keep the planned exit',plan:true,execution:true,review:true});
+ const prepared=run('review',{plan:true,risk:true,event:true});
+ assert.equal(reviewed.score,60);assert.equal(prepared.score,60);
+ assert.equal(reviewed.preTradePreparation,'1 of 3 complete');
+ assert.equal(reviewed.tradeFollowThrough,'2 of 2 complete');
+ assert.equal(reviewed.nextUncheckedItem,'Check the risk budget');
+ assert.equal(prepared.preTradePreparation,'3 of 3 complete');
+ assert.equal(prepared.tradeFollowThrough,'0 of 2 complete');
+ assert.equal(prepared.nextUncheckedItem,'Review whether execution followed the plan');
+ assert.deepEqual(reviewed.completed,['plan','execution','review']);
+ assert.deepEqual(reviewed.missing,['risk','event']);
+ assert.equal(reviewed.notes,'Keep the planned exit');
+});
+
+test('Trade Review shows the first unchecked item in order and a clear completed state',()=>{
+ assert.equal(run('review',{plan:1,risk:'true'}).nextUncheckedItem,'Define the entry plan');
+ assert.equal(run('review',{plan:true,risk:true,event:true,execution:true}).nextUncheckedItem,'Record the outcome and lesson');
+ const done=run('review',{plan:true,risk:true,event:true,execution:true,review:true});
+ assert.equal(done.nextUncheckedItem,'All checklist items complete');
+ assert.deepEqual([done.preTradePreparation,done.tradeFollowThrough,done.score],['3 of 3 complete','2 of 2 complete',100]);
+});
