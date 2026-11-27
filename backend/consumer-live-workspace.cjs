@@ -27,6 +27,28 @@ async function listSubscriptions(s,customer,expandInvoice=false){
  }
  fail('unavailable','Subscription history could not be fully verified. Please retry or contact support.');
 }
+// Inspect every page before expiring or reusing checkout sessions; a partial list is not safe.
+async function reconcileOpenCheckout(s,customer,tier){
+ const params={customer,status:'open',limit:100},seen=new Set(),sessions=new Map();
+ let complete=false;
+ for(let pageNumber=0;pageNumber<10;pageNumber++){
+  const page=await s.checkout.sessions.list(params);
+  for(const session of page.data){
+   if(session.metadata?.product!==PRODUCT)continue;
+   if(typeof session.id!=='string'||!session.id)fail('unavailable','An open checkout could not be verified. Please retry or contact support.');
+   sessions.set(session.id,session);
+  }
+  if(!page.has_more){complete=true;break;}
+  const cursor=page.data[page.data.length-1]?.id;
+  if(!cursor||seen.has(cursor))break;
+  seen.add(cursor);params.starting_after=cursor;
+ }
+ if(!complete)fail('unavailable','Open checkout history could not be fully verified. Please retry or contact support.');
+ const reusable=[...sessions.values()].find(session=>session.metadata.tier===tier&&typeof session.url==='string'&&session.url);
+ // Reuse at most one session, but only after expiring all competing unpaid FYNX checkouts.
+ for(const session of sessions.values())if(session.id!==reusable?.id)await s.checkout.sessions.expire(session.id);
+ return reusable?.url||null;
+}
 async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await listSubscriptions(s,profile.customer,true);// Select the highest independently verified paid tier, not the provider's list order.
  let sub=null,tier=null;
  for(const candidate of list){
@@ -119,7 +141,7 @@ async function handler(data,ctx){
   let customer=(await ref.get()).data()?.customer;
   if(!customer){const c=await s.customers.create({email:user.email,metadata:{product:PRODUCT,fynx_uid:uid}},{idempotencyKey:'fynx-consumer-live-customer-'+uid});customer=c.id;await ref.set({customer},{merge:true});}
   const subs=await listSubscriptions(s,customer);if(subs.some(x=>x.metadata?.product===PRODUCT&&['active','trialing','past_due','unpaid','incomplete','paused'].includes(x.status)))fail('already-exists','Manage your existing subscription before opening a new one.');
-  const open=await s.checkout.sessions.list({customer,status:'open',limit:100});for(const session of open.data){if(session.metadata?.product!==PRODUCT)continue;if(session.metadata.tier===tier)return {url:session.url,mode:'live'};await s.checkout.sessions.expire(session.id);}
+  const openUrl=await reconcileOpenCheckout(s,customer,tier);if(openUrl)return {url:openUrl,mode:'live'};
   const tool=TOOLS.has(data.tool)?data.tool:'analytics';
   let attempt=(await ref.get()).data()?.checkoutAttempt;
   if(attempt?.session){const previous=await s.checkout.sessions.retrieve(attempt.session);if(previous.status!=='open')attempt=null;}

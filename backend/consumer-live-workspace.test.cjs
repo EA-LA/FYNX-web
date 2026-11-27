@@ -10,7 +10,7 @@ function harness(options={}){
  const db={collection,runTransaction:async fn=>fn({get:async r=>snapshot(r.path),set:(r,v,o)=>r.set(v,o),create:(r,v)=>r.set(v),delete:r=>data.delete(r.path)})};
  function sub(tier='starter'){return {id:'sub_paid',customer:'cus_owner',livemode:true,status:'active',metadata:{product:PRODUCT,fynx_uid:'owner',tier},items:{data:[{quantity:1,price:{id:PRICES[tier],livemode:true,type:'recurring',unit_amount:PLANS[tier].cents,currency:'usd',recurring:{interval:'month',interval_count:1,usage_type:'licensed'}}}]},latest_invoice:{customer:'cus_owner',livemode:true,status:'paid',paid:true}};}
  const state={subscriptions:options.paid?[sub(options.tier)]:[],sessions:[],failCreate:false};
- const stripe={subscriptions:{list:async params=>{if(options.stripeDown||state.failSubscriptionPage&&params.starting_after)throw Error('Stripe unavailable');if(!options.paginated)return {data:state.subscriptions};calls.push(['subscription-list',{...params}]);const start=params.starting_after?state.subscriptions.findIndex(s=>s.id===params.starting_after)+1:0;return {data:state.subscriptions.slice(start,start+params.limit),has_more:state.subscriptions.length>start+params.limit};}},prices:{retrieve:async id=>{const tier=Object.keys(PRICES).find(t=>PRICES[t]===id);return {...sub(tier).items.data[0].price,active:true,...options.price};}},customers:{create:async(...args)=>{calls.push(['customer',...args]);return {id:'cus_owner'};}},checkout:{sessions:{list:async()=>({data:state.sessions}),retrieve:async()=>({status:'expired'}),expire:async id=>calls.push(['expire',id]),create:async(...args)=>{calls.push(['checkout',...args]);if(state.failCreate)throw Error('Timeout');return {id:'cs_new',url:'https://checkout.stripe.com/c/pay/cs_new'};}}},billingPortal:{configurations:{create:async()=>({id:'bpc_owner'})},sessions:{create:async args=>{calls.push(['portal',args]);return {url:'https://billing.stripe.com/session/live'};}}}};
+ const stripe={subscriptions:{list:async params=>{if(options.stripeDown||state.failSubscriptionPage&&params.starting_after)throw Error('Stripe unavailable');if(!options.paginated)return {data:state.subscriptions};calls.push(['subscription-list',{...params}]);const start=params.starting_after?state.subscriptions.findIndex(s=>s.id===params.starting_after)+1:0;return {data:state.subscriptions.slice(start,start+params.limit),has_more:state.subscriptions.length>start+params.limit};}},prices:{retrieve:async id=>{const tier=Object.keys(PRICES).find(t=>PRICES[t]===id);return {...sub(tier).items.data[0].price,active:true,...options.price};}},customers:{create:async(...args)=>{calls.push(['customer',...args]);return {id:'cus_owner'};}},checkout:{sessions:{list:async params=>{if(state.failCheckoutPage&&params.starting_after)throw Error('Checkout list unavailable');if(!options.paginatedCheckout)return {data:state.sessions,has_more:false};calls.push(['checkout-list',{...params}]);const start=params.starting_after?state.sessions.findIndex(s=>s.id===params.starting_after)+1:0;return {data:state.sessions.slice(start,start+params.limit),has_more:state.sessions.length>start+params.limit};},retrieve:async()=>({status:'expired'}),expire:async id=>{calls.push(['expire',id]);if(state.failExpire)throw Error('Checkout expiration unavailable');},create:async(...args)=>{calls.push(['checkout',...args]);if(state.failCreate)throw Error('Timeout');return {id:'cs_new',url:'https://checkout.stripe.com/c/pay/cs_new'};}}},billingPortal:{configurations:{create:async()=>({id:'bpc_owner'})},sessions:{create:async args=>{calls.push(['portal',args]);return {url:'https://billing.stripe.com/session/live'};}}}};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
  const module={exports:{}};const stubs={'firebase-functions/v1':{https:{HttpsError},runWith:()=>({https:{onCall:f=>f}})},'firebase-admin':{firestore:()=>db,auth:()=>({getUser:async()=>({email:'owner@example.invalid',disabled:false,...options.user})})},stripe:function(){return stripe;}};
  vm.runInNewContext(fs.readFileSync(__dirname+'/consumer-live-workspace.cjs','utf8'),{module,exports:module.exports,process:{env:{FYNX_CONSUMER_STRIPE_SECRET_KEY:options.key||'sk_live_UNIT_TEST_ONLY',FYNX_ACCOUNT_MEMBERSHIP_BRIDGE:options.bridge?'pro-equivalent':''}},require:n=>stubs[n]||require(n),Date,URL});
@@ -22,7 +22,7 @@ test('rejects sandbox keys and unknown actions',async()=>{await assert.rejects(h
 for(const tier of Object.keys(PRICES))test('checkout uses fixed '+tier+' price and owner identity',async()=>{const h=harness();await h.call({action:'checkout',tier,price:'price_attacker',uid:'other'});const [,args,opts]=h.calls.find(c=>c[0]==='checkout');assert.equal(args.line_items[0].price,PRICES[tier]);assert.equal(args.client_reference_id,'owner');assert.equal(args.subscription_data.metadata.fynx_uid,'owner');assert.equal(args.metadata.product,PRODUCT);assert.equal(args.mode,'subscription');assert.match(opts.idempotencyKey,/fynx-consumer-live-checkout-/);assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);});
 test('wrong price configuration prevents checkout',async()=>{const h=harness({price:{unit_amount:1}});await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'failed-precondition'});assert.equal(h.calls.length,0);});
 test('ambiguous Stripe failure reuses saved idempotency key',async()=>{const h=harness();h.state.failCreate=true;await assert.rejects(h.call({action:'checkout',tier:'starter'}));h.state.failCreate=false;await h.call({action:'checkout',tier:'starter'});const calls=h.calls.filter(c=>c[0]==='checkout');assert.equal(calls[0][2].idempotencyKey,calls[1][2].idempotencyKey);});
-test('open same-tier checkout is reused',async()=>{const h=harness({customer:true});h.state.sessions=[{url:'https://checkout.stripe.com/existing',metadata:{product:PRODUCT,tier:'starter'}}];assert.equal((await h.call({action:'checkout',tier:'starter'})).url,'https://checkout.stripe.com/existing');assert.equal(h.calls.length,0);});
+test('open same-tier checkout is reused',async()=>{const h=harness({customer:true});h.state.sessions=[{id:'cs_existing',url:'https://checkout.stripe.com/existing',metadata:{product:PRODUCT,tier:'starter'}}];assert.equal((await h.call({action:'checkout',tier:'starter'})).url,'https://checkout.stripe.com/existing');assert.equal(h.calls.length,0);});
 test('existing unpaid subscription blocks duplicate payment and still permits billing portal',async()=>{const h=harness({paid:true});h.state.subscriptions[0].status='past_due';await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'already-exists'});assert.equal((await h.call({action:'status'})).hasBillingAccount,true);assert.match((await h.call({action:'portal'})).url,/billing.stripe.com/);});
 test('revocation is checked on the next tool request',async()=>{const h=harness({paid:true});assert.equal((await h.call({action:'status'})).tier,'starter');h.state.subscriptions[0].status='canceled';await assert.rejects(h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),{code:'permission-denied'});});
 test('payment API outage never grants tools',async()=>{await assert.rejects(harness({customer:true,stripeDown:true}).call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),/Stripe unavailable/);});
@@ -309,4 +309,53 @@ test('paid Journal Intelligence does not create a session table from invalid his
  const {result}=await h.call({action:'run',product:'analytics'});
  assert.equal(result.trades,0);
  assert.equal(Object.hasOwn(result,'rows'),false);
+});
+
+const openCheckout=(id,tier,product=PRODUCT)=>({id,url:'https://checkout.stripe.com/'+id,metadata:{product,tier}});
+test('same-tier reuse first expires all competing FYNX open sessions and preserves unrelated products',async()=>{
+ const h=harness({customer:true});
+ h.state.sessions=[openCheckout('cs_keep','starter'),openCheckout('cs_other','plus'),openCheckout('cs_duplicate','starter'),openCheckout('cs_unrelated','pro','other-product')];
+ assert.equal((await h.call({action:'checkout',tier:'starter'})).url,'https://checkout.stripe.com/cs_keep');
+ assert.deepEqual(h.calls.filter(c=>c[0]==='expire').map(c=>c[1]),['cs_other','cs_duplicate']);
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+});
+test('checkout reconciles later pages before reusing a session',async()=>{
+ const h=harness({customer:true,paginatedCheckout:true});
+ h.state.sessions=[openCheckout('cs_keep','starter'),...Array.from({length:99},(_,i)=>openCheckout('cs_unrelated_'+i,'plus','other-product')),openCheckout('cs_later','pro')];
+ assert.equal((await h.call({action:'checkout',tier:'starter'})).url,'https://checkout.stripe.com/cs_keep');
+ const lists=h.calls.filter(c=>c[0]==='checkout-list');
+ assert.equal(lists.length,2);assert.equal(lists[1][1].starting_after,'cs_unrelated_98');
+ assert.deepEqual(h.calls.filter(c=>c[0]==='expire').map(c=>c[1]),['cs_later']);
+ assert.ok(h.calls.findIndex(c=>c[0]==='expire')>h.calls.lastIndexOf(lists[1]));
+});
+test('incomplete checkout history never expires sessions or creates a replacement',async()=>{
+ const h=harness({customer:true,paginatedCheckout:true});
+ h.state.sessions=Array.from({length:101},(_,i)=>openCheckout('cs_'+i,'plus'));
+ h.state.failCheckoutPage=true;
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),/Checkout list unavailable/);
+ assert.equal(h.calls.some(c=>['expire','checkout'].includes(c[0])),false);
+ assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
+});
+test('failed expiration prevents checkout reuse or creation',async()=>{
+ const h=harness({customer:true});
+ h.state.sessions=[openCheckout('cs_keep','starter'),openCheckout('cs_other','plus')];
+ h.state.failExpire=true;
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),/Checkout expiration unavailable/);
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+ assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
+});
+test('checkout creates a new session only after expiring competing tiers',async()=>{
+ const h=harness({customer:true});
+ h.state.sessions=[openCheckout('cs_old','plus')];
+ assert.match((await h.call({action:'checkout',tier:'starter'})).url,/cs_new/);
+ assert.deepEqual(h.calls.map(c=>c[0]),['expire','checkout']);
+});
+
+test('bounded open checkout pagination fails closed instead of processing partial history',async()=>{
+ const h=harness({customer:true,paginatedCheckout:true});
+ h.state.sessions=Array.from({length:1001},(_,i)=>openCheckout('cs_'+i,'plus'));
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'unavailable'});
+ assert.equal(h.calls.filter(c=>c[0]==='checkout-list').length,10);
+ assert.equal(h.calls.some(c=>['expire','checkout'].includes(c[0])),false);
+ assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
 });
