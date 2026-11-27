@@ -52,8 +52,77 @@
    shareButton.disabled=false;
   }
  });
+ const sizeForm=kind==='liquidity'?root.querySelector('[data-liquidity-size]'):null;
+ const sizeInput=sizeForm?.querySelector('#liquidityOrderSize');
+ const sizeSide=sizeForm?.querySelector('#liquiditySizeSide');
+ const sizeLabel=sizeForm?.querySelector('[data-size-label]');
+ const sizeResult=sizeForm?.querySelector('[data-size-result]');
+ const sizePrompt='Enter an order size and check it against the latest snapshot.';
+ const sizeUnit=()=>select.value.split('-')[0];
+ let sizeCompared=null;
+ const isFreshLiquidity=data=>!!data&&!data.stale&&Date.now()-Date.parse(data.observationTime)<=60000;
+ function invalidateSize(message){
+  if(!sizeCompared)return;
+  sizeCompared=null;
+  sizeResult.textContent=message;
+ }
+ function resetSizeForMarket(){
+  if(!sizeInput||!sizeLabel||!sizeResult)return;
+  sizeCompared=null;
+  sizeInput.value='';
+  sizeInput.removeAttribute('aria-invalid');
+  sizeLabel.textContent='Order size in '+sizeUnit();
+  sizeResult.textContent=sizePrompt;
+ }
+ function updateSizeForSnapshot(data){
+  if(!sizeCompared)return;
+  if(!isFreshLiquidity(data)){
+   invalidateSize('No fresh snapshot. Check again after a successful refresh.');
+  }else if(['observationTime','bid','ask','bidSize','askSize'].some(key=>sizeCompared[key]!==data[key])){
+   invalidateSize('The snapshot changed. Check again to compare against the new quote.');
+  }
+ }
+ function attachSizeCheck(){
+  if(!sizeInput||!sizeSide||!sizeLabel||!sizeResult)return;
+  resetSizeForMarket();
+  function invalidateFromEdit(){
+   sizeCompared=null;
+   sizeInput.removeAttribute('aria-invalid');
+   if(sizeResult.textContent!==sizePrompt)sizeResult.textContent=sizePrompt;
+  }
+  sizeInput.addEventListener('input',invalidateFromEdit);
+  sizeSide.addEventListener('change',invalidateFromEdit);
+  sizeForm.addEventListener('submit',event=>{
+   event.preventDefault();
+   sizeCompared=null;
+   sizeInput.removeAttribute('aria-invalid');
+   const raw=sizeInput.value;
+   const quantity=Number(raw);
+   if(!/^(?:[0-9]+(?:\.[0-9]{1,8})?|\.[0-9]{1,8})$/.test(raw)||!Number.isFinite(quantity)||quantity<=0){
+    sizeInput.setAttribute('aria-invalid','true');
+    sizeResult.textContent='Enter a positive order size with up to 8 decimal places.';
+    return;
+   }
+   if(!isFreshLiquidity(last)||last.product!==select.value){
+    sizeResult.textContent='No fresh snapshot. Check again after a successful refresh.';
+    return;
+   }
+   const buy=sizeSide.value==='buy';
+   const displayed=buy?last.askSize:last.bidSize;
+   const quote=buy?'best ask':'best bid';
+   const unit=sizeUnit();
+   const qtyText=number(quantity,8)+' '+unit;
+   const sizeText=(displayed>0&&displayed<0.000000005?'<0.00000001':number(displayed,8))+' '+unit;
+   sizeResult.textContent=quantity<=displayed
+    ? `Your ${qtyText} fits within the ${sizeText} displayed at the ${quote}. This is not a fill estimate.`
+    : `Your ${qtyText} exceeds the ${sizeText} displayed at the ${quote}. The full size is not shown at that price.`;
+   sizeCompared=last;
+  });
+  sizeForm.hidden=false;
+ }
  restoreSharedView();
  syncSourceLink();
+ attachSizeCheck();
  function render(data){
   // Build the next table off-screen; a malformed response must not erase the last good one.
   const table=document.createElement('table'),caption=document.createElement('caption');
@@ -98,7 +167,8 @@
     throw Error('Invalid correlation observation');
   }
  }
- function updateStatus(){if(!last)return;const stale=last.stale||(kind==='liquidity'?Date.now()-Date.parse(last.observationTime)>60000:Date.now()-Date.parse(last.observationDate)>7*86400000);
+ function updateStatus(){if(!last)return;const stale=last.stale||(kind==='liquidity'?!isFreshLiquidity(last):Date.now()-Date.parse(last.observationDate)>7*86400000);
+ if(kind==='liquidity')updateSizeForSnapshot(last);
  status.textContent=`${stale?'Stale data — ':''}${last.source} · ${kind==='liquidity'?'Source time '+new Date(last.observationTime).toLocaleString():'Observation window '+last.startDate+' to '+last.observationDate} · Retrieved ${new Date(last.fetchedAt).toLocaleString()}.${refreshFailed?' Refresh failed; previous observations remain.':''}`;}
  function syncSourceLink(){
   if(kind!=='liquidity')return;
@@ -143,7 +213,9 @@
  }
  select.addEventListener('change',()=>{
   // Never leave the previous market's figures or source URL under the new selection.
-  last=null;refreshFailed=false;output.replaceChildren();resetShareFeedback();syncSourceLink();load(true);
+  last=null;refreshFailed=false;output.replaceChildren();resetShareFeedback();syncSourceLink();
+  resetSizeForMarket();
+  load(true);
  });
  button.addEventListener('click',()=>load(true));
  function schedule(){clearInterval(timer);if(!document.hidden)timer=setInterval(()=>{updateStatus();load();},kind==='liquidity'?15000:300000);}

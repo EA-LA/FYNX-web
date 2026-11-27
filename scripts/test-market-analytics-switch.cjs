@@ -10,12 +10,15 @@ function element(tag = 'div') {
   const listeners = {};
   return {
     tag, children: [], textContent: '', disabled: false, value: '', href: '', hidden: false,
+    attributes: new Map(),
+    setAttribute(name, value) { this.attributes.set(name, value); },
+    removeAttribute(name) { this.attributes.delete(name); },
     focus() { this.focused = true; }, select() { this.selected = true; },
     listeners,
     append(...nodes) { this.children.push(...nodes); },
     replaceChildren(...nodes) { this.children = [...nodes]; },
     addEventListener(type, listener) { (listeners[type] ||= []).push(listener); },
-    trigger(type) { return Promise.all((listeners[type] || []).map(listener => listener({}))); }
+    trigger(type, event = {}) { return Promise.all((listeners[type] || []).map(listener => listener(event))); }
   };
 }
 
@@ -27,6 +30,14 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
   const shareButton = element('button'), shareStatus = element('p'), shareFallback = element('input');
   shareFallback.hidden = true;
   const output = element('div'), link = element('a');
+  const sizeForm = element('form'), sizeInput = element('input'), sizeSide = element('select');
+  const sizeLabel = element('span'), sizeResult = element('p');
+  sizeForm.hidden = true;
+  sizeSide.value = 'buy';
+  sizeForm.querySelector = name => ({
+    '#liquidityOrderSize': sizeInput, '#liquiditySizeSide': sizeSide,
+    '[data-size-label]': sizeLabel, '[data-size-result]': sizeResult
+  }[name] || null);
   link.href = 'https://www.coinbase.com/advanced-trade/spot/BTC-USD';
   const root = {
     dataset: { marketAnalysis: kind },
@@ -35,7 +46,8 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
         select, button, '[data-analysis-feed-status]': status, '[role=status]': status,
         '[data-analysis-output]': output, '[data-market-source]': link,
         '[data-analysis-share]': shareButton, '[data-analysis-share-status]': shareStatus,
-        '[data-analysis-share-fallback]': shareFallback
+        '[data-analysis-share-fallback]': shareFallback,
+        '[data-liquidity-size]': kind === 'liquidity' ? sizeForm : null
       }[name] || null;
     }
   };
@@ -68,7 +80,8 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
     }
   };
   vm.runInNewContext(source, context, { filename: 'market-analytics.js' });
-  return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports, timeouts };
+  return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports, timeouts,
+    sizeForm, sizeInput, sizeSide, sizeLabel, sizeResult, checkSize: () => sizeForm.trigger('submit', { preventDefault(){} }) };
 }
 
 function sample(product = 'BTC-USD') {
@@ -388,7 +401,8 @@ test('both public market research views expose accessible share controls and cur
     assert.match(html, /data-analysis-share>/);
     assert.match(html, /data-analysis-share-status[^>]*role="status"/);
     assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
-    assert.ok(html.includes('market-analytics.js?v=20261126-request-deadline-1'), 'script version is refreshed');
+    const version = name === 'liquidity' ? '20261127-order-size-1' : '20261126-request-deadline-1';
+    assert.ok(html.includes('market-analytics.js?v=' + version), 'script version is refreshed on the affected route');
   }
 });
 
@@ -502,4 +516,88 @@ test('browsers without AbortController can switch markets and recover from a tim
   await settle(h.calls[2],sample('ETH-USD'));
   assert.match(h.output.children[0].children[0].textContent,/ETH-USD/);
   assert.equal(h.timeouts.size,0);
+});
+
+
+test('only the free liquidity view enables the hypothetical size check', () => {
+  assert.equal(setup('liquidity').sizeForm.hidden, false);
+  assert.equal(setup('correlation').sizeForm.hidden, true);
+  const html = fs.readFileSync(path.join(__dirname, '../markets/liquidity.html'), 'utf8');
+  assert.match(html, /<form[^>]*data-liquidity-size[^>]*aria-labelledby="liquidity-size-title"/);
+  assert.match(html, /role="status"[^>]*data-size-result/);
+});
+
+test('buy uses best ask size, sell uses best bid size, and neither requests data', async () => {
+  const h = setup();
+  await settle(h.calls[0], sample());
+  h.sizeInput.value = '3.5';
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /3.5 BTC fits within the 4 BTC displayed at the best ask.*not a fill estimate/);
+  h.sizeSide.value = 'sell';
+  await h.sizeSide.trigger('change');
+  assert.doesNotMatch(h.sizeResult.textContent, /fits within/);
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /3.5 BTC exceeds the 3 BTC displayed at the best bid/);
+  h.sizeInput.value = '3';
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /3 BTC fits within the 3 BTC/);
+  assert.equal(h.calls.length, 1);
+});
+
+test('inputs recover from malformed quantities; asset switches clear the previous quantity and result', async () => {
+  const h = setup('liquidity', {search:'?product=ETH-USD'});
+  assert.match(h.sizeLabel.textContent, /ETH/);
+  await settle(h.calls[0], sample('ETH-USD'));
+  for (const bad of ['', '-1', '0', '1e-8', '0.000000001']) {
+    h.sizeInput.value = bad;
+    await h.checkSize();
+    assert.equal(h.sizeInput.attributes.get('aria-invalid'), 'true');
+  }
+  h.sizeInput.value = '.00000001';
+  await h.sizeInput.trigger('input');
+  assert.equal(h.sizeInput.attributes.has('aria-invalid'), false);
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /0.00000001 ETH/);
+  h.select.value = 'BTC-USD';
+  await h.select.trigger('change');
+  assert.equal(h.sizeInput.value, '');
+  assert.match(h.sizeLabel.textContent, /BTC/);
+  assert.doesNotMatch(h.sizeResult.textContent, /ETH/);
+});
+
+test('does not compare unavailable or stale snapshots, including after a failed refresh', async () => {
+  const h = setup();
+  h.sizeInput.value = '1';
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /No fresh snapshot/);
+  await settle(h.calls[0], {...sample(), observationTime:new Date(Date.now() - 61000).toISOString()});
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /No fresh snapshot/);
+  h.button.trigger('click');
+  await settle(h.calls[1], sample());
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /fits within/);
+  h.button.trigger('click');
+  await fail(h.calls[2]);
+  assert.match(h.status.textContent, /Refresh failed/);
+  assert.match(h.sizeResult.textContent, /No fresh snapshot/);
+  assert.equal(h.output.children.length, 1);
+});
+
+test('a new snapshot invalidates a prior check without silently reusing the old sizes', async () => {
+  const h = setup();
+  const first = sample();
+  await settle(h.calls[0], first);
+  h.sizeInput.value = '2';
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /fits within/);
+  h.button.trigger('click');
+  await settle(h.calls[1], first);
+  assert.match(h.sizeResult.textContent, /fits within/);
+  h.button.trigger('click');
+  await settle(h.calls[2], {...first, askSize:1});
+  assert.match(h.sizeResult.textContent, /snapshot changed/);
+  assert.equal(h.sizeInput.value, '2');
+  await h.checkSize();
+  assert.match(h.sizeResult.textContent, /exceeds the 1 BTC/);
 });
