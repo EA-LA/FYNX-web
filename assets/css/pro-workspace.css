@@ -7,3 +7,6 @@
 
 /* Give the paid trade-by-trade disclosure a larger target without replacing the native marker. */
 #workbench #result .path-inspector > summary{min-height:44px;padding-block:11px;cursor:pointer}
+
+/* Keep long broker symbols readable on narrow screens in paid Watchlist results. */
+#workbench #result > ul > li > a{overflow-wrap:anywhere}
