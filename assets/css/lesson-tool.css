@@ -38,3 +38,8 @@
 .lesson-tool-table.fund-table thead th{white-space:normal;vertical-align:bottom}
 @media(max-width:440px){.lesson-tool-table.fund-table tbody th{white-space:normal;min-width:4.5em}}
 @media(max-width:360px){.lesson-tool-table.fund-table{font-size:12px}.lesson-tool-table.fund-table th,.lesson-tool-table.fund-table td{padding:8px 3px}}
+/* site-qa run 122: daily-reset leverage lesson */
+.lesson-tool-table.lev-table thead th{white-space:normal;vertical-align:bottom}
+.lesson-tool-table.lev-table.lev-summary th:nth-child(2),.lesson-tool-table.lev-table.lev-summary td:nth-child(2),.lesson-tool-table.lev-table.lev-summary th:nth-child(3),.lesson-tool-table.lev-table.lev-summary td:nth-child(3){display:none}
+@media(max-width:400px){.lesson-tool-table.lev-table th:nth-child(4),.lesson-tool-table.lev-table td:nth-child(4){display:table-cell}.lesson-tool-table.lev-table th:nth-child(3),.lesson-tool-table.lev-table td:nth-child(3){display:none}}
+@media(max-width:360px){.lesson-tool-table.lev-table{font-size:12px}.lesson-tool-table.lev-table th,.lesson-tool-table.lev-table td{padding:8px 3px}}
