@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 const { PLANS, run } = require('../backend/consumer-core.cjs');
 
-async function withPaidResult(tool, exercise) {
+async function withPaidResult(tool, exercise, tier = 'starter') {
   const dom = new JSDOM(fs.readFileSync('pro.html', 'utf8'), {
     url: 'https://www.fynxfinanceworld.com/pro.html?tool=' + tool
   });
@@ -25,7 +25,7 @@ async function withPaidResult(tool, exercise) {
       'https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js': {
         getFunctions: () => ({}),
         httpsCallable: () => async req => {
-          if (req.action === 'status') return { data: { tier: 'starter', plans: PLANS } };
+          if (req.action === 'status') return { data: { tier, plans: PLANS } };
           if (req.action === 'list') return { data: { items: [], limit: 25 } };
           ran = req;
           return { data: { result: run(req.product, req.input, [{ pl: 120 }, { pl: -40 }]) } };
@@ -116,4 +116,23 @@ test('paid Journal download stays one target and keeps its file name', async () 
       URL.revokeObjectURL(link.href);
     }
   });
+});
+
+test('paid Portfolio Stress can wrap a long symbol without changing its numeric cells', async () => {
+  await withPaidResult('portfolio', async ({window, document, lastRequest}) => {
+    const symbol = 'NASDAQ100WEEKLYCALL20261218USD';
+    const positions = document.getElementById('tool-positions');
+    positions.value = symbol + ', 6000\nSPY, -2000';
+    positions.dispatchEvent(new window.Event('input', { bubbles: true }));
+    document.getElementById('runTool').click();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(lastRequest()?.product, 'portfolio');
+    const table = document.querySelector('#workbench #result table');
+    assert.equal(table.caption.textContent, 'Portfolio stress test results');
+    const cells = [...table.tBodies[0].rows[0].cells];
+    assert.deepEqual(cells.map(cell => cell.textContent), [symbol, (6000).toLocaleString(), '-300']);
+    assert.equal(window.getComputedStyle(cells[0]).overflowWrap, 'anywhere');
+    assert.notEqual(window.getComputedStyle(cells[1]).overflowWrap, 'anywhere');
+    assert.notEqual(window.getComputedStyle(cells[2]).overflowWrap, 'anywhere');
+  }, 'plus');
 });
