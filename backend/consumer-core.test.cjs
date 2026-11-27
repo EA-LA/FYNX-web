@@ -320,3 +320,27 @@ test('paid Scenario Comparison identifies exactly the scenarios with zero modele
  assert.match(capped.notice,/capped at 100%/);
  assert.match(capped.notice,/zero units/);
 });
+
+test('Professional simulator reports longest underwater duration in trades, separately from depth',()=>{
+ const input={balance:10000,riskPct:20,rewardRisk:1.25,trades:8};
+ const getStreaks=result=>[result.medianLongestUnderwaterStreak,result.longestUnderwaterStreakP90];
+ assert.deepEqual(getStreaks(run('simulation',{...input,winRate:0})),['8 trades','8 trades']);
+ assert.deepEqual(getStreaks(run('simulation',{...input,trades:1,winRate:0})),['1 trade','1 trade']);
+ assert.deepEqual(getStreaks(run('simulation',{...input,winRate:100})),['0 trades','0 trades']);
+ const result=run('simulation',{...input,winRate:50});
+ // At these settings a win multiplies equity by 1.25 and a loss by 0.8.
+ // The integer exponent of 1.25 provides an exact oracle for returning to a prior high.
+ let seed=123456789;
+ const durations=Array.from({length:500},()=>{
+  let level=0,peak=0,previousAtPeak=0,longest=0;
+  for(let trade=1;trade<=input.trades;trade++){
+   seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+   level+=seed<2147483648?1:-1;
+   if(level>=peak){peak=level;previousAtPeak=trade;}
+   else longest=Math.max(longest,trade-previousAtPeak);
+  }
+  return longest;
+ }).sort((a,b)=>a-b);
+ assert.deepEqual(getStreaks(result),[(durations[249]+durations[250])/2+' trades',durations[449]+' trades']);
+ assert.match(result.notice,/consecutive trades closing below a path’s prior equity peak/);
+});
