@@ -520,7 +520,8 @@ html body .sc-filters select.sc-in option{background:#0b0e0c;color:#e7ece9}
 .fx-dest i{display:block;height:6px;background:#f4a261;opacity:.75}.fx-dest b{text-align:right;font-weight:600}
 
 /* HEAT · five heat maps (heatmaps.js) */
-.tp-b:has(>.hm-fill){display:flex;flex-direction:column;overflow:hidden}
+/* Short screens (1366×768): the map keeps its 150px minimum, so the panel scrolls instead of cutting off the key and footer. */
+.tp-b:has(>.hm-fill){display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto}
 .hm-stage{position:relative;min-height:150px}.hm-fill{flex:1 1 auto}.hm-page .hm-fill{flex:none}
 .hm-svg{display:block}.hm-tile{cursor:pointer}.hm-tile rect,.hm-tile circle{stroke:#06090b;stroke-width:1}
 .hm-tile:hover rect,.hm-tile:hover circle,.hm-tile:focus rect,.hm-tile:focus circle{stroke:#ffb000;stroke-width:2}.hm-tile:focus{outline:none}
