@@ -8,8 +8,11 @@ function priceMatches(price,tier){
 }
 function planForSubscription(sub,uid,customer){
  if(!sub||!customer||sub.customer!==customer||sub.status!=='active'||sub.livemode!==true||sub.metadata?.product!==PRODUCT||sub.metadata.fynx_uid!==uid||sub.pause_collection)return null;
- const tier=sub.metadata.tier,item=sub.items?.data?.[0],invoice=sub.latest_invoice;
- if(sub.items?.data?.length!==1||item.quantity!==1||!priceMatches(item.price,tier))return null;
+ const tier=sub.metadata.tier,items=sub.items,invoice=sub.latest_invoice;
+ // An incomplete or malformed item list cannot prove that this is exactly one paid plan.
+ if(!Array.isArray(items?.data)||items.data.length!==1||items.has_more===true)return null;
+ const item=items.data[0];
+ if(item?.quantity!==1||!priceMatches(item.price,tier))return null;
  // Read expanded invoice data from Stripe; browser return URLs never confer access.
  // Basil removed the legacy paid boolean; paid status remains authoritative.
  if(!invoice||typeof invoice!=='object'||invoice.livemode!==true||invoice.customer!==customer||invoice.status!=='paid'||(invoice.paid!==undefined&&invoice.paid!==true))return null;

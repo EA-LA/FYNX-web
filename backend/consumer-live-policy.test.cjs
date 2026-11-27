@@ -32,3 +32,12 @@ for(const [name,mutate] of Object.entries(cases))test('denies '+name,()=>{const 
 for(const status of ['incomplete','incomplete_expired','trialing','past_due','unpaid','canceled','paused'])test('denies '+status+' subscription',()=>{const s=subscription();s.status=status;assert.equal(planForSubscription(s,'owner','cus_owner'),null);});
 test('scheduled cancellation preserves already-paid access',()=>{const s=subscription();s.cancel_at_period_end=true;assert.equal(planForSubscription(s,'owner','cus_owner'),'starter');});
 test('missing subscription and invalid prices fail closed',()=>{assert.equal(planForSubscription(null,'owner','cus_owner'),null);assert.equal(priceMatches(null,'starter'),false);assert.equal(priceMatches({},'toString'),false);});
+
+test('incomplete or malformed subscription item lists fail closed without throwing',()=>{
+ for(const tier of Object.keys(PRICES)){
+  for(const mutate of [s=>s.items.data=[null],s=>s.items.data=Array(1),s=>s.items.data={0:s.items.data[0],length:1},s=>s.items.has_more=true,s=>delete s.items]){
+   const s=subscription(tier);mutate(s);assert.equal(planForSubscription(s,'owner','cus_owner'),null);
+  }
+  const complete=subscription(tier);complete.items.has_more=false;assert.equal(planForSubscription(complete,'owner','cus_owner'),tier);
+ }
+});
