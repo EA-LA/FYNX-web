@@ -109,7 +109,9 @@
       if (mode === 'price') bar.append(PG.pageTabs([['none', 'Pointer'], ['trend', 'Trend line'], ['h', 'Level'], ['measure', 'Measure']], tool, v => { tool = v; drawBar(); }), btn('Undo last', 'fx-chip', () => { const l = drawingList(drawKey); if (!l.length) { msg.textContent = 'No drawings to undo.'; return; } l.pop(); write(drawKey, l); render(); msg.textContent = 'Removed the last drawing.'; }), btn('Clear drawings', 'fx-chip', () => { write(drawKey, []); render(); }));
       else { const c = el('div', 'fx-chips'); cmpList().forEach(s => c.append(btn(`${shortOf(s)} ✕`, 'fx-chip', () => { write(cmpKey, compareList().filter(x => x !== s)); drawBar(); render(); }, `Remove ${s}`))); c.append(btn('+ Add market', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Compare with…', onPick: m => { const l = compareList(); if (!l.includes(m.symbol)) l.push(m.symbol); write(cmpKey, l.slice(-5)); drawBar(); render(); }}))); bar.append(c); }
     };
+    let renderVersion = 0;
     const render = async () => {
+      const version = ++renderVersion;
       box.replaceChildren(); msg.textContent = '';
       if (mode === 'price') {
         const rows = data.rows.slice(-range);
@@ -117,7 +119,10 @@
         const first = rows[0].close, last = rows.at(-1).close, hi = Math.max(...rows.map(r => r.high ?? r.close)), lo = Math.min(...rows.map(r => r.low ?? r.close));
         info.textContent = `${data.source || 'Yahoo Finance'} · ${rows.length} sessions · change ${signed((last / first - 1) * 100, 2, '%')} · high ${fmt(hi, digitsOf(sym))} · low ${fmt(lo, digitsOf(sym))} · drawings follow your signed-in account`;
       } else {
-        const others = cmpList(), series = await Promise.all(others.map(s => T.symHistory(s, '5y'))); if (!alive()) return;
+        info.textContent = 'Loading comparison history…';
+        const others = cmpList(), series = await Promise.all(others.map(s => T.symHistory(s, '5y')));
+        // A newer mode, range or comparison list owns this chart now.
+        if (!alive() || version !== renderVersion) return;
         box.append(T.compareChart([{label: shortOf(sym), rows: data.rows}, ...series.map((d, i) => ({label: shortOf(others[i]), rows: d?.rows || []}))], (box.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, sessions: range, scale: 2} : {W: 1100, H: 420, sessions: range}));
         info.textContent = 'Each line starts at 0% on the first common day of the range; price change only.';
       }

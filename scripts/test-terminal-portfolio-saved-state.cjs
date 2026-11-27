@@ -6,12 +6,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const script = fs.readFileSync(path.join(__dirname, '../assets/js/terminal/portfolio.js'), 'utf8');
-function element() {
+function element(_tag, className) {
   return {
+    className,
+    children: [],
     clientWidth: 390,
     textContent: '',
-    append() {},
-    replaceChildren() {},
+    append(...children) {this.children.push(...children);},
+    replaceChildren(...children) {this.children = children;},
     addEventListener() {},
     setAttribute() {},
     getBoundingClientRect() { return {left: 0, top: 0, width: 390, height: 440}; }
@@ -19,7 +21,7 @@ function element() {
 }
 function setup(initial = {}) {
   const storage = {...initial};
-  const plugins = [], pages = {}, buttons = [], drawn = [];
+  const plugins = [], pages = {}, buttons = [], drawn = [], comparisons = [];
   const context = {
     window: {FynxTerminalPlugins: plugins},
     innerWidth: 390,
@@ -47,7 +49,7 @@ function setup(initial = {}) {
     quoteFor: () => null,
     digitsOf: () => 2,
     symHistory: async () => ({source: 'Test history', rows: history}),
-    compareChart: element,
+    compareChart(series, options) {comparisons.push({series, options}); return element("figure", "comparison");},
     setSymbol() {},
     openPage() {},
     openFinder({onPick}) {onPick({symbol: 'MSFT'});},
@@ -66,7 +68,7 @@ function setup(initial = {}) {
     }
   };
   plugins[0](T, PG);
-  return {T, pages, buttons, drawn, storage};
+  return {T, pages, buttons, drawn, comparisons, storage};
 }
 
 test('non-array saved portfolio data never crashes the Terminal panel', () => {
@@ -106,4 +108,45 @@ test('comparison list preserves valid strings but discards invalid saved element
   assert.ok(h.buttons.some(b => b.label === 'SPY ✕'));
   assert.ok(h.buttons.some(b => b.label === 'MSFT ✕'));
   assert.equal(h.buttons.some(b => b.label === '7 ✕'), false);
+});
+
+
+async function deferredChart() {
+  const h = setup(), host = element(), pending = [];
+  const history = h.T.symHistory;
+  h.T.symHistory = (symbol, range) => symbol === 'SPY' && range === '5y'
+    ? new Promise(resolve => pending.push(async () => resolve(await history(symbol, range))))
+    : history(symbol, range);
+  await h.pages.chart(host, 'AAPL', () => true);
+  return {h, pending, pick: label => h.buttons.findLast(b => b.label === label).click(),
+    chart: host.children.find(n => n.className === 'pg-chart'), note: host.children.find(n => n.className === 'pg-note')};
+}
+const settleChart = async release => {await release(); await new Promise(resolve => setImmediate(resolve));};
+
+test('Price remains the only chart after a comparison request finishes late', async () => {
+  const {h,chart,note,pending,pick} = await deferredChart();
+  pick('Compare %');
+  assert.equal(pending.length,1);
+  pick('Price');
+  const price = chart.children[0];
+  await settleChart(pending[0]);
+  assert.equal(h.comparisons.length,0);
+  assert.strictEqual(chart.children[0],price);
+  assert.equal(chart.children.length,2,'price graphic and readout only');
+  assert.match(note.textContent,/sessions.*change/);
+});
+
+test('only the newest comparison can populate the chart after a range change', async () => {
+  const {h,chart,note,pending,pick} = await deferredChart();
+  pick('Compare %');
+  pick('1M');
+  assert.equal(pending.length,2);
+  await settleChart(pending[1]);
+  assert.equal(h.comparisons.length,1);
+  assert.equal(h.comparisons[0].options.sessions,21);
+  const current = chart.children[0];
+  await settleChart(pending[0]);
+  assert.equal(h.comparisons.length,1);
+  assert.deepEqual(chart.children,[current]);
+  assert.match(note.textContent,/Each line starts/);
 });
