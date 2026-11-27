@@ -758,16 +758,29 @@
 
     function calculateGuard(){
       const side = document.getElementById("positionSide").value;
-      const entry = parseFloat(document.getElementById("entryPrice").value) || 0;
-      const balance = parseFloat(document.getElementById("accountBalance").value) || 0;
-      const marginUsed = parseFloat(document.getElementById("riskAllocation").value) || 0;
-      const leverage = parseFloat(document.getElementById("leverage").value) || 0;
-      const maintenance = (parseFloat(document.getElementById("maintenanceMargin").value) || 0) / 100;
-      const stop = parseFloat(document.getElementById("stopPrice").value) || 0;
+      const number = id => document.getElementById(id).valueAsNumber;
+      const entry = number("entryPrice");
+      const balance = number("accountBalance");
+      const marginUsed = number("riskAllocation");
+      const leverage = number("leverage");
+      const maintenance = number("maintenanceMargin") / 100;
+      const stop = number("stopPrice");
 
-      if(entry <= 0 || balance <= 0 || marginUsed <= 0 || leverage <= 0 || stop <= 0){
+      if(![entry, balance, marginUsed, stop].every(value => Number.isFinite(value) && value > 0)){
         resetOutput();
-        setStatus("bad","Invalid inputs","All values must be positive numbers.");
+        setStatus("bad","Invalid inputs","Entry price, account balance, margin used and stop price must be positive numbers.");
+        return;
+      }
+
+      if(!Number.isFinite(leverage) || leverage < 1){
+        resetOutput();
+        setStatus("bad","Invalid leverage","Enter leverage of at least 1x.");
+        return;
+      }
+
+      if(!Number.isFinite(maintenance) || maintenance < 0){
+        resetOutput();
+        setStatus("bad","Invalid maintenance margin","Enter a maintenance margin of 0% or higher.");
         return;
       }
 
