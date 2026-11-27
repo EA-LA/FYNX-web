@@ -68,7 +68,7 @@ function setup(initial = {}) {
     }
   };
   plugins[0](T, PG);
-  return {T, pages, buttons, drawn, comparisons, storage};
+  return {T, PG, pages, buttons, drawn, comparisons, storage};
 }
 
 test('non-array saved portfolio data never crashes the Terminal panel', () => {
@@ -149,4 +149,14 @@ test('only the newest comparison can populate the chart after a range change', a
   assert.equal(h.comparisons.length,1);
   assert.deepEqual(chart.children,[current]);
   assert.match(note.textContent,/Each line starts/);
+});
+
+test('changing a chart market uses in-Terminal navigation without queuing a close', async () => {
+  const h = setup(), calls = [];
+  // Observe the plugin boundary: closing now would queue a history traversal after the new chart opens.
+  h.PG.closeAll = () => calls.push(['close']);
+  h.T.openPage = (page, symbol) => calls.push(['open', page, symbol]);
+  await h.pages.chart(element(), 'AAPL', () => true);
+  h.buttons.find(b => b.label.startsWith('Change market')).click();
+  assert.deepEqual(calls, [['open', 'chart', 'MSFT']]);
 });
