@@ -548,6 +548,11 @@
   @media (max-width: 768px){
     .fynx-top-actions{ display:none; }
     .mobile-header-actions{ display:flex; }
+    /* [site-qa] run 115: the Resources button now sits left of Sign in and the menu button, so a
+       panel anchored to its own right edge opened 88px (SE) / 16px (iPhone 14) off the left edge.
+       Anchor it to the right edge of the whole action row instead. */
+    #header .mobile-header-actions > .mobile-resources-menu{ position:static; }
+    #header .mobile-resources-panel a{ min-height:44px; align-items:center; }
   }
   /* ==============================================
      ✅ ONLY FIX YOU ASKED FOR:

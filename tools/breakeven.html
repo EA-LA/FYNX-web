@@ -118,6 +118,11 @@
     @media(max-width:420px){.be-moves th,.be-moves td{padding:.45rem .25rem;font-size:.85rem}.be-moves{padding:.6rem}}
     .be-moves th{font-size:.78rem;font-weight:600;color:var(--muted)}
     .be-moves .be-row td{font-weight:700}
+    .be-moves tbody th{font-size:inherit;font-weight:400;color:inherit;text-align:left;white-space:nowrap}
+    .be-moves .be-row th{font-weight:700}
+    #beSpreads thead th{white-space:normal}
+    @media(max-width:430px){#beSpreads th:nth-child(5),#beSpreads td:nth-child(5){display:none}}
+    @media(max-width:360px){#beSpreads th,#beSpreads td{padding-left:.18rem;padding-right:.18rem}}
     .be-note{margin-top:.5rem;font-size:.8rem;line-height:1.45;color:var(--muted)}
     @media(max-width:800px){
       .panel-grid{grid-template-columns:1fr}
@@ -237,6 +242,16 @@
           </div>
           <div class="be-note">Example moves from your entry, not forecasts. Net = pips moved × pip value × lots − spread − commission. Swaps and slippage are not included.</div>
         </div>
+        <div id="beSpreads" class="be-moves" hidden>
+          <h4>Same trade, other spreads</h4>
+          <div class="be-table-wrap">
+            <table>
+              <thead><tr><th scope="col">Spread (pips)</th><th scope="col">Pips needed</th><th scope="col">Break-even</th><th scope="col">Cost</th><th scope="col">vs yours</th></tr></thead>
+              <tbody id="beSpreadsBody"></tbody>
+            </table>
+          </div>
+          <div class="be-note">Spreads often widen around news releases, the daily rollover and quiet hours. Check your broker’s typical and peak spread for this pair. Same entry, lots and commission; example spreads, not quotes.</div>
+        </div>
 
       </div>
 
@@ -248,6 +263,7 @@
 </main>
 
 <script src="/assets/vendor/decimal.js"></script>
+<script src="/assets/js/breakeven-spreads.js?v=20261127-site-qa-115" defer></script>
 <script>
 function clearResults(message = "Inputs changed. Calculate again."){
   for(const id of ["be", "cost", "pips"]){
