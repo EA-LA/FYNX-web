@@ -21,7 +21,7 @@ function run(values) {
   for (const [id, value] of Object.entries(values)) doc.getElementById(id).value = value;
   doc.getElementById('calculateBtn').click();
   const rows = [...doc.querySelectorAll('#levTable tbody tr')].map(tr => [...tr.cells].map(td => td.textContent.replace(/\s+/g, ' ').trim()));
-  const out = { rows, hidden: doc.getElementById('levCard').hidden, pill: doc.getElementById('maxLeveragePill').textContent, bad: [...doc.querySelectorAll('#levTable tbody tr.lev-bad')].length };
+  const out = { price:doc.getElementById('liqPriceValue').textContent, title:doc.getElementById('riskTitle').textContent, rows, hidden: doc.getElementById('levCard').hidden, pill: doc.getElementById('maxLeveragePill').textContent, bad: [...doc.querySelectorAll('#levTable tbody tr.lev-bad')].length };
   dom.window.close();
   return out;
 }
@@ -58,4 +58,25 @@ test('table hides on invalid input', () => {
   const { hidden, rows } = run({ entryPrice: '0' });
   assert.equal(hidden, true);
   assert.equal(rows.length, 0);
+});
+
+
+test('invalid leverage and missing or negative maintenance never show risk estimates', () => {
+  for (const [values, title] of [
+    [{leverage:'0.5'}, 'Invalid leverage'],
+    [{maintenanceMargin:'-5'}, 'Invalid maintenance margin'],
+    [{maintenanceMargin:''}, 'Invalid maintenance margin'],
+  ]) {
+    const result = run(values);
+    assert.equal(result.title,title);
+    assert.equal(result.price,'—');
+    assert.equal(result.hidden,true);
+    assert.deepEqual(result.rows,[]);
+  }
+});
+
+test('an explicitly entered zero maintenance margin still calculates', () => {
+  const {price,hidden} = run({maintenanceMargin:'0'});
+  assert.equal(price,'90');
+  assert.equal(hidden,false);
 });
