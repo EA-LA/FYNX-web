@@ -57,6 +57,16 @@
     const load = () => { const s = document.createElement('script'); s.type = 'module'; s.src = '/assets/js/saved-settings.js?v=20261127-sync-1'; document.head.appendChild(s); };
     if (document.readyState === 'complete') setTimeout(load, 0); else window.addEventListener('load', () => (window.requestIdleCallback || setTimeout)(load), {once: true});
   }
+  // Charts, maps and other drawn visuals are pictures, not text: pressing and dragging on them (crosshair, drawing
+  // tools, a quick double-click) must not turn them into a browser text selection, which paints the whole chart
+  // and its axis labels grey-green as if it had been copied. Text, tables and numbers stay selectable.
+  try {
+    if (!document.getElementById('fynx-visuals-css')) {
+      const st = document.createElement('style'); st.id = 'fynx-visuals-css';
+      st.textContent = 'svg,svg *,canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}img{-webkit-user-drag:none}.fx-chartwrap,.fx-chartwrap *,.hm-stage,.hm-stage *,.hm-fill,.hm-fill *,.fx-ql-chart,.fx-ql-chart *,.fx-ql-net,.fx-ql-net *,.fx-of-stage,.fx-of-stage *,[class*=chart]:has(>svg,>canvas),[class*=chart]:has(>svg,>canvas) *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}';
+      document.head.appendChild(st);
+    }
+  } catch {}
   let theme = 'light';
   try {
     const saved = localStorage.getItem('fynx_theme');

@@ -75,3 +75,9 @@ html body .fp-dialog .fp-count{margin:0!important;color:#999!important;font:400 
 .fp-featured-list{display:flex;flex-wrap:wrap;gap:4px}.fp-featured-list span{font:600 10px/1 Arial,Helvetica,sans-serif;padding:4px 6px;border:1px solid #33403a;color:#d6e0da}
 .fp-featured-cta{font:800 12px/1 Arial,Helvetica,sans-serif;color:#ffb000;margin-top:2px}
 @media(max-width:700px){.fp-dialog .fp-featured{grid-template-columns:1fr;gap:12px;padding:12px}.fp-featured-title{font-size:18px}.fp-featured-list{display:none}}
+
+/* Charts and drawn visuals are pictures, not text: dragging on them must never select them (see site-theme-init.js). */
+svg,svg *,canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img{-webkit-user-drag:none}
+.fx-chartwrap,.fx-chartwrap *,.hm-stage,.hm-stage *,.hm-fill,.hm-fill *,.fx-ql-chart,.fx-ql-chart *,.fx-ql-net,.fx-ql-net *,.fx-of-stage,.fx-of-stage *,[class*=chart]:has(>svg,>canvas),[class*=chart]:has(>svg,>canvas) *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+

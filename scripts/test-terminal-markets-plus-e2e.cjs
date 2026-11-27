@@ -12,8 +12,8 @@ const SN = require('./refresh-sentiment.cjs');
 const F = require('../backend/filings-core.cjs');
 
 const root = path.resolve(__dirname, '..');
-let chromium;
-try { ({chromium} = require('playwright')); } catch { ({chromium} = require('playwright-core')); }
+let chromium, webkit;
+try { ({chromium, webkit} = require('playwright')); } catch { ({chromium, webkit} = require('playwright-core')); }
 const executablePath = process.env.FYNX_CHROMIUM_PATH || ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium'].find(p => fs.existsSync(p));
 const ORIGIN = 'https://www.fynxfinanceworld.com';
 const TYPES = {'.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html'};
@@ -168,7 +168,8 @@ async function until(page, cond, arg, {step = 500, max = 40} = {}) {
 const synced = page => until(page, () => window.FynxSavedSettings?.state.restored && ['synced', 'partial'].includes(window.FynxSavedSettings.state.status));
 
 let browser;
-test.before(async () => { browser = await chromium.launch({executablePath, args: ['--no-sandbox']}); });
+// FYNX_BROWSER=webkit runs the same tests in WebKit (Safari's engine).
+test.before(async () => { browser = process.env.FYNX_BROWSER === 'webkit' ? await webkit.launch() : await chromium.launch({executablePath, args: ['--no-sandbox']}); });
 test.after(async () => { await browser?.close(); });
 // Test-only membership server: FYNXPlan's test hook gets a fake 'consumerLiveWorkspace' with the given plan.
 const PLAN_SHIM = `;(function(){var c=window.__PLAN;if(!c||!window.FYNXPlan||!FYNXPlan._test)return;var LIM={free:5,starter:15,plus:60,pro:null};
@@ -1331,6 +1332,36 @@ test('WORLD satellite: base-map menu, Globe-parity layers on the real engine, wo
   await ctx.close();
 });
 
+// Drag across every chart and visual panel the way a user does (crosshair, drawing, zoom gestures): nothing on a
+// chart may turn into a browser text selection (the grey-green "copied" look), on any desk.
+async function dragSelects(page) {
+  return page.evaluate(() => {
+    const out = [];
+    for (const n of document.querySelectorAll('#fx-main svg, #fx-main canvas, #fx-page svg, #fx-page canvas')) {
+      const r = n.getBoundingClientRect(); if (r.width < 60 || r.height < 40) continue;
+      const sel = getSelection(); sel.removeAllRanges();
+      // What a press-and-drag across the chart selects: a range from its top-left to its bottom-right point.
+      const a = document.caretRangeFromPoint(r.left + 4, r.top + 4), b = document.caretRangeFromPoint(r.right - 4, r.bottom - 4);
+      if (!a || !b) continue;
+      try { sel.setBaseAndExtent(a.startContainer, a.startOffset, b.startContainer, b.startOffset); } catch { continue; }
+      const style = getComputedStyle(n), sel2 = getSelection();
+      const hit = sel2.rangeCount && sel2.containsNode(n, true) && style.userSelect !== 'none' && style.webkitUserSelect !== 'none';
+      if (hit) out.push((n.closest('section.tp')?.id || n.closest('#fx-page') && 'page') + ' ' + n.tagName.toLowerCase());
+      sel.removeAllRanges();
+    }
+    return [...new Set(out)];
+  });
+}
+test('dragging on charts never selects them (no grey-green highlight) on any desk or chart page', {skip: !process.env.FYNX_SELECT_PROBE && false}, async () => {
+  const {ctx, page, errors} = await boot({width: 1920, height: 1080});
+  const bad = [];
+  for (const d of ['DASHBOARD', 'WORLD', 'QUANT', 'STOCKS', 'FOREX', 'CRYPTO', 'ALL']) { await command(page, d); await page.clock.runFor(2500); for (const x of await dragSelects(page)) bad.push(d + ': ' + x); }
+  await command(page, 'DXY'); await page.clock.runFor(1500); await command(page, 'GP'); await page.clock.runFor(2500); for (const x of await dragSelects(page)) bad.push('GP page: ' + x);
+  assert.deepEqual(bad, [], 'charts that become selectable when dragged');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 test('WORLD satellite on iPhone: search and map menu fit the toolbar', {skip: !fs.existsSync(path.join(MAPLIBRE_DIR, 'maplibre-gl.js')) && 'maplibre-gl not installed (MAPLIBRE_DIR)'}, async () => {
   const calls = [];
   const {ctx, page, errors} = await boot({intercept: satelliteRoutes(calls), url: '?desk=world', phone: true, width: 390, height: 844});
@@ -1347,5 +1378,41 @@ test('WORLD satellite on iPhone: search and map menu fit the toolbar', {skip: !f
   const list = await page.evaluate(() => { const r = document.querySelector('.fx-wsearch-list').getBoundingClientRect(); return [r.left, r.right, innerWidth]; });
   assert.ok(list[0] >= 0 && list[1] <= list[2] + 1, 'results fit the screen: ' + list);
   await shot(page, 'world-satellite-phone.png');
+  assert.deepEqual(errors, []); await ctx.close();
+});
+
+test('a real press-and-drag across any chart selects nothing (and in Safari would without the fix)', async () => {
+  const webkit = process.env.FYNX_BROWSER === 'webkit', report = {};
+  for (const disableFix of [false, true]) {
+    const {ctx, page, errors} = await boot({width: 1920, height: 1080});
+    const hits = [];
+    for (const d of ['DASHBOARD', 'WORLD', 'QUANT', 'STOCKS', 'FOREX', 'ALL']) {
+      await command(page, d); await page.clock.runFor(2500);
+      // Control run: undo both copies of the fix (the injected style and the stylesheet rule).
+      if (disableFix) await page.evaluate(() => { document.getElementById('fynx-visuals-css')?.remove(); if (!document.getElementById('undo-fix')) { const st = document.createElement('style'); st.id = 'undo-fix'; st.textContent = 'svg,svg *,canvas,.fx-chartwrap,.fx-chartwrap *,.hm-stage,.hm-stage *,.hm-fill,.hm-fill *,.fx-ql-chart,.fx-ql-chart *,.fx-ql-net,.fx-ql-net *,.fx-of-stage,.fx-of-stage *,[class*=chart],[class*=chart] *{-webkit-user-select:auto!important;user-select:auto!important}'; document.head.append(st); } });
+      const targets = await page.$$eval('#fx-main svg, #fx-main canvas', ns => ns.map((n, i) => { n.dataset.dragTest = String(i); const r = n.getBoundingClientRect(); return {i, w: r.width, h: r.height, id: n.closest('section.tp')?.id || '?'}; }).filter(t => t.w >= 120 && t.h >= 80));
+      for (const t of targets) {
+        const el = await page.$(`[data-drag-test="${t.i}"]`); await el.scrollIntoViewIfNeeded(); const b = await el.boundingBox(); if (!b) continue;
+        await page.evaluate(() => getSelection().removeAllRanges());
+        await page.mouse.move(b.x + 8, b.y + 8); await page.mouse.down();
+        await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, {steps: 5}); await page.mouse.move(b.x + b.width - 8, b.y + b.height - 8, {steps: 5}); await page.mouse.up();
+        if (await page.evaluate(i => { const s = getSelection(), n = document.querySelector(`[data-drag-test="${i}"]`); return s.rangeCount > 0 && !s.isCollapsed && s.containsNode(n, true); }, t.i)) hits.push(`${d} ${t.id}`);
+        await page.keyboard.press('Escape');
+      }
+    }
+    report[disableFix ? 'withoutFix' : 'withFix'] = [...new Set(hits)];
+    if (!disableFix) assert.deepEqual(report.withFix, [], 'with the fix, dragging selects no chart');
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+  console.log('# drag-select report ' + JSON.stringify(report));
+  if (webkit) assert.ok(report.withoutFix.length > 0, 'in WebKit the bug reproduces without the fix');
+});
+
+test('text you may want to copy (headlines, prices, tables) stays selectable', async () => {
+  const {ctx, page, errors} = await boot({width: 1920, height: 1080});
+  await page.clock.runFor(2500);
+  const r = await page.evaluate(() => ['#fx-main table td', '#fx-main .fx-empty, #fx-main p', '.fx-hl'].map(sel => { const n = document.querySelector(sel); return n ? [sel, getComputedStyle(n).userSelect || getComputedStyle(n).webkitUserSelect] : [sel, 'missing']; }));
+  for (const [sel, v] of r) assert.notEqual(v, 'none', `${sel} is still selectable`);
   assert.deepEqual(errors, []); await ctx.close();
 });
