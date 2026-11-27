@@ -1,0 +1,2 @@
+7988 [{'cik': 320193, 'symbol': 'AAPL', 'name': 'Apple Inc.'}, {'cik': 2130357, 'symbol': 'ANT', 'name': 'Anthropic, PBC'}]
+earnings 200
