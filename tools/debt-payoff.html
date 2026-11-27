@@ -500,6 +500,11 @@
               <label for="targetMonths">Debt-Free Target (months, optional)</label>
               <input id="targetMonths" type="number" min="1" max="600" step="1" placeholder="e.g. 18" inputmode="numeric" />
             </div>
+
+            <div class="field">
+              <label for="upfrontPayment">One-Time Principal Payment ($, optional)</label>
+              <input id="upfrontPayment" type="number" min="0.01" step="0.01" placeholder="e.g. 2000" inputmode="decimal" aria-describedby="upfrontNote" />
+            </div>
           </div>
 
           <div class="button-row">
@@ -565,6 +570,11 @@
             <h3>Debt-free by a target date</h3>
             <p class="faster-note">The fixed monthly payment that clears this balance in each time frame, at the same interest rate. Add your own number of months above to see your target here.</p>
             <ul id="targetList" class="faster-list"><li class="faster-empty">Calculate to see the payment for each target.</li></ul>
+          </div>
+          <div class="summary-box faster-box">
+            <h3>One-time principal payment</h3>
+            <p id="upfrontNote" class="faster-note">Compare paying part of the balance today while keeping the same monthly payment, including any recurring extra. This assumes the payment goes to principal before the next month’s interest and excludes fees or penalties. The regular schedule and scenario link do not include this payment.</p>
+            <p id="upfrontResult" role="status" aria-atomic="true">Enter a one-time principal payment and calculate to compare.</p>
           </div>
         </div>
       </div>
@@ -650,6 +660,7 @@
       document.getElementById("summaryText").textContent = "No calculation yet.";
       document.getElementById("fasterList").innerHTML = '<li class="faster-empty">Calculate to compare extra payments.</li>';
       document.getElementById("targetList").innerHTML = '<li class="faster-empty">Calculate to see the payment for each target.</li>';
+      clearUpfrontComparison();
       document.getElementById("scheduleBody").innerHTML = `
         <tr>
           <td colspan="6" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
@@ -671,6 +682,64 @@
         balance = balance + interest - pay;
       }
       return balance > 0.005 ? null : {months, interest: interestTotal, paid};
+    }
+
+    let comparedUpfront = null;
+
+    function clearUpfrontComparison(){
+      comparedUpfront = null;
+      const input = document.getElementById("upfrontPayment");
+      input.removeAttribute("aria-invalid");
+      document.getElementById("upfrontResult").textContent = input.value
+        ? "Calculate again to update the one-time payment comparison."
+        : "Enter a one-time principal payment and calculate to compare.";
+    }
+
+    function renderUpfrontComparison(loan, rate, monthlyPayment){
+      const input = document.getElementById("upfrontPayment");
+      const result = document.getElementById("upfrontResult");
+      const raw = String(input.value).trim();
+      clearUpfrontComparison();
+      if (!raw && !input.validity?.badInput) return;
+      comparedUpfront = raw;
+
+      const upfront = Number(raw);
+      if (input.validity?.badInput || !/^(?:[0-9]+(?:\.[0-9]{1,2})?|\.[0-9]{1,2})$/.test(raw)
+          || !Number.isFinite(upfront) || upfront <= 0 || upfront > loan) {
+        input.setAttribute("aria-invalid", "true");
+        result.textContent = "Enter a positive one-time payment with at most two decimals and no greater than the loan balance.";
+        return;
+      }
+      if (!document.getElementById("interestRate").value.trim()
+          || ![loan, rate, monthlyPayment, loan * rate].every(Number.isFinite)) {
+        result.textContent = "Enter a valid loan balance, annual rate and monthly payment to compare.";
+        return;
+      }
+
+      // Match the regular calculation's range; keep a non-amortizing plan distinct from a long one.
+      function estimate(balance){
+        if (balance <= 0.005) return { months: 0, interest: 0 };
+        if (monthlyPayment <= balance * rate) return null;
+        const payoff = simulatePayoff(balance, rate, monthlyPayment);
+        return payoff && payoff.months < 1200 && Number.isFinite(payoff.interest) ? payoff : null;
+      }
+      function describe(payoff, balance){
+        if (payoff) return payoff.months === 0
+          ? "paid off today with no modeled future interest"
+          : `${plural(payoff.months, "month")} and ${formatCurrency(payoff.interest)} in future interest`;
+        return monthlyPayment <= balance * rate
+          ? "monthly payment does not exceed the first month’s interest"
+          : "no payoff within the calculator’s range";
+      }
+
+      const remaining = loan - upfront;
+      const regular = estimate(loan);
+      const reduced = estimate(remaining);
+      const savings = regular && reduced
+        ? ` You finish ${regular.months === reduced.months ? "in the same number of months" : plural(regular.months - reduced.months, "month") + " sooner"} and save ${formatCurrency(Math.max(0, regular.interest - reduced.interest))} in future interest.`
+        : " Interest savings cannot be estimated without a payoff estimate for both plans.";
+
+      result.textContent = `Without the one-time payment: ${describe(regular, loan)}. With ${formatCurrency(upfront)} paid today: ${describe(reduced, remaining)}.${savings}`;
     }
 
     function plural(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
@@ -777,6 +846,7 @@
         firstInterestEl.textContent = formatCurrency(firstMonthInterest);
         summaryEl.textContent = `Your first month interest is ${formatCurrency(firstMonthInterest)}, so your payment must be higher than that to reduce the balance.`;
         renderTargets(originalLoan, monthlyRate, monthlyPaymentInput, targetMonths);
+        renderUpfrontComparison(originalLoan, monthlyRate, monthlyPaymentInput);
         return;
       }
 
@@ -818,6 +888,7 @@
         resetOutput();
         statusEl.className = "result-status error";
         statusEl.textContent = "Calculation exceeded the allowed range. Please increase the payment.";
+        renderUpfrontComparison(originalLoan, monthlyRate, monthlyPaymentInput);
         return;
       }
 
@@ -855,6 +926,7 @@
 
       renderTargets(originalLoan, monthlyRate, monthlyPaymentInput, targetMonths);
       scheduleBody.innerHTML = rows;
+      renderUpfrontComparison(originalLoan, monthlyRate, monthlyPaymentInput);
     }
 
     // Previous results no longer represent the inputs as soon as a field changes.
@@ -870,6 +942,18 @@
       input.addEventListener("change", invalidatePayoff);
     });
 
+    const upfrontInput = document.getElementById("upfrontPayment");
+    upfrontInput.addEventListener("input", clearUpfrontComparison);
+    upfrontInput.addEventListener("change", () => {
+      if (upfrontInput.value.trim() !== comparedUpfront) clearUpfrontComparison();
+    });
+    upfrontInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        calculatePayoff();
+      }
+    });
+
     document.getElementById("calculateBtn").addEventListener("click", calculatePayoff);
 
     document.getElementById("resetBtn").addEventListener("click", () => {
@@ -878,6 +962,7 @@
       document.getElementById("monthlyPayment").value = 300;
       document.getElementById("extraPayment").value = "";
       document.getElementById("targetMonths").value = "";
+      upfrontInput.value = "";
       resetOutput();
     });
 
