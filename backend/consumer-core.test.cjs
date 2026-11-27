@@ -226,3 +226,22 @@ test('paid Trade Review explains the note limit without altering valid content o
  assert.throws(()=>run('review',{notes:null}),/Trade Review notes must be text/);
  assert.equal(run('review',{notes:' '.repeat(2001)}).notes,'');
 });
+
+test('paid Journal Intelligence compares full history with the last 20 valid realized records',()=>{
+ const old=Array(5).fill(100),recent=[...Array(10).fill(5),...Array(10).fill(-2)];
+ const result=run('analytics',{},[...old,...recent.slice(0,10),null,...recent.slice(10),''].map(pl=>({pl})));
+ assert.equal(result.trades,25);
+ assert.equal(result.netPL,530);
+ assert.equal(result.winRate,60);
+ assert.equal(result.recentTrades,20);
+ assert.equal(result.recentWinRate,'50%');
+ assert.equal(result.recentNetPL,30);
+ assert.match(result.notice,/last 20 dated trades with valid realized P\/L/);
+});
+
+test('recent Journal stats use the available sample and do not imply zero win rate with no valid trades',()=>{
+ const sparse=run('analytics',{},['4',0,-1,null].map(pl=>({pl})));
+ assert.deepEqual([sparse.recentTrades,sparse.recentWinRate,sparse.recentNetPL],[3,'33.3%',3]);
+ const empty=run('analytics',{},[{pl:null}]);
+ assert.deepEqual([empty.recentTrades,empty.recentWinRate,empty.recentNetPL],[0,null,null]);
+});
