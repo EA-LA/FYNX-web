@@ -1,7 +1,7 @@
 import {C,$,escape,number,money,percent,tone,time,ageLabel,errorHTML,empty,toast,options,metric,quotes,quoteCache} from './shared.js';
-import {store} from './store.js?v=20261113-shared-account-1';
+import {store} from './store.js?v=20261114-consistency-2';
 import {stageHoldingRemoval,canUndoHolding,restoreRemovedHolding} from './holding-undo.js';
-import {replaceMarkupWithFocus} from './focus.js?v=20261113-shared-account-1';
+import {replaceMarkupWithFocus} from './focus.js?v=20261114-consistency-2';
 let portfolioBusy=false,alertBusy=false,lastCheck='',portfolioRefreshError='';
 let lastRemoved=null,undoBusy=false;
 function pendingUndo(){

@@ -24,3 +24,11 @@
 @media(max-width:600px){.lesson-tool{padding:16px 12px}.lesson-tool-fields{grid-template-columns:1fr 1fr}.lesson-tool-stats{grid-template-columns:1fr 1fr}.lesson-tool-stats div:first-child{grid-column:1/-1}}
 @media(max-width:400px){.lesson-tool-table{font-size:13px}.lesson-tool-table th,.lesson-tool-table td{padding:8px 4px}.lesson-tool-table th:nth-child(4),.lesson-tool-table td:nth-child(4){display:none}}
 @media(max-width:380px){.lesson-tool-fields,.lesson-tool-stats{grid-template-columns:1fr}.lesson-tool-stats dd{font-size:18px}}
+/* site-qa run 120: duration lesson */
+.lesson-tool-stats.lesson-tool-stats-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:600px){.lesson-tool-stats.lesson-tool-stats-2 div:first-child{grid-column:auto}}
+@media(max-width:400px){.lesson-tool-table.dur-table th:nth-child(4),.lesson-tool-table.dur-table td:nth-child(4){display:table-cell}}
+@media(max-width:440px){.lesson-tool-table.dur-table th:nth-child(5),.lesson-tool-table.dur-table td:nth-child(5){display:none}.lesson-tool-table.dur-table tbody th{white-space:normal}}
+.lesson-layout>.lesson-article{min-width:0}
+.lesson-tool-table.dur-table thead th{white-space:normal;vertical-align:bottom}
+@media(max-width:360px){.lesson-tool-table.dur-table{font-size:12px}.lesson-tool-table.dur-table th,.lesson-tool-table.dur-table td{padding:8px 3px}}

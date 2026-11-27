@@ -371,7 +371,7 @@
     const isSettingsPage = location.pathname === '/profile.html' || location.pathname === '/notifications.html';
     if (!isSettingsPage && !document.body.dataset.fynxBellMounted) {
       document.body.dataset.fynxBellMounted = '1';
-      import('/assets/js/account-ui.js?v=20261125-header-fix').then(function (m) {
+      import('/assets/js/account-ui.js?v=20261114-consistency-2').then(function (m) {
         if (m.mountNotificationBell) m.mountNotificationBell();
       }).catch(function (err) {
         console.warn('[FYNX] notification dropdown unavailable', err && err.message);
@@ -380,7 +380,7 @@
     // Auto news ingestion (uses existing ingestNewsNotifications).
     if (!document.querySelector('script[data-fynx-auto-news]')) {
       const s = document.createElement('script');
-      s.src = '/assets/js/auto-news-ingest.js?v=20261125-header-fix';
+      s.src = '/assets/js/auto-news-ingest.js?v=20261114-consistency-2';
       s.defer = true;
       s.dataset.fynxAutoNews = '1';
       document.head.append(s);
