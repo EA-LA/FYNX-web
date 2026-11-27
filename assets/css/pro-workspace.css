@@ -4,3 +4,6 @@
 
 /* Preserve the structure of paid notes and keep long links inside the workbench. */
 #workbench #result > p{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Give the paid trade-by-trade disclosure a larger target without replacing the native marker. */
+#workbench #result .path-inspector > summary{min-height:44px;padding-block:11px;cursor:pointer}
