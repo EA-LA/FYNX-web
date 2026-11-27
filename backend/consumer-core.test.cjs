@@ -344,3 +344,23 @@ test('Professional simulator reports longest underwater duration in trades, sepa
  assert.deepEqual(getStreaks(result),[(durations[249]+durations[250])/2+' trades',durations[449]+' trades']);
  assert.match(result.notice,/consecutive trades closing below a path’s prior equity peak/);
 });
+
+test('paid Research Watchlist reports pasted duplicates without removing unique symbols or notes',()=>{
+ const r=run('watchlist',{symbols:[' aapl ','BTCUSD','AAPL',' aapl',' ethusd ','btcusd'],notes:'Synthetic research note'});
+ assert.deepEqual(r.symbols,['AAPL','BTCUSD','ETHUSD']);
+ assert.equal(r.uniqueSymbols,3);
+ assert.equal(r.duplicateEntriesSkipped,3);
+ assert.equal(r.notes,'Synthetic research note');
+ assert.match(r.notice,/Repeated symbols: AAPL, BTCUSD\. Only the first occurrence of each is kept\./);
+});
+
+test('watchlist keeps its existing validation limit and skips no entries for an already clean list',()=>{
+ const result=run('watchlist',{symbols:['META','EURUSD']});
+ assert.equal(result.uniqueSymbols,2);
+ assert.equal(result.duplicateEntriesSkipped,0);
+ assert.doesNotMatch(result.notice,/Repeated symbols/);
+ const max=run('watchlist',{symbols:Array(30).fill('META')});
+ assert.equal(max.duplicateEntriesSkipped,29);
+ assert.throws(()=>run('watchlist',{symbols:Array(31).fill('META')}),/Add 1–30 symbols/);
+ assert.throws(()=>run('watchlist',{symbols:['AAPL','  ']}),/Enter a valid name/);
+});

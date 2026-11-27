@@ -75,7 +75,20 @@ function run(product,d={},trades=[]){
   const nextItem={plan:'Define the entry plan',risk:'Check the risk budget',event:'Check scheduled events',execution:'Review whether execution followed the plan',review:'Record the outcome and lesson'};
   return {notes,completed,missing,score:completed.length*20,preTradePreparation:phase(preparation),tradeFollowThrough:phase(followThrough),nextUncheckedItem:missing.length?nextItem[missing[0]]:'All checklist items complete',notice:'Self-assessment of your trading process, not a performance rating.'};
  }
- if(product==='watchlist'){if(!Array.isArray(d.symbols)||d.symbols.length<1||d.symbols.length>30)throw Error('Add 1–30 symbols.');const notes=typeof d.notes==='string'?d.notes:'';if(notes.length>2000)throw Error('Research notes must be 2,000 characters or fewer.');return {symbols:[...new Set(d.symbols.map(s=>label(s,30).toUpperCase()))],notes,notice:'A saved research list. Prices are not supplied by this tool.'};}
+ if(product==='watchlist'){
+  if(!Array.isArray(d.symbols)||d.symbols.length<1||d.symbols.length>30)throw Error('Add 1–30 symbols.');
+  const notes=typeof d.notes==='string'?d.notes:'';
+  if(notes.length>2000)throw Error('Research notes must be 2,000 characters or fewer.');
+  const seen=new Set(),repeated=new Set();
+  for(const raw of d.symbols){
+   const symbol=label(raw,30).toUpperCase();
+   if(seen.has(symbol))repeated.add(symbol);
+   else seen.add(symbol);
+  }
+  const symbols=[...seen],duplicateEntriesSkipped=d.symbols.length-symbols.length;
+  const duplicateNotice=repeated.size?' Repeated symbols: '+[...repeated].join(', ')+'. Only the first occurrence of each is kept.':'';
+  return {symbols,notes,uniqueSymbols:symbols.length,duplicateEntriesSkipped,notice:'A saved research list. Prices are not supplied by this tool.'+duplicateNotice};
+ }
  if(product==='portfolio'){const balance=number(d.balance,'Balance',1),shock=number(d.shock,'Shock percent',-100,100);if(!Array.isArray(d.positions)||!d.positions.length||d.positions.length>30)throw Error('Enter 1–30 positions.');const rows=d.positions.map(p=>{const value=number(p.value,'Signed position value',-1e9,1e9);return {symbol:label(p.symbol,30),value,scenarioPL:value*shock/100};});const grossExposure=rows.reduce((a,p)=>a+Math.abs(p.value),0),netExposure=rows.reduce((a,p)=>a+p.value,0),scenarioPL=rows.reduce((a,p)=>a+p.scenarioPL,0);return {rows,grossExposure,netExposure,scenarioPL,scenarioEquity:balance+scenarioPL,grossLeverage:grossExposure/balance,notice:'Parallel price-shock model. Enter signed notionals in one account currency. Not VaR; ignores correlations, options nonlinearity, fees and liquidation.'};}
  if(product==='simulation'){const balance=number(d.balance,'Balance',1),riskPct=number(d.riskPct,'Risk percent',0.01,20),winRate=number(d.winRate,'Win rate',0,100)/100,rewardRisk=number(d.rewardRisk,'Reward/risk',0.01,20),count=number(d.trades,'Trades',1,500);if(!Number.isInteger(count))throw Error('Trades per path must be a whole number between 1 and 500.');let seed=123456789;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};const end=[],drawdowns=[],underwaterStreaks=[];let representative=[];for(let p=0;p<500;p++){let eq=balance,peak=balance,dd=0,underwater=0,longestUnderwater=0;const curve=[eq];for(let i=0;i<count;i++){eq*=1+(random()<winRate?rewardRisk:-1)*riskPct/100;if(!Number.isFinite(eq))throw Error('These assumptions exceed the simulation range. Reduce the trade count, risk or payoff.');peak=Math.max(peak,eq);dd=Math.max(dd,(peak-eq)/peak*100);
    // An effectively equal peak ends the streak; do not count roundoff as drawdown time.
