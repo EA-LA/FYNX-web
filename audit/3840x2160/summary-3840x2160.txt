@@ -1,0 +1,7 @@
+viewport 3840x2160 · boot 1954ms · 16 desks · 94 panels · 98 pages · heap 95.8MB · DOM 4861
+ticker: {"items":36,"overlaps":0,"inner":0,"sample":""}
+page errors: 0
+console errors: 5
+  Failed to load resource: the server responded with a status of 400 ()
+failed hosts: us-central1-fynx-c7a28.cloudfunctions.net(8)
+problems: 0
