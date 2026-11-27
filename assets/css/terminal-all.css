@@ -520,7 +520,8 @@ html body .sc-filters select.sc-in option{background:#0b0e0c;color:#e7ece9}
 .fx-dest i{display:block;height:6px;background:#f4a261;opacity:.75}.fx-dest b{text-align:right;font-weight:600}
 
 /* HEAT · five heat maps (heatmaps.js) */
-.tp-b:has(>.hm-fill){display:flex;flex-direction:column;overflow:hidden}
+/* Short screens (1366×768): the map keeps its 150px minimum, so the panel scrolls instead of cutting off the key and footer. */
+.tp-b:has(>.hm-fill){display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto}
 .hm-stage{position:relative;min-height:150px}.hm-fill{flex:1 1 auto}.hm-page .hm-fill{flex:none}
 .hm-svg{display:block}.hm-tile{cursor:pointer}.hm-tile rect,.hm-tile circle{stroke:#06090b;stroke-width:1}
 .hm-tile:hover rect,.hm-tile:hover circle,.hm-tile:focus rect,.hm-tile:focus circle{stroke:#ffb000;stroke-width:2}.hm-tile:focus{outline:none}
@@ -686,3 +687,51 @@ html body.fx-terminal .fl-table td,html body.fx-terminal .fl-table th{text-align
 .ia-lock b{font:700 14px Inter,Arial,sans-serif;color:#fff}.ia-lock p{margin:0;color:#b8c3bd;font-size:12.5px;max-width:720px}.ia-lock-row{display:flex;gap:8px}
 .fx-planbtn.owner b{color:#000;background:var(--am);padding:0 4px}
 html body.fx-terminal .ia-table tr:not(:first-child) th{text-align:left!important}.ia-bar .pg-tabs{margin:2px 0 4px}
+/* Workspace mode: ALL · FOCUS · COMPARE and the selection chips */
+.fx-modebar{flex:none;display:inline-flex;border:1px solid var(--ln2);height:24px}
+.fx-mode{background:none;border:0;border-right:1px solid var(--ln2);color:var(--mu);font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.6px;padding:0 9px;min-width:44px}
+.fx-mode:last-child{border-right:0}.fx-mode:hover{color:var(--tx)}.fx-mode.on{background:var(--am);color:#000}
+.fx-symchip{max-width:min(46vw,760px)}
+.fx-symadd{font-weight:700;color:var(--am)}
+.fx-cmpchip{display:inline-flex;align-items:center;height:20px;border:1px solid var(--ln2);border-left-width:3px;margin-right:2px}
+.fx-cmpname,.fx-cmpx,.fx-cmpadd,.fx-cmpclear{background:none;border:0;color:var(--tx);font:700 10.5px 'IBM Plex Mono',monospace;padding:0 6px;height:100%}
+.fx-cmpx{color:var(--mu);border-left:1px solid var(--ln2)}.fx-cmpx:hover,.fx-cmpclear:hover{color:var(--dn)}.fx-cmpadd{color:var(--am)}.fx-cmpclear{color:var(--mu);border-left:1px solid var(--ln2);margin-left:2px}
+.fx-symchip:has(.fx-cmpchip){padding:0 0 0 2px;gap:2px;overflow-x:auto;scrollbar-width:none}
+.fx-cmpt th,.fx-cmpt td{white-space:nowrap}.fx-cmpt th small{color:var(--mu);font-weight:400}
+.fx-sw{display:inline-block;width:8px;height:8px;margin-right:5px;vertical-align:middle}
+.fx-cmplink{background:none;border:0;color:var(--tx);font:700 11px 'IBM Plex Mono',monospace;padding:0;cursor:pointer}.fx-cmplink:hover{color:var(--am)}
+.fx-rng i{display:block;position:relative;width:70px;height:4px;background:#26302c}.fx-rng i b{position:absolute;top:-3px;width:3px;height:10px;margin-left:-1px;background:var(--am)}
+.fx-corrm td{text-align:center!important;min-width:46px}.fx-corrm th{white-space:nowrap}
+.fx-symtag{margin-right:6px;font:700 9.5px 'IBM Plex Mono',monospace;padding:0 5px}
+/* The chip shrinks with the desk bar and scrolls inside itself, so compare chips never push the page sideways. */
+.fx-symchip{flex:0 1 auto;min-width:0}
+@media (max-width:900px){.fx-mode{padding:0 6px;min-width:0}.fx-symchip{max-width:none;min-width:96px}}
+/* Phones: a focused or compared market gets its own row under the desk list instead of squeezing it. */
+@media (max-width:1100px){.fx-deskbar:has(.fx-symchip:not([hidden])){flex-wrap:wrap;height:auto;row-gap:4px;padding-top:4px;padding-bottom:4px}.fx-deskbar:has(.fx-symchip:not([hidden])) .fx-deskbar-list{flex:1 1 0}.fx-deskbar .fx-symchip:not([hidden]){order:9;flex:1 1 100%;max-width:100%}.fx-deskbar-note{display:none}}
+.fx-scroll{overflow-x:auto;max-width:100%}
+/* Notification bell (Terminal header) */
+.fx-bellwrap{position:relative;display:inline-flex}.fx-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:34px}
+.fx-bellbadge{position:absolute;top:-5px;right:-6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--dn);color:#fff;font:700 9.5px/16px 'IBM Plex Mono',monospace;text-align:center}
+.fx-bellbadge[hidden]{display:none}
+.fx-belldrop{position:fixed;z-index:60;width:min(400px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#0b0f0e;border:1px solid var(--am);box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.fx-belldrop[hidden]{display:none}
+.fx-bellhead{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--ln2)}.fx-bellhead b{font:700 11px 'IBM Plex Mono',monospace;color:var(--am);letter-spacing:.8px}.fx-bellhead span{font:11px 'IBM Plex Mono',monospace;color:var(--mu);flex:1}
+.fx-belllink{background:none;border:0;color:var(--bl);font:600 11.5px Inter,Arial,sans-serif;cursor:pointer;padding:2px 0;text-decoration:none}.fx-belllink:hover{text-decoration:underline}
+.fx-belllist{overflow-y:auto;flex:1;min-height:60px}
+.fx-bellitem{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #18201d;border-left:3px solid transparent;padding:7px 10px;color:var(--tx);cursor:pointer}
+.fx-bellitem:hover,.fx-bellitem:focus-visible{background:#121a17}.fx-bellitem.unread{border-left-color:var(--am)}.fx-bellitem.unread strong{color:#fff}
+.fx-bellitem.p-high .fx-bellcat,.fx-bellitem.p-critical .fx-bellcat{color:var(--dn)}
+.fx-bellitem strong{font:600 12.5px/1.35 Inter,Arial,sans-serif;color:#c9d1cd}.fx-bellitem small{font:11px/1.35 Inter,Arial,sans-serif;color:var(--mu)}
+.fx-belltop{display:flex;align-items:center;gap:6px;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.5px;color:var(--mu)}.fx-belltop time{margin-left:auto;font-weight:400}
+.fx-bellsym{font-style:normal;color:#000;background:var(--am);padding:0 4px}
+.fx-bellnote{margin:0;padding:12px 10px;font:12px/1.45 Inter,Arial,sans-serif;color:var(--mu)}
+.fx-bellprefs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:7px 10px;border-top:1px solid var(--ln2)}
+.fx-bellpref{background:none;border:1px solid var(--ln2);color:var(--mu);font:700 10px 'IBM Plex Mono',monospace;padding:3px 7px;cursor:pointer}.fx-bellpref.on{color:var(--up);border-color:var(--up)}
+.fx-bellprefs .fx-belllink{margin-left:auto}
+.fx-bellfoot{margin:0;padding:5px 10px 8px;font:10.5px 'IBM Plex Mono',monospace;color:var(--mu)}
+.fx-follow{color:var(--mu)}.fx-follow.on{color:var(--am)}
+.fx-sess{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid var(--ln2);font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.5px;color:var(--mu);vertical-align:middle}
+.fx-sess-open{color:var(--up);border-color:var(--up)}.fx-sess-closed{color:var(--dn);border-color:var(--dn)}.fx-sess-ext{color:var(--am);border-color:var(--am)}
+/* Tablets and small laptops: the header row (clocks, feeds, plan, tour, build, bell, edit, exit) is wider than
+   the screen, which made the whole Terminal scroll sideways. Let it wrap to a second row and trim the clocks. */
+@media (min-width:761px) and (max-width:1365px){html body.fx-terminal>header.fx-top{height:auto!important;min-height:44px!important;flex-wrap:wrap!important;row-gap:4px;padding:4px 10px!important}html body.fx-terminal .fx-clocks{flex:1 1 auto;min-width:0;overflow:hidden}html body.fx-terminal .fx-cmd-msg{flex:0 1 160px}}

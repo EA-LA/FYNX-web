@@ -155,7 +155,8 @@
     tb.append(h);
     for (const r of rows.slice(0, limit)) {
       const tr = el('tr', 'pg-click'); tr.tabIndex = 0; tr.setAttribute('role', 'button'); tr.setAttribute('aria-label', `Open ${r.sym} ${r.name}`);
-      const go = () => T.setSymbol({symbol: r.open, name: r.name}); tr.addEventListener('click', go); tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      // Click: FOCUS the Terminal on this market. Shift/Ctrl/Cmd-click: add it to COMPARE.
+      const go = e => (e?.shiftKey || e?.ctrlKey || e?.metaKey) && T.addCompare ? T.addCompare({symbol: r.open, name: r.name}) : T.setSymbol({symbol: r.open, name: r.name}); tr.addEventListener('click', go); tr.title = 'Click to focus the Terminal on it · Shift-click to add it to a comparison'; tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
       for (const [k, , f, num] of COLS[asset]) {
         const v = r[k];
         if (k === 'sym') { tr.append(el('th', 'sc-sym', v)); continue; }

@@ -91,10 +91,15 @@
     stock: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'fin', 'earn', 'opt', 'cmp', 'desks', 'heat', 'eco', 'xa', 'tools'],
     fund: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'opt', 'cmp', 'xa', 'desks', 'heat', 'eco', 'term', 'tools'],
     fx: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'bias', 'cb', 'eco', 'range', 'pos', 'corr', 'curve', 'sess', 'tools'],
-    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'pos', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
+    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'dom', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
     other: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'cmp', 'xa', 'term', 'pos', 'desks', 'heat', 'eco', 'tools']
   };
-  const D = () => S.sym ? symDef() : DESK_DEFS[S.deskKey];
+  S.focusGen = 0; S.cmp = null; S.cmpSeed = null;
+  { const j = k => { try { return JSON.parse(store.get(k) || 'null'); } catch { return null; } }; S.lastSym = j('last-sym'); S.lastCmp = Array.isArray(j('last-cmp')) ? j('last-cmp') : null; }
+  S.tried = {}; // loaders without a LIVE feed badge: true = answered with data, false = failed (see pending())
+  // Workspace mode: ALL (a desk), FOCUS (S.sym: one instrument) or COMPARE (S.cmp: 2–8 instruments). One shared state.
+  const D = () => S.cmp ? cmpDef() : S.sym ? symDef() : DESK_DEFS[S.deskKey];
+  const modeOf = () => S.cmp ? 'compare' : S.sym ? 'focus' : 'all';
   function symClass(symbol, type) {
     const t = String(type || '').toUpperCase();
     if (t === 'CURRENCY' || /=X$/.test(symbol) || (EDGE[symbol] && /^[A-Z]{6}$/.test(symbol) && !/^(XAU|XAG|BTC|ETH)/.test(symbol))) return 'fx';
@@ -116,6 +121,19 @@
       opt: S.opts?.underlyings?.[s.symbol] ? s.symbol : base.opt, news, newsTabs: base.newsTabs?.includes(news) ? base.newsTabs : [news, ...(base.newsTabs || []).slice(0, 4)], heat: cls === 'crypto' ? ['Crypto'] : cls === 'fx' ? ['FX majors', 'FX crosses'] : base.heat || ['Stocks'], grid: null};
   }
 
+  // COMPARE: the selected instruments drive the market list, heat map, cross-asset list, calendar currencies and earnings.
+  // Wide boxes for the comparison table and chart, a tall column for the headlines.
+  const CMP_SLOTS = ['mkts', 'cmpq', 'cmpcorr', 'cmpnews', 'heat', 'cmp', 'cmprisk', 'earn', 'top', 'eco', 'sess', 'vix', 'intel', 'tools'];
+  const CMP_GRID = {areas: ['s1 s2 s2 s3 s4 s5', 's1 s6 s6 s7 s4 s8', 's9 s10 s11 s12 s13 s14']};
+  function cmpDef() {
+    const ids = S.cmp, classes = ids.map(id => symClass(id)), same = classes.every(c => c === classes[0]) ? classes[0] : null;
+    const base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[same]] || DESK_DEFS.all;
+    const news = {fx: 'forex', crypto: 'crypto', fund: 'finance', stock: 'stocks'}[same] || 'all';
+    const ccy = [...new Set(ids.flatMap(id => symCurrencies(id)))];
+    return {...base, label: 'COMPARE', noun: ids.map(shortOf).join(' · '), who: `${ids.length} selected markets`, slots: CMP_SLOTS, focus: FX_TO_EDGE[ids[0]] || ids[0], compare: true, storyKind: base.storyKind,
+      mkts: [['SEL', {syms: ids}]], heat: {syms: ids}, xa: ids, ccy, news, newsTabs: base.newsTabs, earnSyms: ids.filter((id, i) => classes[i] === 'stock'), grid: CMP_GRID, edge: ids.map(id => FX_TO_EDGE[id] || id).filter(id => EDGE[id]).concat(), range: base.range};
+  }
+
   /* --- utilities --------------------------------------------------------- */
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined && text !== null) n.textContent = String(text); return n; }
   function safeHref(href) { try { const u = new URL(href, location.href); return ['https:', 'http:'].includes(u.protocol) ? u : null; } catch { return null; } }
@@ -131,6 +149,9 @@
   const big = v => !finite(v) ? '—' : Math.abs(v) >= 1e12 ? '$' + (v / 1e12).toFixed(2) + 'T' : Math.abs(v) >= 1e9 ? '$' + (v / 1e9).toFixed(2) + 'B' : Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + v.toFixed(2);
   const count = v => !finite(v) ? '—' : v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
   const report = (op, e) => { try { window.FynxMonitor?.report('feed', 'terminal-' + op, e); } catch {} };
+  // An empty panel says "loading" only while its feed has not answered yet; once the feed has failed it says so,
+  // instead of a loading message that never ends.
+  const pending = (host, feeds, loading, failed) => { const st = [].concat(feeds).map(f => f in S.feeds ? S.feeds[f] : S.tried[f]); return empty(host, st.some(v => v === undefined) && !st.some(v => v === true) ? loading : failed); };
   const feed = (name, ok) => { if (!ok && S.feeds[name] !== false) S.tickRebase.add(name); S.feeds[name] = ok; renderLive(); };
   /* Tick highlighting (assets/js/terminal/tick.js): tk() tags a value cell with its instrument/field key; the
      shared painter flashes it when that value just changed in the data. Daily performance colours (tone) are
@@ -198,7 +219,7 @@
     return 2;
   }
   const universe = groups => {
-    if (groups && !Array.isArray(groups)) return groups.syms.filter(s => MKQ()[s] || S.quotes[s]);
+    if (groups && !Array.isArray(groups)) return groups.syms.filter(s => MKQ()[s] || S.quotes[s] || S.symQuotes[s]);
     const all = Object.values(MKQ()), fromSnap = groups.flatMap(g => all.filter(q => q.group === g).map(q => q.symbol));
     if (fromSnap.length) return fromSnap;
     const map = {Stocks: 'Stocks', Crypto: 'Crypto', 'FX majors': 'FX', 'Equity funds': 'ETFs', 'Sector funds': 'ETFs', 'Bond funds': 'ETFs', 'Commodity funds': 'ETFs'};
@@ -228,12 +249,24 @@
   async function loadSnapshot(name, check) { try { const d = await getJSON(TDATA + name, {bust: true, timeout: 30000}); if (check(d)) return d; } catch (e) { report(name, e); } return null; }
   async function loadMarkets() { const d = await loadSnapshot('markets.json', d => d?.version === 1 && d.quotes && typeof d.quotes === 'object'); if (d) S.mk = d; feed('markets', Boolean(S.mk)); }
   async function loadOptions() { const d = await loadSnapshot('options.json', d => d?.version === 1 && d.underlyings); if (d) S.opts = d; feed('options', Boolean(S.opts)); }
-  async function loadEarnings() { const d = await loadSnapshot('earnings.json', d => d?.version === 1 && Array.isArray(d.events)); if (d) S.earn = d; }
+  async function loadEarnings() { const d = await loadSnapshot('earnings.json', d => d?.version === 1 && Array.isArray(d.events)); if (d) S.earn = d; S.tried.earnings = Boolean(S.earn); }
   async function loadDesk() { try { S.desk = M.validateDesk(await getJSON(DESK_URL, {bust: true})); feed('rates', true); } catch (e) { report('desk', e); feed('rates', false); } }
   async function loadEdge() { const d = await research('edge.json', d => Array.isArray(d?.markets)); if (d) S.edge = d; feed('edge', Boolean(S.edge)); }
   async function loadCalendar() { const d = await research('calendar.json', d => Array.isArray(d?.events)); if (d) S.calendar = d; feed('calendar', Boolean(S.calendar)); }
-  async function loadSchedule() { if (!S.schedule) try { S.schedule = await getJSON('/assets/data/macro/central-banks.json'); } catch (e) { report('schedule', e); } }
-  async function loadBriefing(force = false) { try { const r = await window.FynxTerminalData?.loadBriefing?.({force}); if (r?.items?.length) { S.briefing = r.items.slice(0, 80); feed('news', true); } else feed('news', false); } catch (e) { report('news', e); feed('news', false); } }
+  async function loadSchedule() { if (!S.schedule) try { S.schedule = await getJSON('/assets/data/macro/central-banks.json'); } catch (e) { report('schedule', e); } S.tried.schedule = Boolean(S.schedule); }
+  // Headlines: a failed load (often a slow first request while the terminal boots) is retried on a short backoff
+  // (10 s, 20 s, 40 s, 1, 2, 3 min) instead of waiting for the 5-minute refresh; panels repaint when it succeeds.
+  const brief = {tries: 0, timer: null};
+  async function loadBriefing(force = false) {
+    let ok = false;
+    try { const r = await window.FynxTerminalData?.loadBriefing?.({force}); if (r?.items?.length) { S.briefing = r.items.slice(0, 80); ok = true; } } catch (e) { report('news', e); }
+    feed('news', ok);
+    if (ok) { brief.tries = 0; return; }
+    if (!brief.timer && brief.tries < 6) {
+      const wait = [10, 20, 40, 60, 120, 180][brief.tries++] * 1000;
+      brief.timer = setTimeout(async () => { brief.timer = null; const had = S.briefing.length; await loadBriefing(true); if (S.briefing.length && !had) { renderNews(); R('top', 'desks', 'official', 'intel', 'story'); } }, wait);
+    }
+  }
   async function loadNews(cat, force = false) {
     const N = window.FYNXMarketIntelligenceData; if (!N) return null;
     if (cat === 'all') { if (!S.briefing.length || force) await loadBriefing(force); return {items: S.briefing}; }
@@ -242,7 +275,7 @@
     return S.desks[cat] || null;
   }
   async function loadVix() { try { S.vix = await getJSON(FN('webMarketAnalytics') + '?kind=vix'); feed('vix', true); } catch (e) { report('vix', e); feed('vix', false); } }
-  async function loadCorr(w = S.corrWindow) { try { S.corr[w] = await getJSON(FN('webMarketAnalytics') + '?kind=correlation&window=' + w); } catch (e) { report('corr', e); } }
+  async function loadCorr(w = S.corrWindow) { try { S.corr[w] = await getJSON(FN('webMarketAnalytics') + '?kind=correlation&window=' + w); } catch (e) { report('corr', e); } S.tried['corr' + w] = Boolean(S.corr[w]); }
   async function loadBooks(list = ['BTC-USD', 'ETH-USD']) {
     await Promise.allSettled(list.map(async p => { try { S.books[p] = await getJSON(FN('webMarketAnalytics') + '?kind=liquidity&product=' + p, {timeout: 15000}); } catch (e) { report('book', e); } }));
   }
@@ -323,9 +356,11 @@
   }
   function renderLive() {
     const ok = Object.values(S.feeds).filter(Boolean).length, total = Object.keys(S.feeds).length, live = $('fx-live');
-    live.lastChild.textContent = total ? `LIVE · ${ok}/${total} FEEDS` : 'CONNECTING';
+    // Connection status of the data feeds, not a claim about price timeliness: quotes are delayed (exchange delays
+    // apply) and are labelled so wherever they appear; only exchange order books stream in real time.
+    live.lastChild.textContent = total ? `FEEDS ${ok}/${total} · DELAYED` : 'CONNECTING';
     live.className = 'fx-live' + (total && ok < total ? ' fx-warn' : '');
-    live.title = Object.entries(S.feeds).map(([k, v]) => `${k}: ${v ? 'ok' : 'unavailable'}`).join(' · ') + ' · click for sources';
+    live.title = `${ok} of ${total} data feeds answering. Prices are delayed quotes (Yahoo Finance and exchange delays apply); crypto order books (Kraken, Coinbase) stream live. ` + Object.entries(S.feeds).map(([k, v]) => `${k}: ${v ? 'ok' : 'unavailable'}`).join(' · ') + ' · click for sources';
   }
   function stripSymbols() {
     const d = D();
@@ -345,8 +380,12 @@
     if (t) host.append(el('span', 'fx-dim', `Delayed quotes · ${hhmm(t)}`));
   }
   function renderNews() {
-    const track = $('fx-news-track'); track.replaceChildren();
+    const track = $('fx-news-track');
     const cat = D().news, items = (cat === 'all' ? S.briefing : S.desks[cat]?.items?.length ? S.desks[cat].items : S.briefing).slice(0, 18);
+    // Same headlines as on screen: leave the strip alone, so the scroll never restarts or jumps on a routine refresh.
+    const sig = cat + '|' + items.map(h => h.url || h.title).join('|');
+    if (sig === S.newsSig && track.childElementCount) return;
+    S.newsSig = sig; track.replaceChildren();
     // The strip can contain cached or delayed headlines: never claim a live feed solely because items exist.
     const headlineStatus = $('fx-headline-feed-status');
     if (headlineStatus) headlineStatus.textContent = items.length ? 'HEADLINES' : 'UNAVAILABLE';
@@ -365,7 +404,8 @@
     return r;
   }
   function renderMkts() {
-    const d = D(), groups = d.mkts, all = groups.length > 1 ? [['ALL', {syms: [...new Set(groups.flatMap(g => universe(g[1])))]}], ...groups] : groups;
+    // Tabs backed by a live list (★ followed markets) are shown only when the list has markets.
+    const d = D(), groups = d.mkts.filter(t => Array.isArray(t[1]) || t[1].syms.length), all = groups.length > 1 ? [['ALL', {syms: [...new Set(groups.flatMap(g => universe(g[1])))]}], ...groups] : groups;
     if (!all.some(t => t[0] === S.mktTab)) S.mktTab = all[0][0];
     setText('t-mkts', d.noun);
     tabs('mkts-tabs', all.map(t => [t[0], t[0]]), S.mktTab, v => { S.mktTab = v; renderMkts(); });
@@ -374,21 +414,22 @@
     if (S.sym && !list.includes(S.sym.symbol) && !list.includes(EDGE_TO_FX[S.sym.symbol])) list = [S.sym.symbol, ...list];
     if (S.mktSort) list = [...list].sort((a, b) => (quoteFor(b)?.changePercent ?? -999) * S.mktSort - (quoteFor(a)?.changePercent ?? -999) * S.mktSort);
     const head = el('div', 'fx-th'); head.append(el('span', '', 'SYMBOL'), el('span', '', 'LAST'), btn(S.mktSort === 1 ? 'CHG ▼' : S.mktSort === -1 ? 'CHG ▲' : 'CHG ↕', 'fx-sort', () => { S.mktSort = S.mktSort === 1 ? -1 : S.mktSort === -1 ? null : 1; renderMkts(); }, 'Sort by change')); host.append(head);
-    if (!list.length) return empty(host, 'Loading quotes…');
+    if (!list.length) return pending(host, ['quotes', 'markets'], 'Loading quotes…', 'Quotes are unavailable right now. FYNX retries automatically.');
     for (const id of list) host.append(quoteRow(id, null, () => setSymbol({symbol: id})));
-    const src = list.some(id => S.quotes[id]) ? 'Live delayed quotes refresh every 30 s; others' : 'Delayed quotes';
+    const src = list.some(id => S.quotes[id]) ? 'Delayed quotes refresh every 30 s; others' : 'Delayed quotes';
     host.append(el('p', 'fx-foot', `${src} from the ${S.mk ? hhmm(S.mk.generatedAt) : ''} market snapshot (Yahoo Finance, exchange delays apply).`));
   }
   function renderList(kind, ids, foot) {
     const host = panel(kind);
-    if (!ids.length) return empty(host, 'Loading quotes…');
+    if (!ids.length) return pending(host, ['quotes', 'markets'], 'Loading quotes…', 'Quotes for these markets are unavailable right now. FYNX retries automatically.');
     const head = el('div', 'fx-th'); head.append(el('span', '', 'SYMBOL'), el('span', '', 'LAST'), el('span', '', 'CHG')); host.append(head);
     ids.forEach(id => host.append(quoteRow(id)));
     if (foot) host.append(el('p', 'fx-foot', foot));
   }
   function renderXA() {
-    const ids = (D().xa || []).filter(id => quoteFor(id));
-    setText('t-xa', `Cross-asset vs ${D().noun.toLowerCase()}`);
+    // Desks without their own cross-asset list (e.g. ALL) use the broad market set.
+    const ids = (D().xa || DESK_DEFS.stocks.xa || []).filter(id => quoteFor(id));
+    const nm = D().compare || D().symbol ? D().noun : D().noun.toLowerCase(); setText('t-xa', `Cross-asset vs ${nm}`);
     renderList('xa', ids);
     const host = $('b-xa'); if (!host || !ids.length) return;
     const risk = ['^GSPC', '^NDX', 'BTC-USD'].map(id => quoteFor(id)?.changePercent).filter(finite), safe = ['GC=F', '^TNX'].map(id => quoteFor(id)?.changePercent).filter(finite);
@@ -601,7 +642,7 @@
   // A quiet desk or market still shows news: the latest stories across FYNX, newest first, with a note.
   function fallbackNews(host, note, n = 25) {
     const items = [...S.briefing].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
-    if (!items.length) return empty(host, 'Loading headlines…');
+    if (!items.length) return pending(host, 'news', 'Loading headlines…', 'Headlines are temporarily unavailable. FYNX retries automatically.');
     host.append(el('p', 'fx-foot', note)); items.slice(0, n).forEach(h => host.append(headlineRow(h)));
   }
   async function renderTop() {
@@ -610,7 +651,7 @@
     const host = panel('top');
     if (cat !== 'all' && !S.desks[cat]) { empty(host, 'Loading headlines…'); await loadNews(cat); if (D().news !== cat || !$('b-top')) return; host.replaceChildren(); }
     const items = cat === 'all' ? S.briefing : S.desks[cat]?.items || [];
-    if (!items.length) return cat === 'all' ? empty(host, 'Loading headlines…') : fallbackNews(host, 'This desk is quiet right now · latest across FYNX');
+    if (!items.length) return cat === 'all' ? pending(host, 'news', 'Loading headlines…', 'Headlines are temporarily unavailable. FYNX retries automatically.') : fallbackNews(host, 'This desk is quiet right now · latest across FYNX');
     items.slice(0, 40).forEach(h => host.append(headlineRow(h)));
   }
   async function renderDesks(load = false) {
@@ -625,7 +666,7 @@
   }
   function renderOfficial() {
     const host = panel('official'), items = S.briefing.filter(h => h.kind === 'official-release');
-    if (!items.length) return empty(host, S.briefing.length ? 'No official releases in the current feed.' : 'Loading official releases…');
+    if (!items.length) return S.briefing.length ? empty(host, 'No official releases in the current feed.') : pending(host, 'news', 'Loading official releases…', 'Official releases are temporarily unavailable. FYNX retries automatically.');
     items.slice(0, 30).forEach(h => host.append(headlineRow(h)));
     host.append(el('p', 'fx-foot', 'Statistics agencies and central banks, straight from their official feeds.'));
   }
@@ -633,7 +674,7 @@
   /* --- CB, CURVE, RATES, GOVT, RISK ------------------------------------------- */
   function renderCB() {
     const host = panel('cb'), banks = S.schedule?.banks || [];
-    if (!banks.length) return empty(host, 'Loading central banks…');
+    if (!banks.length) return pending(host, 'schedule', 'Loading central banks…', 'The central bank schedule is unavailable right now.');
     const head = el('div', 'fx-th fx-c4'); head.append(el('span', '', 'BANK'), el('span', '', 'RATE'), el('span', '', 'NEXT'), el('span', '', 'IN')); host.append(head);
     for (const b of banks) {
       const rate = M.policyRate(b.currency, S.desk), next = M.nextDecision(b), r = rowButton('fx-c4', () => openPage('cb', b.short), `${b.name} details`);
@@ -659,7 +700,7 @@
     for (let k = 0; k <= 2; k++) { const val = lo + (hi - lo) * k / 2; c.append(svg('line', {x1: L, x2: W - R, y1: y(val), y2: y(val), class: 'g'})); const t = svg('text', {x: 2, y: y(val) + 3, class: 'a'}); t.textContent = val.toFixed(2); c.append(t); }
     const line = (key, cls) => { const p = rows.map((r, i) => finite(r[key]) ? `${x(i)},${y(r[key])}` : null).filter(Boolean); if (p.length > 1) c.append(svg('polyline', {points: p.join(' '), class: cls, fill: 'none'})); };
     line('month', 'ln-m'); line('value', 'ln-up');
-    rows.forEach((r, i) => { const t = svg('text', {x: x(i), y: H - 3, class: 'a', 'text-anchor': 'middle'}); t.textContent = r.tenor; c.append(t); });
+    rows.forEach((r, i) => { const t = svg('text', {x: x(i), y: H - 3, class: 'a', 'text-anchor': i === rows.length - 1 ? 'end' : i === 0 ? 'start' : 'middle'}); t.textContent = r.tenor; c.append(t); });
     return {chart: c, view: v, curve};
   }
   function tenorGrid(area, v, curve) {
@@ -671,13 +712,13 @@
     tabs('curve-tabs', [['US', 'US'], ['EA', 'EA'], ['GB', 'UK'], ['JP', 'JP']], S.curve, setCurve);
     const host = panel('curve'), c = curveChart(S.curve);
     setText('t-curve', M.AREAS[S.curve].short);
-    if (!c) return empty(host, 'Loading yield curves…');
+    if (!c) return pending(host, 'rates', 'Loading yield curves…', 'Yield curves are unavailable right now. FYNX retries automatically.');
     host.append(c.chart, tenorGrid(S.curve, c.view, c.curve), el('p', 'fx-foot', `${c.view.spread ? `${c.view.spread.label} ${signed(c.view.spread.bp, 0, ' bp')} · ` : ''}close ${c.view.latestDate} · Δ = 1M bp · dashed = a month ago`));
     if (S.curve === 'US' && S.desk?.liveUS?.quotes) { const live = el('div', 'fx-chips'); S.desk.liveUS.quotes.forEach(q => live.append(tk(el('span', 'fx-chip', `${q.tenor} ${q.price.toFixed(3)} `), 'ust:' + q.tenor, null), tk(el('span', 'fx-chip ' + tone(q.price - q.previousClose), signed((q.price - q.previousClose) * 100, 1, 'bp')), 'ustbp:' + q.tenor, (q.price - q.previousClose) * 100))); host.append(live); }
   }
   function renderGov() {
     const host = panel('gov'), areas = ['US', 'EA', 'GB', 'JP'].map(a => ({a, v: M.curveView(S.desk?.curves?.[a])})).filter(x => x.v);
-    if (!areas.length) return empty(host, 'Loading government yields…');
+    if (!areas.length) return pending(host, 'rates', 'Loading government yields…', 'Government yields are unavailable right now. FYNX retries automatically.');
     const tenors = ['2Y', '5Y', '10Y', '30Y'], pick = (v, t) => v.rows.find(r => r.tenor === t);
     const table = el('table', 'fx-table'), head = el('tr'); head.append(el('th', '', 'AREA')); tenors.forEach(t => head.append(el('th', '', t))); head.append(el('th', '', '2s10s')); table.append(head);
     for (const {a, v} of areas) {
@@ -691,7 +732,7 @@
   }
   function renderRates() {
     const host = panel('rates'), list = (S.desk?.rates?.rows || []).filter(r => finite(r.value)).map(r => ({ccy: r.area === 'XM' ? 'EA' : r.area, value: r.value, date: r.observationDate})).sort((a, b) => b.value - a.value);
-    if (!list.length) return empty(host, 'Loading policy rates…');
+    if (!list.length) return pending(host, 'rates', 'Loading policy rates…', 'Policy rates are unavailable right now. FYNX retries automatically.');
     const max = Math.max(...list.map(r => r.value), 1);
     for (const r of list) { const row = el('div', 'fx-row fx-rate'); const bar = el('span', 'fx-hbar'), fill = el('i'); fill.style.width = Math.max(0, r.value) / max * 100 + '%'; bar.append(fill); row.append(el('b', '', r.ccy), bar, tk(el('span', 'fx-num', r.value.toFixed(2) + '%'), 'rate:' + (r.ccy === 'EA' ? 'XM' : r.ccy), r.value), el('small', 'fx-dim', r.date ? day(r.date) : '')); host.append(row); }
     host.append(el('p', 'fx-foot', `${S.desk.rates.source} · latest observation per bank`));
@@ -699,7 +740,7 @@
   function renderTerm() {
     const d = D(), ids = d.vol || ['^VIX9D', '^VIX', '^VIX3M', '^VIX6M'], host = panel('term');
     const vix = ['^VIX9D', '^VIX', '^VIX3M', '^VIX6M'].map(id => ({id, q: quoteFor(id)})).filter(x => x.q);
-    if (!vix.length && !ids.some(id => quoteFor(id))) return empty(host, 'Loading volatility indices…');
+    if (!vix.length && !ids.some(id => quoteFor(id))) return pending(host, ['vix', 'markets', 'quotes'], 'Loading volatility indices…', 'Volatility data is unavailable right now. FYNX retries automatically.');
     if (vix.length > 2) {
       const W = 300, H = 70, vals = vix.map(x => x.q.price), lo = Math.min(...vals) * 0.95, hi = Math.max(...vals) * 1.05, x = i => 8 + i * (W - 16) / (vix.length - 1), y = v => 6 + (hi - v) / (hi - lo) * (H - 22);
       const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart', role: 'img', 'aria-label': 'VIX term structure ' + vix.map(v => `${shortOf(v.id)} ${v.q.price}`).join(', ')});
@@ -764,7 +805,7 @@
   function trendPos(st) { return finite(st.close?.value) && finite(st.high20?.value) && finite(st.low20?.value) && st.high20.value > st.low20.value ? (st.close.value - st.low20.value) / (st.high20.value - st.low20.value) * 2 - 1 : null; }
   function renderEdge() {
     const host = panel('edge'), ms = edgeMarkets();
-    if (!ms.length) return empty(host, S.edge ? 'No Edge Radar markets for this desk.' : 'Loading Edge Radar…');
+    if (!ms.length) return S.edge ? empty(host, 'No Edge Radar markets for this desk.') : pending(host, 'edge', 'Loading Edge Radar…', 'Edge Radar is unavailable right now. FYNX retries automatically.');
     const head = el('div', 'fx-th fx-c5'); head.append(el('span', '', 'MKT'), el('span', '', 'REGIME'), el('span', '', 'TREND'), el('span', '', 'VOL'), el('span', '', 'EVENT')); host.append(head);
     for (const m of ms) {
       const st = m.state || {}, pos = trendPos(st);
@@ -776,7 +817,7 @@
   }
   function renderPos() {
     const host = panel('pos'), ms = edgeMarkets().filter(m => finite(m.positioning?.net?.value)).sort((a, b) => b.positioning.net.value - a.positioning.net.value);
-    if (!ms.length) return empty(host, S.edge ? 'No CFTC positioning for this desk.' : 'Loading positioning…');
+    if (!ms.length) return S.edge ? empty(host, 'No CFTC positioning for this desk.') : pending(host, 'edge', 'Loading positioning…', 'CFTC positioning is unavailable right now. FYNX retries automatically.');
     setText('n-pos', 'CFTC ' + (ms[0].positioning.reportDate || ''));
     for (const m of ms) {
       const n = m.positioning.net.value, r = rowButton('fx-posrow', () => openPage('edge', m.symbol), `${m.symbol} net ${Math.round(n * 100)}%`);
@@ -811,15 +852,18 @@
     setText('t-eco', ccy ? `${ccy.join('/')} calendar` : 'Economic calendar');
     tabs('eco-tabs', [[false, 'All'], [true, 'High']], S.ecoHigh, v => { S.ecoHigh = v; renderEco(); });
     const host = panel('eco'), ev = ecoEvents();
-    if (!ev.length) return empty(host, S.calendar ? 'No events match.' : 'Loading calendar…');
+    if (!ev.length) return S.calendar ? empty(host, 'No events match.') : pending(host, 'calendar', 'Loading calendar…', 'The economic calendar is unavailable right now. FYNX retries automatically.');
     const now = Date.now(); let marked = false;
     for (const e of ev) { if (Date.parse(e.time) >= now && !marked) { host.append(el('div', 'fx-nowline', 'NOW')); marked = true; } host.append(ecoRow(e)); }
     // Scroll only inside the calendar panel; scrollIntoView also moved the whole page on phones.
     const nowLine = host.querySelector('.fx-nowline'); if (nowLine) host.scrollTop += nowLine.getBoundingClientRect().top - host.getBoundingClientRect().top;
   }
   function renderEarn() {
-    const host = panel('earn'), today = new Date().toISOString().slice(0, 10), ev = (S.earn?.events || []).filter(e => e.date >= today);
-    if (!ev.length) return empty(host, S.earn ? 'No large-company earnings in the published window.' : 'Loading earnings calendar…');
+    const only = D().earnSyms || (S.sym?.cls === 'stock' ? [S.sym.symbol] : null), want = only ? new Set(only.map(x => x.replace('.', '-'))) : null;
+    const host = panel('earn'), today = new Date().toISOString().slice(0, 10), ev = (S.earn?.events || []).filter(e => e.date >= today && (!want || want.has(String(e.symbol).replace('.', '-'))));
+    setText('t-earn', want ? `Earnings · ${[...want].map(shortOf).join(', ')}` : 'Earnings calendar');
+    if (want && !ev.length && S.earn) return empty(host, `No earnings dates for ${[...want].map(shortOf).join(', ')} in the published window (next ${S.earn.days || 14} days, large US companies).`);
+    if (!ev.length) return S.earn ? empty(host, 'No large-company earnings in the published window.') : pending(host, 'earnings', 'Loading earnings calendar…', 'The earnings calendar is unavailable right now. FYNX retries automatically.');
     let last = '';
     for (const e of ev.slice(0, 40)) {
       if (e.date !== last) { host.append(el('div', 'fx-th1', new Date(e.date + 'T12:00:00Z').toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric'}))); last = e.date; }
@@ -858,7 +902,7 @@
   const OPT = () => S.opts?.underlyings || {};
   function renderOptList() {
     const host = panel('optlist'), list = Object.values(OPT());
-    if (!list.length) return empty(host, 'Loading option chains…');
+    if (!list.length) return pending(host, 'options', 'Loading option chains…', 'Option chains are unavailable right now. FYNX retries automatically.');
     const head = el('div', 'fx-th fx-omon'); head.append(el('span', '', 'UND'), el('span', '', 'LAST'), el('span', '', 'IV30'), el('span', '', 'P/C'), el('span', '', 'MOVE')); host.append(head);
     for (const u of list) {
       const e = u.expiries.find(x => x.dte >= 1) || u.expiries[0];
@@ -883,7 +927,7 @@
     if (sym) S.optSym = sym;
     setText('t-opt', sym ? `${sym} options` : 'Options');
     const host = panel('opt'), u = OPT()[sym];
-    if (!u) return empty(host, S.opts ? 'No option chain for this underlying.' : 'Loading option chains…');
+    if (!u) return S.opts ? empty(host, 'No option chain for this underlying.') : pending(host, 'options', 'Loading option chains…', 'Option chains are unavailable right now. FYNX retries automatically.');
     optSummary(host, u);
   }
   function chainTable(u, e, {compact = false} = {}) {
@@ -900,7 +944,7 @@
   }
   function renderChain() {
     const u = OPT()[S.optSym], host = panel('chain');
-    if (!u) return empty(host, S.opts ? 'Choose an underlying.' : 'Loading option chains…');
+    if (!u) return S.opts ? empty(host, 'Choose an underlying.') : pending(host, 'options', 'Loading option chains…', 'Option chains are unavailable right now. FYNX retries automatically.');
     const exps = u.expiries.slice(0, 8);
     tabs('chain-tabs', exps.map((x, i) => [i, day(x.date)]), S.optExp, v => { S.optExp = v; R('opt', 'chain'); });
     const e = exps[S.optExp] || exps[0];
@@ -909,7 +953,7 @@
   }
   function renderActive() {
     const host = panel('active'), all = Object.values(OPT()).flatMap(u => u.mostActive.map(c => ({...c, u: u.symbol}))).sort((a, b) => b.volume - a.volume).slice(0, 25);
-    if (!all.length) return empty(host, 'Loading option activity…');
+    if (!all.length) return pending(host, 'options', 'Loading option activity…', 'Option activity is unavailable right now. FYNX retries automatically.');
     const head = el('div', 'fx-th fx-act'); head.append(el('span', '', 'CONTRACT'), el('span', '', 'LAST'), el('span', '', 'IV'), el('span', '', 'VOL'), el('span', '', 'OI')); host.append(head);
     for (const c of all) {
       const r = rowButton('fx-act', () => { S.optSym = c.u; S.optExp = Math.max(0, OPT()[c.u].expiries.findIndex(x => x.date === c.expiry)); R('optlist', 'opt', 'chain'); if (!$('tp-chain')) openPage('options', c.u); }, `${c.u} ${c.strike} ${c.type === 'C' ? 'call' : 'put'}`);
@@ -988,7 +1032,7 @@
   }
   function renderIntel() {
     const host = panel('intel'), items = S.sym ? symIntel() : intelItems();
-    setText('t-intel', S.sym ? `FYNX Intelligence · ${shortOf(S.sym.symbol)}: what matters now` : `FYNX Intelligence · ${D().noun.toLowerCase()} ranked now`);
+    setText('t-intel', S.sym ? `FYNX Intelligence · ${shortOf(S.sym.symbol)}: what matters now` : `FYNX Intelligence · ${D().compare ? 'markets' : D().noun.toLowerCase()} ranked now`);
     if (!items.length) return empty(host, 'Scanning the live feeds…');
     items.slice(0, 8).forEach((it, i) => host.append(intelRow(it, i)));
     host.append(el('p', 'fx-foot', `Ranked from ${Object.values(S.feeds).filter(Boolean).length} live feeds: moves vs normal, headlines, events, central banks, rates, positioning and options. Not advice.`));
@@ -1113,7 +1157,7 @@
   function renderJournal(host) {
     const j = S.journal;
     if (j.status === 'signed-out') { host.append(el('p', 'fx-sub', 'Sign in to see your saved trades here.')); host.append(link('Sign in ↗︎', '/auth/login.html?return=/terminal.html', 'fx-chip fx-chip-link'), btn('Journal page ▸', 'fx-chip fx-chip-link', () => openPage('journal'))); return; }
-    if (j.status !== 'ready') return empty(host, j.status === 'error' ? 'Journal sync is unavailable right now.' : 'Loading your journal…');
+    if (j.status !== 'ready') return empty(host, j.status === 'error' ? 'Journal sync is unavailable right now.' : j.status === 'signed-out' ? 'Sign in to see your own trades here: they come from your FYNX Journal.' : 'Loading your journal…');
     const t = j.trades, pls = t.map(x => x.pl).filter(finite), net = pls.reduce((s, v) => s + v, 0), wins = pls.filter(v => v > 0).length;
     const out = el('div', 'fx-calcout'); const card = (k, v, cls) => { const d = el('div'); d.append(el('span', '', k), el('b', cls || '', v)); out.append(d); };
     card('TRADES', String(t.length)); card('WIN RATE', pls.length ? (wins / pls.length * 100).toFixed(0) + '%' : '—'); card('NET P/L', pls.length ? (net >= 0 ? '+$' : '−$') + Math.abs(net).toFixed(2) : '—', tone(net)); card('BEST', pls.length ? '$' + Math.max(...pls).toFixed(2) : '—');
@@ -1144,19 +1188,26 @@
     }
     throw last;
   }
-  async function symHistory(symbol, range = '2y') {
+  // One request per market and range at a time: panels asking together share the same promise.
+  const symInflight = new Map();
+  function symHistory(symbol, range = '2y') {
     const key = symbol + '|' + range, hit = S.symData[key];
-    if (hit && Date.now() - hit.at < 300000) return hit;
+    if (hit && Date.now() - hit.at < 300000) return Promise.resolve(hit);
+    if (symInflight.has(key)) return symInflight.get(key);
+    const p = symHistoryFetch(symbol, range, key).finally(() => symInflight.delete(key));
+    symInflight.set(key, p); return p;
+  }
+  async function symHistoryFetch(symbol, range, key) {
     try {
       const d = await fnMarket({op: 'chart', symbol, range});
       if (Array.isArray(d?.rows) && d.rows.length) {
-        const v = {...d, at: Date.now()}; S.symData[key] = v; S.symData[symbol] = v;
+        const v = {...d, at: Date.now()}; S.symData[key] = v; S.symData[symbol] = v; S.tried['sym:' + symbol] = true;
         S.symQuotes[symbol] = {price: d.price, changePercent: d.changePercent, previousClose: d.previousClose, dayHigh: d.dayHigh, dayLow: d.dayLow, volume: d.volume, high52: d.high52, low52: d.low52, asOf: d.asOf, name: d.name, currency: d.currency, exchange: d.exchange, source: 'Yahoo Finance (delayed)', vol20: volOf(d.rows.map(r => r.close), 20)};
         return v;
       }
     } catch (e) { report('fn-chart', e); }
     const series = await loadSeries(FX_TO_EDGE[symbol] || symbol);
-    if (!series?.rows?.length) return null;
+    if (!series?.rows?.length) { S.tried['sym:' + symbol] = false; return null; }
     const v = {symbol, name: nameOf(symbol), rows: series.rows, source: series.source, at: Date.now(), fallback: true};
     S.symData[key] = v; if (!S.symData[symbol]) S.symData[symbol] = v;
     return v;
@@ -1182,7 +1233,7 @@
     return {vol, mdd: mdd * 100, var95, total, beta, corr, ratio: vol ? total / vol : null, days: rets.length};
   }
   /* Normalized % comparison chart for several series. */
-  const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3'];
+  const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3', '#f4e285', '#e0e0e0'];
   function compareChart(series, {W = 640, H = 220, sessions = 252, scale = 1} = {}) {
     // scale > 1 (phones) enlarges axis text, margins and lines so they stay readable once the SVG is shrunk to a ~300px column.
     const wrap = el('div', 'fx-chartwrap'), valid = series.filter(x => x.rows?.length > 2);
@@ -1207,8 +1258,8 @@
     const host = panel('squote'), s = S.sym; if (!s) return empty(host, 'Pick a market with Find.');
     const q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || S.history[s.symbol]?.rows || [], dg = digitsOf(s.symbol);
     setText('t-squote', `${shortOf(s.symbol)} · ${d?.exchange || s.exchange || ''} ${d?.currency ? '· ' + d.currency : ''}`);
-    if (!q) return empty(host, 'Loading quote…');
-    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', '', q.asOf ? new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''));
+    if (!q) return pending(host, 'sym:' + s.symbol, 'Loading quote…', `No quote for ${shortOf(s.symbol)} is available from FYNX's market data providers right now.`);
+    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', 'fx-sqasof', `${q.delayed !== false || q.snapshot ? 'Delayed' : 'Last'}${q.asOf ? ' · ' + new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}`), sessionBadge(s.symbol, s.cls, S.symData[s.symbol]?.exchange || s.exchange));
     host.append(el('p', 'fx-sub fx-sqname', s.name || nameOf(s.symbol)), top);
     const st = el('div', 'fx-calcout fx-c4out');
     const card = (k, v, cls, key, raw) => { const x = el('div'); x.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); st.append(x); };
@@ -1218,10 +1269,20 @@
     if (rows.length > 30) { const p = el('div', 'fx-perfrow'); for (const [n, l] of [[5, '1W'], [21, '1M'], [63, '3M'], [126, '6M'], [251, '1Y']]) { const v = perfOf(rows, n); const x = el('span'); x.append(el('small', '', l), el('b', tone(v), finite(v) ? signed(v, 1, '%') : '—')); p.append(x); } host.append(p); }
     host.append(el('p', 'fx-foot', `${q.source || 'Delayed quote'} · prices adjusted for splits and dividends`));
   }
+  // Whether the market behind a quote is trading now, so a closed market's last price is never read as a live one.
+  function sessionInfo(symbol, cls, exchange, now = Date.now()) {
+    if (cls === 'crypto') return {state: 'open', text: 'Trades 24/7'};
+    if (cls === 'fx') { const ny = new Date(new Date(now).toLocaleString('en-US', {timeZone: 'America/New_York'})), wd = ny.getDay(), h = ny.getHours(); const shut = wd === 6 || (wd === 5 && h >= 17) || (wd === 0 && h < 17); return shut ? {state: 'closed', text: 'FX market closed for the weekend'} : {state: 'open', text: 'FX market open (24 h, Sun–Fri)'}; }
+    const us = /^(NMS|NYQ|NGM|NCM|PCX|ASE|BTS|NYSE|NASDAQ|NasdaqGS|NasdaqGM|NasdaqCM|NYSEArca)$/i.test(String(exchange || '')) || (!exchange && /^[A-Z]{1,5}(-[A-Z])?$/.test(symbol) && (cls === 'stock' || cls === 'fund'));
+    if (us && window.FynxMarketStatus) { const st = window.FynxMarketStatus.status(now); return {state: st.state === 'open' ? 'open' : st.state === 'pre' || st.state === 'post' ? 'ext' : 'closed', text: `US market ${st.label.toLowerCase()} · ${st.text}`}; }
+    if (/=F$/.test(symbol)) return {state: 'info', text: 'Futures: near-24 h electronic session (exchange hours)'};
+    return null;
+  }
+  function sessionBadge(symbol, cls, exchange) { const i = sessionInfo(symbol, cls, exchange); if (!i) return ''; const b = el('small', 'fx-sess fx-sess-' + i.state, i.state === 'open' ? 'OPEN' : i.state === 'closed' ? 'CLOSED' : i.state === 'ext' ? 'EXT HOURS' : 'HOURS'); b.title = i.text; return b; }
   async function renderSRisk() {
-    const host = panel('srisk'), s = S.sym; if (!s) return;
+    const host = panel('srisk'), s = S.sym; if (!s) return empty(host, 'Focus a market to see its volatility, drawdown, VaR, beta and correlation: type a symbol in the command bar.');
     const bench = benchFor(s.symbol, s.cls); setText('t-srisk', `Risk vs ${shortOf(bench)} · 1 year`);
-    const d = S.symData[s.symbol]; if (!d) return empty(host, 'Loading history…');
+    const d = S.symData[s.symbol]; if (!d) return pending(host, 'sym:' + s.symbol, 'Loading history…', `No price history for ${shortOf(s.symbol)} is available right now, so risk numbers cannot be calculated.`);
     const b = await symHistory(bench); if (!$('b-srisk') || S.sym?.symbol !== s.symbol) return;
     const r = riskStats(d.rows, b?.rows, s.cls === 'crypto' ? 365 : 252); host.replaceChildren();
     if (!r) return empty(host, 'Not enough daily history for risk numbers.');
@@ -1231,7 +1292,7 @@
     host.append(out, el('p', 'fx-foot', `From ${r.days} daily returns. VaR: on 1 day in 20 the loss was at least this much. Return ÷ volatility ${finite(r.ratio) ? r.ratio.toFixed(2) : '—'}.`));
   }
   async function renderSNews() {
-    const host = panel('snews'), s = S.sym; if (!s) return;
+    const host = panel('snews'), s = S.sym; if (!s) return empty(host, 'Focus a market to see headlines about it: type a symbol in the command bar.');
     setText('t-snews', `${shortOf(s.symbol)} headlines`);
     if (!S.symNews[s.symbol]) { empty(host, 'Searching headlines…'); try { const r = await fnMarket({op: 'search', q: s.symbol.replace(/=X$|=F$|^\^/g, '')}); S.symNews[s.symbol] = r.news || []; } catch { S.symNews[s.symbol] = []; } if (!$('b-snews') || S.sym?.symbol !== s.symbol) return; host.replaceChildren(); }
     const own = S.symNews[s.symbol].map(n => ({title: n.title, url: n.url, source: n.publisher, publishedAt: n.publishedAt || new Date().toISOString(), external: true}));
@@ -1242,12 +1303,82 @@
     // Every headline opens as a FYNX article page (summary or brief), never at the publisher.
     for (const h of items.slice(0, 25)) host.append(headlineRow(h));
   }
+  /* --- COMPARE panels: every number comes from each market's own daily history (symHistory) and quote ------------- */
+  const cmpRows = id => S.symData[id]?.rows || S.history[FX_TO_EDGE[id] || id]?.rows || null;
+  async function cmpHistories() { const ids = S.cmp || [], gen = S.focusGen; const data = await Promise.all(ids.map(id => symHistory(id))); return gen === S.focusGen ? ids.map((id, i) => ({id, rows: data[i]?.rows || null})) : null; }
+  function cmpPerYear(id) { return symClass(id) === 'crypto' ? 365 : symClass(id) === 'fx' ? 260 : 252; }
+  async function renderCmpQ() {
+    const host = panel('cmpq'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare: type them in the command bar, e.g. AAPL NVDA MSFT.');
+    setText('t-cmpq', `${ids.length} markets · quotes & performance`);
+    const list = await cmpHistories(); if (!list || !$('b-cmpq')) return; host.replaceChildren();
+    const t = el('table', 'fx-table fx-cmpt'), h = el('tr'); ['MARKET', 'LAST', 'DAY', '1W', '1M', '3M', '1Y', '52W RANGE'].forEach(x => h.append(el('th', '', x))); t.append(h);
+    list.forEach(({id, rows}, i) => {
+      const q = quoteFor(id), dg = digitsOf(id), tr = el('tr'), name = el('th'), sw = el('i', 'fx-sw'); sw.style.background = CMP_COLORS[i % CMP_COLORS.length];
+      name.append(sw, btn(shortOf(id), 'fx-cmplink', () => setSymbol({symbol: id}), `Focus on ${id}`), el('small', '', ' ' + (nameOf(id) !== shortOf(id) ? nameOf(id) : S.symData[id]?.name || '')));
+      const r = rows || [], hi = q?.high52, lo = q?.low52, pos = finite(hi) && finite(lo) && hi > lo && finite(q?.price) ? (q.price - lo) / (hi - lo) : null;
+      const bar = el('td', 'fx-rng'); if (finite(pos)) { const b = el('i'), f = el('b'); f.style.left = (pos * 100).toFixed(0) + '%'; b.append(f); bar.append(b); bar.title = `${fmt(lo, dg)} – ${fmt(hi, dg)}`; } else bar.textContent = '—';
+      tr.append(name, el('td', 'fx-num', ''), el('td', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'), ...[5, 21, 63, cmpPerYear(id)].map(n => { const v = r.length ? perfOf(r, n) : null; return el('td', 'fx-num ' + tone(v), finite(v) ? signed(v, 1, '%') : '—'); }), bar);
+      tr.children[1].append(q ? tk(el('span', '', fmt(q.price, dg)), 'px:' + id, q.price) : document.createTextNode('—'));
+      if (q?.changePercent !== undefined) tk(tr.children[2], 'chg:' + id, q.changePercent);
+      t.append(tr);
+    });
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc);
+    const miss = list.filter(x => !x.rows?.length).map(x => shortOf(x.id));
+    host.append(el('p', 'fx-foot', `Returns from daily closes (sessions: 5 = 1W, 21 = 1M, 63 = 3M, one year of sessions = 1Y) · delayed quotes${miss.length ? ` · no history for ${miss.join(', ')}` : ''}`));
+  }
+  function alignedReturns(a, b) {
+    const m = new Map(); for (let i = 1; i < b.length; i++) m.set(b[i].date.slice(0, 10), b[i].close / b[i - 1].close - 1);
+    const out = []; for (let i = Math.max(1, a.length - 260); i < a.length; i++) { const d = a[i].date.slice(0, 10); if (m.has(d)) out.push([a[i].close / a[i - 1].close - 1, m.get(d)]); }
+    return out;
+  }
+  function pearson(p) { if (p.length < 30) return null; const n = p.length, ma = p.reduce((s, x) => s + x[0], 0) / n, mb = p.reduce((s, x) => s + x[1], 0) / n; let c = 0, va = 0, vb = 0; for (const [x, y] of p) { c += (x - ma) * (y - mb); va += (x - ma) ** 2; vb += (y - mb) ** 2; } return va && vb ? c / Math.sqrt(va * vb) : null; }
+  async function renderCmpCorr() {
+    const host = panel('cmpcorr'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmpcorr', 'Correlation · 1Y daily returns');
+    const list = await cmpHistories(); if (!list || !$('b-cmpcorr')) return; host.replaceChildren();
+    const ok = list.filter(x => x.rows?.length > 31); if (ok.length < 2) return empty(host, 'Correlation needs at least two markets with a year of daily history.');
+    const t = el('table', 'fx-table fx-corrm'), h = el('tr'); h.append(el('th', '', '')); ok.forEach(x => h.append(el('th', '', shortOf(x.id)))); t.append(h);
+    for (const a of ok) { const tr = el('tr'); tr.append(el('th', '', shortOf(a.id)));
+      for (const b of ok) { const v = a === b ? 1 : pearson(alignedReturns(a.rows, b.rows)), td = el('td', 'fx-num', finite(v) ? v.toFixed(2) : '—');
+        if (finite(v)) { td.style.background = v >= 0 ? `rgba(47,184,116,${Math.min(0.55, Math.abs(v) * 0.55)})` : `rgba(229,72,77,${Math.min(0.55, Math.abs(v) * 0.55)})`; td.title = `${shortOf(a.id)} vs ${shortOf(b.id)}: ${v.toFixed(2)} over matching trading days`; }
+        tr.append(td); }
+      t.append(tr); }
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc, el('p', 'fx-foot', 'Pearson correlation of daily returns on days both markets traded (up to one year). +1 = move together, −1 = opposite.'));
+  }
+  async function renderCmpRisk() {
+    const host = panel('cmprisk'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmprisk', 'Risk · 1 year');
+    const list = await cmpHistories(); if (!list || !$('b-cmprisk')) return;
+    const benches = [...new Set(list.map(x => benchFor(x.id, symClass(x.id))))], bh = {}; await Promise.all(benches.map(async b => { bh[b] = (await symHistory(b))?.rows || null; }));
+    if (!$('b-cmprisk') || ids !== S.cmp) return; host.replaceChildren();
+    const t = el('table', 'fx-table fx-cmpt'), h = el('tr'); ['MARKET', 'VOL', 'MAX DD', 'VaR 95', 'BETA', 'VS'].forEach(x => h.append(el('th', '', x))); t.append(h);
+    for (const {id, rows} of list) { const b = benchFor(id, symClass(id)), r = rows ? riskStats(rows, bh[b], cmpPerYear(id)) : null, tr = el('tr');
+      tr.append(el('th', '', shortOf(id)), el('td', 'fx-num', r ? r.vol.toFixed(1) + '%' : '—'), el('td', 'fx-num fx-down', r ? signed(r.mdd, 1, '%') : '—'), el('td', 'fx-num', r ? r.var95.toFixed(2) + '%' : '—'), el('td', 'fx-num', finite(r?.beta) ? r.beta.toFixed(2) : '—'), el('td', 'fx-dim', b === id ? '—' : shortOf(b)));
+      t.append(tr); }
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc, el('p', 'fx-foot', 'Annualised volatility, deepest peak-to-trough fall and one-day 95% VaR from a year of daily closes; beta against each market\'s own benchmark.'));
+  }
+  async function renderCmpNews() {
+    const host = panel('cmpnews'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmpnews', `Headlines · ${ids.map(shortOf).join(', ')}`);
+    const gen = S.focusGen, need = ids.filter(id => !S.symNews[id]);
+    if (need.length) { empty(host, 'Searching headlines…'); await Promise.allSettled(need.map(async id => { try { const r = await fnMarket({op: 'search', q: id.replace(/=X$|=F$|^\^/g, '')}); S.symNews[id] = r.news || []; } catch { S.symNews[id] = []; } })); if (!$('b-cmpnews') || gen !== S.focusGen) return; host.replaceChildren(); }
+    const seen = new Set(), items = [];
+    for (const id of ids) {
+      const nm = (S.symData[id]?.name || nameOf(id) || '').replace(/,? (Inc|Corp|Corporation|Ltd|plc|Holdings|Group|N\.V\.|S\.A\.|AG|SE|Co)\.?$/i, '').split(' ').slice(0, 2).join(' ').toLowerCase(), tick = shortOf(id).toLowerCase();
+      const words = [nm, tick.length > 2 ? tick : ''].filter(w => w && w.length > 2);
+      const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
+      for (const h of [...room, ...S.symNews[id].map(n => ({title: n.title, url: n.url, source: n.publisher, publishedAt: n.publishedAt || null, external: true}))]) { const k = h.title.toLowerCase(); if (seen.has(k) || !h.publishedAt) continue; seen.add(k); items.push({...h, sym: id}); }
+    }
+    items.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+    if (!items.length) return fallbackNews(host, 'No headlines mention the selected markets yet · latest market news', 15);
+    for (const h of items.slice(0, 40)) { const row = headlineRow(h); row.prepend(el('span', 'fx-chip fx-symtag', shortOf(h.sym))); host.append(row); }
+  }
   async function renderCmp() {
-    const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym);
-    const peers = [sym, benchFor(sym, cls), ...(cls === 'stock' ? ['QQQ'] : cls === 'crypto' ? ['ETH-USD'] : cls === 'fx' ? ['GC=F'] : ['TLT'])].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
+    const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym), gen = S.focusGen;
+    const peers = S.cmp ? [...S.cmp] : [sym, benchFor(sym, cls), ...(cls === 'stock' ? ['QQQ'] : cls === 'crypto' ? ['ETH-USD'] : cls === 'fx' ? ['GC=F'] : ['TLT'])].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
     setText('t-cmp', `${peers.map(shortOf).join(' vs ')} · 1Y`);
     const data = await Promise.all(peers.map(p => symHistory(p)));
-    if (!$('b-cmp')) return; host.replaceChildren();
+    if (!$('b-cmp') || gen !== S.focusGen) return; host.replaceChildren();
     host.append(compareChart(data.map((d, i) => ({label: shortOf(peers[i]), rows: d?.rows || []}))), btn('Compare more and draw ▸', 'fx-chip fx-chip-link', () => openPage('chart', sym)));
   }
   function symbolStoryText() {
@@ -1355,15 +1486,17 @@
   async function setSymbol(meta) {
     const symbol = String(meta?.symbol || '').trim(); if (!symbol) return;
     const id = FX_TO_EDGE[symbol] && EDGE[FX_TO_EDGE[symbol]] ? symbol : symbol;
+    S.cmp = null; S.focusGen++;
     S.sym = {symbol: id, name: meta.name || nameOf(id), type: meta.type || null, exchange: meta.exchange || null, cls: symClass(id, meta.type)};
+    S.lastSym = {...S.sym}; store.set('last-sym', JSON.stringify(S.lastSym));
     S.focus = FX_TO_EDGE[id] || id; S.mktTab = null; if (S.sym.cls === 'stock') S.finTicker = id.replace('.', '-');
     if (S.opts?.underlyings?.[id]) { S.optSym = id; S.optExp = 0; }
-    const u = new URL(location.href); u.searchParams.set('sym', id); history.replaceState(history.state, '', u);
-    store.set('sym', JSON.stringify(S.sym));
-    say(`Loading ${id}…`); PG?.closeAll();
+    const u = new URL(location.href); u.searchParams.set('sym', id); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u);
+    store.set('sym', JSON.stringify(S.sym)); store.set('cmp', '');
+    say(`Loading ${id}…`); PG?.closeAll(); announce();
     renderDeskBar(); buildGrid(); renderAll();
-    const d = await symHistory(id);
-    if (S.sym?.symbol !== id) return;
+    const gen = S.focusGen, d = await symHistory(id);
+    if (S.sym?.symbol !== id || gen !== S.focusGen) return;
     commitTicks(true);
     if (d?.name && !meta.name) S.sym.name = d.name;
     if (d?.rows?.length && !EDGE[S.focus]) S.history[id] = {source: d.source || 'Yahoo Finance', rows: d.rows};
@@ -1371,14 +1504,79 @@
     renderDeskBar(); buildGrid(); renderAll(); say(d ? `${shortOf(id)} loaded: every box shows this market` : `${id}: no data found`);
     await loadSeries(S.focus); R('focus');
   }
-  function clearSymbol() { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); setDesk(S.deskKey); }
+  function clearSymbol() { clearFocus(); }
+  // The address always carries the workspace selection (?desk, ?sym, ?cmp) so a refresh or a shared link restores it.
+  // Pages close by stepping browser history back, which lands on an older address: re-apply the selection after
+  // every history step (this listener runs after the pages router's own).
+  function syncWorkspaceUrl() {
+    const u = new URL(location.href), before = u.search;
+    if (S.cmp) { u.searchParams.set('cmp', S.cmp.join(',')); u.searchParams.delete('sym'); } else if (S.sym) { u.searchParams.set('sym', S.sym.symbol); u.searchParams.delete('cmp'); } else { u.searchParams.delete('sym'); u.searchParams.delete('cmp'); }
+    if (S.deskKey && S.deskKey !== 'all') u.searchParams.set('desk', S.deskKey); else u.searchParams.delete('desk');
+    if (u.search !== before) history.replaceState(history.state, '', u);
+  }
+  window.addEventListener('popstate', () => setTimeout(syncWorkspaceUrl, 0));
+  // Back to ALL: drop the focus and the comparison, keep the desk, its layout and every preference.
+  function clearFocus() {
+    S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', '');
+    const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u);
+    announce(); setDesk(S.deskKey);
+  }
+  // Tell plugins (order flow, depth of market, charts…) which instruments the workspace is on.
+  function announce() { try { window.dispatchEvent(new CustomEvent('fynx:focus', {detail: {mode: modeOf(), symbol: S.sym?.symbol || null, cls: S.sym?.cls || null, ids: S.cmp ? [...S.cmp] : S.sym ? [S.sym.symbol] : []}})); } catch {} }
+  // Canonical instrument id: the Yahoo-style symbol the quote feeds use (EURUSD → EURUSD=X, BTC → BTC-USD).
+  function canon(input) {
+    const raw = String(input || '').trim(); if (!raw) return null;
+    const r = resolve(raw); if (r) return EDGE_TO_FX[r] || r;
+    const up = raw.toUpperCase().replace(/\s+/g, '');
+    if (/^[A-Z]{3}\/?[A-Z]{3}$/.test(up) && EDGE[up.replace('/', '')]) return EDGE_TO_FX[up.replace('/', '')] || up.replace('/', '');
+    return /^[A-Za-z0-9.\-=^&]{1,24}$/.test(raw) ? up : null;
+  }
+  // COMPARE: 2–8 instruments side by side. One instrument is a FOCUS instead.
+  async function setCompare(list, {quiet = false} = {}) {
+    const ids = [...new Set(list.map(canon).filter(Boolean))].slice(0, 8);
+    if (!ids.length) return say('No market recognised.');
+    if (ids.length === 1) return setSymbol({symbol: ids[0]});
+    S.sym = null; S.cmp = ids; S.focusGen++; S.lastCmp = [...ids]; S.mktTab = null;
+    store.set('cmp', JSON.stringify(ids)); store.set('last-cmp', JSON.stringify(ids)); store.set('sym', '');
+    const u = new URL(location.href); u.searchParams.set('cmp', ids.join(',')); u.searchParams.delete('sym'); history.replaceState(history.state, '', u);
+    document.title = `FYNX Terminal · ${ids.map(shortOf).join(' vs ')}`;
+    PG?.closeAll(); announce(); renderDeskBar(); buildGrid(); renderAll();
+    if (!quiet) say(`Comparing ${ids.map(shortOf).join(', ')}: loading every box…`);
+    const gen = S.focusGen, hist = await Promise.all(ids.map(id => symHistory(id)));
+    if (gen !== S.focusGen) return;
+    const missing = ids.filter((id, i) => !hist[i]?.rows?.length);
+    commitTicks(true); renderDeskBar(); renderAll();
+    say(missing.length ? `Comparing ${ids.length} markets · no data for ${missing.map(shortOf).join(', ')}` : `Comparing ${ids.length} markets: every box shows the selection`);
+  }
+  function addCompare(meta) {
+    const id = canon(meta?.symbol || meta); if (!id) return;
+    const now = S.cmp ? [...S.cmp] : S.sym ? [S.sym.symbol] : [];
+    if (now.includes(id)) return say(`${shortOf(id)} is already selected.`);
+    if (now.length >= 8) return say('Compare up to 8 markets at once.');
+    setCompare([...now, id]);
+  }
+  function seedCompare(m) {
+    S.cmpSeed = [...(S.cmpSeed || []), m.symbol];
+    if (S.cmpSeed.length >= 2) { const l = S.cmpSeed; S.cmpSeed = null; return setCompare(l); }
+    say(`${shortOf(m.symbol)} selected · pick one more market`); openFinder({onPick: seedCompare, title: `Compare ${shortOf(m.symbol)} with…`});
+  }
+  function removeCompare(id) {
+    const left = (S.cmp || []).filter(x => x !== id);
+    if (left.length >= 2) setCompare(left, {quiet: true}); else if (left.length === 1) setSymbol({symbol: left[0]}); else clearFocus();
+  }
+  function setMode(mode) {
+    if (mode === 'all') return clearFocus();
+    if (mode === 'focus') { const s = S.sym || (S.cmp ? {symbol: S.cmp[0]} : S.lastSym); if (s) return setSymbol(s); return openFinder({title: 'Focus the workspace on a market'}); }
+    if (mode === 'compare') { if (S.cmp) return; const last = S.lastCmp; if (S.sym) return openFinder({onPick: addCompare, title: `Compare ${shortOf(S.sym.symbol)} with…`}); if (last?.length >= 2) return setCompare(last); S.cmpSeed = []; return openFinder({onPick: seedCompare, title: 'Pick the first market to compare'}); }
+  }
 
   /* --- layout: desk bar, editable panels --------------------------------------------------------- */
   const RENDER = {mkts: renderMkts, focus: renderFocus, heat: renderHeat, fin: renderFin, story: renderStory, intel: renderIntel, top: renderTop, desks: () => renderDesks(), cb: renderCB, curve: renderCurve, vix: renderRisk, bias: renderBias,
     edge: renderEdge, pos: renderPos, eco: renderEco, corr: () => renderCorr(), tools: renderTools, movers: renderMovers, xa: renderXA, idx: renderIdx, sess: renderSess, earn: renderEarn, opt: renderOpt, optlist: renderOptList, chain: renderChain,
     active: renderActive, term: renderTerm, rates: renderRates, gov: renderGov, books: renderBooks, range: () => renderRange(), perf: renderPerf, official: renderOfficial,
-    squote: renderSQuote, srisk: () => renderSRisk(), snews: () => renderSNews(), cmp: () => renderCmp()};
-  Object.assign(PANELS, {squote: ['QUOTE', 'Quote & performance', 'des'], srisk: ['RISK', 'Risk', 'port'], snews: ['NEWS', 'Headlines', 'news'], cmp: ['CMP', 'Compare', 'chart']});
+    squote: renderSQuote, srisk: () => renderSRisk(), snews: () => renderSNews(), cmp: () => renderCmp(), cmpq: () => renderCmpQ(), cmpcorr: () => renderCmpCorr(), cmprisk: () => renderCmpRisk(), cmpnews: () => renderCmpNews()};
+  Object.assign(PANELS, {squote: ['QUOTE', 'Quote & performance', 'des'], srisk: ['RISK', 'Risk', 'port'], snews: ['NEWS', 'Headlines', 'news'], cmp: ['CMP', 'Compare', 'chart'],
+    cmpq: ['CMPQ', 'Compare · quotes & performance', 'chart'], cmpcorr: ['CCORR', 'Compare · correlation', 'chart'], cmprisk: ['CRISK', 'Compare · risk', 'port'], cmpnews: ['CNEWS', 'Compare · headlines', 'news']});
   Object.assign(LINK_LABEL, {chart: 'Chart', port: 'Portfolio', ctry: 'Country', world: 'World'});
   const TABBED = new Set(['mkts', 'focus', 'desks', 'curve', 'eco', 'corr', 'tools', 'perf', 'chain']);
   const PANEL_GROUPS = [
@@ -1402,7 +1600,7 @@
     if (/^mine-p[a-z0-9]{8,24}$/.test(slot)) return null;
     return undefined;
   }
-  const layoutKey = () => S.sym ? 'sym-' + S.sym.cls : S.deskKey;
+  const layoutKey = () => S.cmp ? 'cmp' : S.sym ? 'sym-' + S.sym.cls : S.deskKey;
   // Room for every panel on one desk (plus a spare row for market cards), never fewer than the original 28 boxes.
   const maxSlots = () => Math.max(28, 16 + Math.ceil(Object.keys(PANELS).length / 6) * 6 + 6);
   function getSlots() {
@@ -1433,7 +1631,7 @@
     const main = $('fx-main'), keep = [...main.children].filter(n => !n.classList.contains('tp'));
     const slots = getSlots(), {rows, base, cols} = gridAreas(slots.length);
     main.replaceChildren(...keep);
-    main.dataset.desk = S.sym ? 'sym' : S.deskKey;
+    main.dataset.desk = S.cmp ? 'cmp' : S.sym ? 'sym' : S.deskKey;
     main.style.setProperty('--fx-areas', rows.map(r => `"${r}"`).join(' '));
     main.style.setProperty('--fx-rows', rows.length > 3 ? `repeat(${rows.length}, minmax(270px, 1fr))` : `repeat(${rows.length}, minmax(0, 1fr))`); main.dataset.tall = rows.length > 3 ? '1' : '';
     if (cols) main.style.setProperty('--fx-cols', cols); else main.style.removeProperty('--fx-cols');
@@ -1502,14 +1700,29 @@
   });
   $('fx-ed-unrow').addEventListener('click', () => { const v = getSlots(), {base} = gridAreas(v.length); if (v.length <= base) return say('This is the smallest layout.'); setSlots(v.slice(0, Math.max(base, v.length - 6))); });
   $('fx-ed-reset').addEventListener('click', () => { store.set('layout-' + layoutKey(), ''); buildGrid(); renderAll(); say('Layout reset'); });
-  const EXTRA_GROUPS = [];
+  const EXTRA_GROUPS = [['Compare (selected markets)', ['cmpq', 'cmpcorr', 'cmprisk', 'cmpnews']]];
+  Object.assign(PANEL_DESC, {cmpq: 'The selected markets side by side: price, day, 1W–1Y returns, 52-week range', cmpcorr: 'Correlation matrix of the selected markets (1Y daily returns)', cmprisk: 'Volatility, drawdown, VaR and beta for each selected market', cmpnews: 'Headlines about any of the selected markets'});
   function renderDeskBar() {
     const host = $('fx-deskbar-list'); host.replaceChildren();
-    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym) { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
-    const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym;
-    if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('✕', 'fx-symx', clearSymbol, `Close ${S.sym.symbol}, back to the ${D().label} desk`)); }
-    setText('fx-deskbar-note', S.sym ? `Every box shows ${shortOf(S.sym.symbol)}` : `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
+    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym && !S.cmp ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym || S.cmp) { S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', ''); const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u); announce(); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
+    renderModeBar();
+    const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym && !S.cmp;
+    if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('+', 'fx-symx fx-symadd', () => openFinder({onPick: addCompare, title: `Compare ${shortOf(S.sym.symbol)} with…`}), `Compare ${S.sym.symbol} with another market`), btn('✕', 'fx-symx', clearFocus, `Close ${S.sym.symbol}, back to the ${DESK_DEFS[S.deskKey].label} desk`)); }
+    if (S.cmp) {
+      S.cmp.forEach((id, i) => { const c = el('span', 'fx-cmpchip'); c.style.borderColor = CMP_COLORS[i % CMP_COLORS.length]; c.append(btn(shortOf(id), 'fx-cmpname', () => setSymbol({symbol: id}), `Focus on ${id}`), btn('✕', 'fx-cmpx', () => removeCompare(id), `Remove ${id} from the comparison`)); chip.append(c); });
+      if (S.cmp.length < 8) chip.append(btn('+ Add', 'fx-cmpadd', () => openFinder({onPick: addCompare, title: 'Add a market to the comparison'}), 'Add a market to the comparison'));
+      chip.append(btn('Clear ✕', 'fx-cmpclear', clearFocus, 'Clear the selection and return to the ALL workspace'));
+    }
+    setText('fx-deskbar-note', S.cmp ? `Every box compares ${S.cmp.length} markets` : S.sym ? `Every box shows ${shortOf(S.sym.symbol)}` : `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
     const on = host.querySelector('.on'); if (on && host.scrollWidth > host.clientWidth) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
+  }
+  // ALL · FOCUS · COMPARE switch. ALL keeps the global desks; FOCUS and COMPARE remember the last selection.
+  function renderModeBar() {
+    const host = $('fx-modebar'); if (!host) return; host.replaceChildren();
+    const m = modeOf(), focusName = S.sym ? shortOf(S.sym.symbol) : S.cmp ? shortOf(S.cmp[0]) : S.lastSym ? shortOf(S.lastSym.symbol) : '';
+    for (const [k, l, hint] of [['all', 'ALL', 'Global markets: the desks'], ['focus', 'FOCUS', focusName ? `One market: ${focusName}` : 'Pick one market for every box'], ['compare', 'COMPARE', S.cmp ? S.cmp.map(shortOf).join(', ') : 'Pick 2–8 markets to compare']]) {
+      const b = btn(l, 'fx-mode' + (m === k ? ' on' : ''), () => setMode(k), hint); b.setAttribute('aria-pressed', String(m === k)); b.title = hint; host.append(b);
+    }
   }
   async function setDesk(key, {initial = false} = {}) {
     if (!DESK_DEFS[key]) key = 'all';
@@ -1553,7 +1766,14 @@
     if (verb === 'FIND' || verb === 'SEARCH') { openFinder(); if (rest) { $('fx-finder-input').value = rest; renderFinder(rest); } return; }
     if (verb === 'EDIT') { $('fx-edit').click(); return; }
     if (verb === 'BUILD' || verb === 'BUILDER') { if (!window.FynxBuilderReady) return say('Builder is still loading.'); openPage('builder'); return say('FYNX Builder'); }
-    if (verb === 'ALLDESK' || verb === 'CLEAR') { if (S.sym) clearSymbol(); return; }
+    if (verb === 'ALLDESK' || verb === 'CLEAR' || verb === 'ALL') { if (S.sym || S.cmp) clearFocus(); else setDesk('all'); return; }
+    if (verb === 'CMP' || verb === 'COMPARE' || verb === 'VS') { const l = rest.split(/[\s,+&]+|\bvs\b/i).filter(Boolean); if (l.length) return setCompare(S.sym && l.length === 1 ? [S.sym.symbol, ...l] : l); return setMode('compare'); }
+    if (verb === 'FOCUS') { if (rest) return setSymbol({symbol: canon(rest) || rest.toUpperCase()}); return setMode('focus'); }
+    if (/^\+\s*\S/.test(cmd.trim())) { addCompare(cmd.trim().replace(/^\+\s*/, '')); return; }
+    // Several markets typed together (AAPL NVDA MSFT · EUR/USD + GBP/USD + XAU/USD) open COMPARE.
+    { const toks = cmd.trim().split(/\s*[+,&]\s*|\s+vs\.?\s+|\s+/i).filter(Boolean);
+      // Each part must be a known market or typed as a ticker (upper case), so "Apple Inc" or "EUR USD" still mean one market.
+      if (toks.length >= 2 && toks.length <= 8 && !PAGES.includes(verb) && !resolve(cmd) && toks.every(t => resolve(t) || /^[A-Z0-9.\-=^\/]{1,12}$/.test(t))) return setCompare(toks); }
     const id = resolve(cmd);
     if (id) { setSymbol({symbol: EDGE_TO_FX[id] || id}); return say(`${nameOf(id)}: loading every box`); }
     if (/^[A-Za-z0-9.\-=^&]{1,24}$/.test(cmd.trim())) { setSymbol({symbol: cmd.trim().toUpperCase()}); return; }
@@ -1580,12 +1800,18 @@
 
   const CORE = {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton, tabs, say,
     CATALOG, EDGE, FX_TO_EDGE, EDGE_TO_FX, NEWS_CATS, DESK_DEFS, DESK_ORDER, SESSIONS, EXCHANGES, FUTSPEC, KEYS, CALC_TITLE,
-    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
+    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, clearFocus, setCompare, addCompare, removeCompare, setMode, modeOf, canon, symCurrencies, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
     loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage, tk, commitTicks};
   PG = window.FynxTerminalPages ? window.FynxTerminalPages(CORE) : null;
   CORE.PG = PG;
   // Plugins (World desk, portfolio, charts) add panels, desks and pages through CORE.
-  for (const plug of window.FynxTerminalPlugins || []) { try { plug(CORE, PG); } catch (e) { report('plugin', e); } }
+  // A plugin that redefines an existing panel or renderer would silently replace it (two features on one id): record it.
+  const collisions = window.__fynxPanelCollisions = [];
+  for (const plug of window.FynxTerminalPlugins || []) {
+    const before = {p: {...PANELS}, r: {...RENDER}};
+    try { plug(CORE, PG); } catch (e) { report('plugin', e); }
+    for (const k of Object.keys(before.p)) if (PANELS[k] !== before.p[k] || RENDER[k] !== before.r[k]) { collisions.push(k); report('panel-collision', new Error(k)); }
+  }
 
   async function start() {
     const params = new URLSearchParams(location.search);
@@ -1593,7 +1819,8 @@
     renderKeys(); renderClocks();
     await setDesk(DESK_DEFS[want] ? want : 'all', {initial: true});
     if (params.get('symbol')) S.focus = resolve(params.get('symbol')) || S.focus;
-    if (params.get('sym')) setSymbol({symbol: params.get('sym')});
+    if (params.get('cmp')) setCompare(params.get('cmp').split(',').filter(Boolean).slice(0, 8), {quiet: true});
+    else if (params.get('sym')) setSymbol({symbol: params.get('sym')});
     PG?.fromLocation();
     const d = D();
     await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
@@ -1605,7 +1832,9 @@
   }
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
   every(30000, async () => { await loadQuotes(); commitTicks(); renderQuotesAll(); R('story'); });
-  every(15000, async () => { if (!getSlots().includes('books') && S.deskKey !== 'all') return; await loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); commitTicks(); R('vix', 'books'); });
+  // Crypto top of book: every 15 s while the Book box is on screen, every 60 s when only the Risk box shows its spread line.
+  let bookTick = 0;
+  every(15000, async () => { const slots = getSlots(), full = slots.includes('books'); if (!full && !slots.includes('vix')) return; if (!full && bookTick++ % 4) return; await loadBooks(['BTC-USD', 'ETH-USD']); commitTicks(); R('vix', 'books'); });
   every(30000, () => { renderClocks(); R('cb', 'sess'); });
   every(120000, async () => { await Promise.allSettled([loadBriefing(), D().news !== 'all' ? loadNews(D().news, true) : null]); renderNews(); R('top', 'story', 'intel', 'official'); });
   every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); commitTicks(); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });

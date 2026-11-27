@@ -174,14 +174,14 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.match(html, /assets\/vendor\/codemirror\/searchcursor\.js\?v=20261117-builder-4/);
   assert.match(html, /assets\/css\/terminal-builder\.css\?v=20261119-builder-5/);
   assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261126-tick-1/);
-  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261126-tick-1/);
+  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261127-audit-1/);
   assert.doesNotMatch(html, /cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net\/npm\/codemirror|unpkg\.com\/codemirror/);
   assert.ok(html.indexOf('codemirror.js') < html.indexOf('builder-core.js'));
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
-  assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261126-rows-1/);
-  assert.match(html, /assets\/js\/terminal\/pages\.js\?v=20261126-rows-1/);
-  assert.match(release, /'assets\/js\/terminal\/app\.js':'20261126-rows-1'/);
-  assert.match(release, /'assets\/js\/terminal\/pages\.js':'20261126-rows-1'/);
+  assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261127-audit-1/);
+  assert.match(html, /assets\/js\/terminal\/pages\.js\?v=20261127-audit-1/);
+  assert.match(release, /'assets\/js\/terminal\/app\.js':'20261127-audit-1'/);
+  assert.match(release, /'assets\/js\/terminal\/pages\.js':'20261127-audit-1'/);
   const buildAt = app.indexOf("verb === 'BUILD'");
   const symbolAt = app.indexOf('if (/^[A-Za-z0-9.\\-=^&]{1,24}$/.test(cmd.trim()))');
   assert.ok(buildAt > 0 && symbolAt > buildAt);
@@ -191,7 +191,7 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   for (const id of ['mkts', 'focus', 'heat', 'fin', 'story', 'intel', 'top', 'desks', 'cb', 'curve', 'vix', 'bias', 'edge', 'pos', 'eco', 'corr', 'tools', 'movers', 'xa', 'idx', 'sess', 'earn', 'opt', 'optlist', 'chain', 'active', 'term', 'rates', 'gov', 'books', 'range', 'perf', 'official', 'squote', 'srisk', 'snews', 'cmp']) {
     assert.match(app, new RegExp('\\b' + id + ':'));
   }
-  assert.match(app, /for \(const plug of window\.FynxTerminalPlugins \|\| \[\]\) \{ try \{ plug\(CORE, PG\); \} catch/);
+  assert.match(app, /for \(const plug of window\.FynxTerminalPlugins \|\| \[\]\) \{[\s\S]{0,120}try \{ plug\(CORE, PG\); \} catch/);
   assert.match(app, /window\.FynxBuilderSweep\?\.\(\)/);
   assert.match(pages, /\['BUILD', 'Open FYNX Builder:/);
   assert.match(builder, /stopAllFrames\(\);\s*clearInstalls\(T\)/);

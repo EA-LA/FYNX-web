@@ -211,8 +211,11 @@
     c.append(b); return c;
   }
   let open = null;
+  // Navigating to another page or desk closes an open paywall, so it never covers a page it does not belong to.
+  let closeOpen = null;
+  function closePaywall() { if (open && closeOpen) closeOpen(); open = null; closeOpen = null; }
   function paywall({cat = 'analysis', feature = '', reason = 'limit', title, lead} = {}) {
-    style(); if (open) open.remove();
+    style(); if (open) closePaywall();
     const back = doc.activeElement;
     const m = meter(cat), wrap = el('div', 'fxp-dlg'), box = el('div', 'fxp-box');
     wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-labelledby', 'fxp-title');
@@ -236,7 +239,7 @@
     const onKey = e => { if (e.key === 'Escape') close(); };
     wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
     doc.addEventListener('keydown', onKey);
-    doc.body.append(wrap); open = wrap;
+    doc.body.append(wrap); open = wrap; closeOpen = close;
     // Focus without scrolling: on small phones scrolling to the Plus button hid the title, the reason and the close button.
     setTimeout(() => { plans.querySelector('.fxp-plan.hot .fxp-cta')?.focus({preventScroll: true}); box.scrollTop = 0; }, 30);
     return close;
@@ -258,7 +261,7 @@
     paint(); listeners.add(paint); return c;
   }
 
-  root.FYNXPlan = {ready, refresh, charge, server, meter, paywall, lockedCard, chip, checkout, onChange: fn => { listeners.add(fn); return () => listeners.delete(fn); },
+  root.FYNXPlan = {ready, refresh, charge, server, closePaywall, meter, paywall, lockedCard, chip, checkout, onChange: fn => { listeners.add(fn); return () => listeners.delete(fn); },
     resetText, get tier() { return state.tier; }, get name() { return nameOf(); }, get owner() { return state.owner; }, get label() { return state.owner ? OWNER_LABEL : NAMES[state.tier]; }, OWNER_LABEL, LIMITS, NAMES, PRICES, PERKS, limitOf};
   // Test hook (scripts/test-fynx-plan-usage.cjs only): inject a fake server and account.
   if (root.__FYNX_PLAN_TEST__) root.FYNXPlan._test = {set(svc, st) { services = svc; state = {...state, ...st}; readyPromise = Promise.resolve(state); }};

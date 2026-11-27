@@ -97,7 +97,7 @@
       const items = await loadItems();
       if (!items.length) return;
 
-      const mod = await import('/assets/js/account-system.js?v=20261125-header-fix');
+      const mod = await import('/assets/js/account-system.js?v=20261127-terminal-alerts-1');
       if (mod && typeof mod.ingestNewsNotifications === 'function') {
         const result = await mod.ingestNewsNotifications(window.FynxIdentity.uid, items);
         if (result && result.created > 0) log('ingested ' + result.created + ' news notifications');

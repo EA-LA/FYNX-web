@@ -35,7 +35,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js?v=20261114-consistency-2";
+} from "./notifications/engine.js?v=20261127-terminal-alerts-1";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -253,8 +253,8 @@ export async function markNotificationRead(uid, id, read = true) {
   await notificationEngine.repository.markRead(uid, id, read);
 }
 
-export async function markAllNotificationsRead(uid) {
-  await notificationEngine.repository.markAllRead(uid);
+export async function markAllNotificationsRead(uid, ids = null) {
+  await notificationEngine.repository.markAllRead(uid, ids);
 }
 
 export async function dismissNotification(uid, id) {

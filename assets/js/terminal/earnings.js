@@ -25,8 +25,9 @@
   const OUTCOMES = [['all', 'All releases'], ['beat', 'Beat'], ['inline', 'In line'], ['miss', 'Miss'], ['unknown', 'Result unavailable']];
   const mean = a => { const s = a.filter(finite); return s.length ? s.reduce((x, y) => x + y, 0) / s.length : NaN; };
   const local = ['localhost', '127.0.0.1'].includes(location.hostname);
-  // Same read-only research service on two routes (Cloud Function, then the Vercel copy), as the Research desk uses.
-  const RES = local ? ['/api/research'] : ['https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData', /(^|\.)vercel\.app$/.test(location.hostname) ? '/fn/research.js' : 'https://fynxfinanceworld.vercel.app/fn/research.js'];
+  // Same read-only research service on two routes. The Vercel copy deploys with every release, so it goes first; the
+  // Cloud Function copy (deployed separately, can lag behind) is the fallback.
+  const RES = local ? ['/api/research'] : [/(^|\.)vercel\.app$/.test(location.hostname) ? '/fn/research.js' : 'https://fynxfinanceworld.vercel.app/fn/research.js', 'https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData'];
   async function fetchEarnings(cik, sym) {
     let last = null;
     for (const base of RES) { try { const d = await T.getJSON(`${base}?action=earnings&cik=${cik}&symbol=${encodeURIComponent(sym)}`, {timeout: 60000}); if (d?.releases) return d; } catch (e) { last = e; report('earnings', e); } }

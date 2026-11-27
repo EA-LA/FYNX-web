@@ -7,3 +7,9 @@ test('operation category is enforced and known error codes survive',()=>{
  assert.equal(sanitize({category:'auth',operation:'photo-upload'}),null);
  assert.deepEqual(sanitize({category:'save',operation:'journal-save',code:'permission-denied',page:'/journal.html'}),{category:'save',operation:'journal-save',code:'permission-denied',page:'/journal.html'});
 });
+
+test('a specific source travels with the generic operation; anything else in it is dropped', () => {
+  assert.deepEqual(sanitize({category: 'feed', operation: 'feed-load', code: 'timeout', page: '/terminal.html', source: 'terminal-quotes'}), {category: 'feed', operation: 'feed-load', code: 'timeout', page: '/terminal.html', source: 'terminal-quotes'});
+  assert.equal(sanitize({category: 'feed', operation: 'feed-load', code: 'x', page: '/', source: 'Terminal Quotes <script>'}).source, undefined);
+  assert.equal(sanitize({category: 'feed', operation: 'terminal-quotes', code: 'x', page: '/'}), null, 'unknown operations are still rejected');
+});

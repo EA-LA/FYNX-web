@@ -20,7 +20,7 @@
     }
   };
   const monitor = document.createElement('script');
-  monitor.src = '/assets/js/monitoring.js?v=20260928-operations';
+  monitor.src = '/assets/js/monitoring.js?v=20261127-source-1';
   monitor.defer = true;
   document.head.appendChild(monitor);
   let theme = 'light';

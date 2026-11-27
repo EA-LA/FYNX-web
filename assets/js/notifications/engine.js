@@ -1,4 +1,4 @@
-import {save as saveAccountState,requireSync,accountData,subscribe} from '../account-sync.js?v=20261115-intelligence-1';
+import {save as saveAccountState,saveMany as saveManyAccountState,requireSync,accountData,subscribe} from '../account-sync.js?v=20261115-intelligence-1';
 import { safeNotificationUrl } from '../safe-content.js?v=20260928-audit2';
 import { app } from "../../../auth/firebase.js";
 import {
@@ -27,7 +27,9 @@ export const NOTIFICATION_CATEGORY = {
   ECONOMIC_CALENDAR: "economic_calendar",
   ACCOUNT_SECURITY: "account_security",
   PLATFORM_UPDATES: "platform_updates",
-  BILLING_CHALLENGES: "billing_challenges"
+  BILLING_CHALLENGES: "billing_challenges",
+  // Terminal alerts for markets the member follows (moves, news, earnings, events, price rules).
+  MARKET_ALERTS: "market_alerts"
 };
 
 export const PRIORITY = {
@@ -54,6 +56,7 @@ export const DEFAULT_NOTIFICATION_PREFERENCES = {
   accountSecurity: true,
   platformUpdates: true,
   billingChallenges: false,
+  marketAlerts: true,
   soundEnabled: false,
   quietHours: { enabled: false, start: "22:00", end: "07:00", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" },
   digestMode: "realtime",
@@ -66,7 +69,9 @@ const DEDUPE_WINDOWS_MS = {
   breaking_news: 60 * 60 * 1000,
   economic_calendar: 15 * 60 * 1000,
   account_security: 2 * 60 * 1000,
-  platform_updates: 6 * 60 * 60 * 1000
+  platform_updates: 6 * 60 * 60 * 1000,
+  // Market alert keys already carry the day (and direction or story), so one alert per key and day.
+  market_alerts: 36 * 60 * 60 * 1000
 };
 
 function notificationCollection(uid) {
@@ -140,13 +145,25 @@ export class NotificationRepository {
     });
   }
 
+  // Read state lives in the account's notificationState records (shared with the apps). Writing one only when it
+  // changes keeps that collection small: it is capped per account, so rewriting old, already-read items used to
+  // fill it up.
   async markRead(uid, id, read = true) {
-    await requireSync(uid);await saveAccountState('notificationState',id,{read,readAt:read?Date.now():null});
+    await requireSync(uid);
+    if (Boolean(accountData('notificationState',id)?.read) === Boolean(read)) return;
+    await saveAccountState('notificationState',id,{read,readAt:read?Date.now():null});
   }
 
-  async markAllRead(uid) {
-    const snap = await getDocs(query(notificationCollection(uid), where("read", "==", false), where("archived", "==", false)));
-    for(const doc of snap.docs)await this.markRead(uid,doc.id,true);
+  async markAllRead(uid, ids = null) {
+    await requireSync(uid);
+    let list = Array.isArray(ids) ? ids : null;
+    if (!list) {
+      const snap = await getDocs(query(notificationCollection(uid), orderBy("timestamp", "desc"), limit(200)));
+      list = snap.docs.map(d => d.id);
+    }
+    const todo = [...new Set(list)].filter(id => typeof id === "string" && id && !accountData('notificationState',id)?.read && !accountData('notificationState',id)?.archived);
+    const at = Date.now();
+    for (let i = 0; i < todo.length; i += 50) await saveManyAccountState(todo.slice(i, i + 50).map(id => ({domain: 'notificationState', id, data: {read: true, readAt: at}})));
   }
   async dismiss(uid,id){await requireSync(uid);await saveAccountState('notificationState',id,{archived:true,dismissed:true,dismissedAt:Date.now()});}
 
@@ -189,8 +206,11 @@ export class BrowserNotificationAdapter {
       data: { sourceUrl: payload.sourceUrl || "notifications.html" }
     });
     notif.onclick = () => {
-      // News alerts open FYNX's own summary of the story, not the publisher's site.
-      const source = safeNotificationUrl(payload.sourceUrl), link = source ? new URL("/news/article.html?url=" + encodeURIComponent(source), location.href).href : new URL("notifications.html", location.href).href;
+      // FYNX destinations (a Terminal market, a FYNX article) open as they are; an outside story opens as FYNX's own
+      // summary of it, not the publisher's site.
+      let own = null; try { const u = new URL(payload.sourceUrl || "", location.href); if (u.origin === location.origin) own = u; } catch {}
+      if (own && /^\/terminal(\.html)?$/.test(own.pathname) && /^\/terminal(\.html)?$/.test(location.pathname)) { window.focus(); window.dispatchEvent(new CustomEvent("fynx:notification-open", {detail: {url: own.href}})); notif.close(); return; }
+      const source = own ? null : safeNotificationUrl(payload.sourceUrl), link = own ? own.href : source ? new URL("/news/article.html?url=" + encodeURIComponent(source), location.href).href : new URL("notifications.html", location.href).href;
       window.open(link, "_blank", "noopener");
     };
     return true;
@@ -233,6 +253,7 @@ export class NotificationRulesEngine {
   async shouldCreate(uid, payload) {
     const prefs = await this.preferenceManager.get(uid);
     if (!prefs.inAppEnabled && payload.priority !== PRIORITY.CRITICAL) return { ok: false, prefs };
+    if (payload.category === NOTIFICATION_CATEGORY.MARKET_ALERTS && prefs.marketAlerts === false) return { ok: false, prefs };
 
     const recentBurst = await this.repository.countRecent(uid, 60 * 1000);
     if (recentBurst > 12 && ![PRIORITY.HIGH, PRIORITY.CRITICAL].includes(payload.priority)) return { ok: false, prefs };
