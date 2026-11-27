@@ -34,7 +34,13 @@
     // Storage.clear() fires with a null key; removeItem() has a null value.
     if(event.key!==key&&event.key!==null)return;
     if(valid(event.newValue)){set(event.newValue,false);return;}
-    if(event.newValue===null)set(valid(requested)?requested:'us',false);
+    if(event.newValue===null){
+      // The explicit edition may have changed since initial navigation.
+      // Use the current permalink, not the original page-load parameter.
+      let permalink;
+      try {permalink=new URL(root.location.href).searchParams.get('edition');}catch{}
+      set(valid(permalink)?permalink:'us',false);
+    }
   });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
 })(window);
