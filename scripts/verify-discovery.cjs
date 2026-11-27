@@ -11,11 +11,20 @@ assert.equal(new Set(inventory.map(e=>e.url)).size,inventory.length,'Duplicate r
 assert.equal(directory.window.document.querySelectorAll('script').length,0,'Light directory must not require scripts');
 const links=new Set([...library.window.document.querySelectorAll('a[href]')].map(a=>a.pathname));
 const plainLinks=new Set([...directory.window.document.querySelectorAll('a[href]')].map(a=>a.pathname));
+// The no-script directory must outlive the rolling article inventory.
+assert.deepEqual([...plainLinks].filter(url=>url.startsWith('/intelligence/')).sort(),[
+ '/intelligence/','/intelligence/method.html'
+], 'Lightweight directory must link to the current Intelligence hub, not article snapshots');
+assert.match(directory.window.document.querySelector('main a[href="/intelligence/"]').textContent,/browse all current stories/i);
+
 let lessons=0,tools=0;
 for(const entry of inventory){
  assert(sitemap.has(base+entry.url),'Resource missing from sitemap: '+entry.url);
  assert(links.has(entry.url),'Resource missing from initial library HTML: '+entry.url);
- assert(plainLinks.has(entry.url),'Resource missing from lightweight directory: '+entry.url);
+ if(!/^\/intelligence\/[^/]+\/(?:index\.html)?$/.test(entry.url)){
+  const directoryURL=entry.url==='/intelligence/index.html'?'/intelligence/':entry.url;
+  assert(plainLinks.has(directoryURL),'Resource missing from lightweight directory: '+directoryURL);
+ }
  assert(!/[?#]/.test(entry.url),'Query or fragment used as a resource identity');
  const file=entry.url.endsWith('/')?entry.url+'index.html':entry.url;
  const dom=new JSDOM(fs.readFileSync(path.join(root,file),'utf8'),{url:base+entry.url});const doc=dom.window.document;
