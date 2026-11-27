@@ -28,6 +28,7 @@ html body.fx-auth[data-fynx-layout] .fx-card .password-toggle:hover{background:#
 html body .fx-forgot{justify-self:end;margin-top:-4px;font-size:13px;font-weight:600;color:#1f5a3f;text-decoration:none}
 html body .fx-forgot:hover{text-decoration:underline}
 @media (pointer:coarse){html body .fx-forgot{display:inline-flex;align-items:center;min-height:44px;margin-top:-12px}}
+@media (pointer:coarse){html body .fx-alt a,html body .fx-help a{display:inline-flex;align-items:center;min-height:44px;vertical-align:middle}html body .fx-alt{margin-top:2px}}
 html body.fx-auth[data-fynx-layout] .fx-card .btn{width:100%!important;min-height:50px!important;height:auto!important;border-radius:10px!important;border:1.5px solid #cfd6d2!important;background:#fff!important;color:#0f1512!important;font:700 15px Inter,Arial,sans-serif!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;text-decoration:none!important;cursor:pointer;transition:border-color .15s,background .15s!important;box-shadow:none!important;transform:none!important;margin:0!important}
 html body.fx-auth[data-fynx-layout] .fx-card .btn:hover{border-color:#0f1512!important;background:#f6f8f7!important}
 html body.fx-auth[data-fynx-layout] .fx-card .btn.primary{background:#0f1512!important;border-color:#0f1512!important;color:#fff!important;margin-top:4px!important}
