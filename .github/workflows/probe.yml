@@ -5,17 +5,17 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 170
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with: {ref: terminal/focus-sync, path: app}
-      - uses: actions/setup-node@v4
-        with: {node-version: 22}
-      - run: cd app && npm ci --ignore-scripts --no-audit --no-fund
-      - name: focus
+      - name: financials
         run: |
           git config --global user.name probe && git config --global user.email probe@users.noreply.github.com
-          export FYNX_CHROMIUM_PATH=$(which google-chrome)
-          mkdir -p focus; (cd app && timeout 2400 node scripts/probe-focus.cjs ../focus > ../focus/run.log 2>&1 || echo "exit $?" >> ../focus/run.log)
-          git add focus && git commit -qm "focus probe" && git pull -q --rebase && git push -q
+          mkdir -p fin
+          for cik in 1326801 320193 1045810 789019; do
+            curl -s -m 60 -w '\nHTTP %{http_code} %{time_total}s\n' "https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=financials&cik=$cik" | tail -c 1500 > fin/fb-$cik.txt
+            curl -s -m 60 -w '\nHTTP %{http_code} %{time_total}s\n' "https://fynxfinanceworld.vercel.app/fn/research.js?action=financials&cik=$cik" | tail -c 1500 > fin/vercel-$cik.txt
+          done
+          curl -s -m 60 "https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=directory" | python3 -c "import sys,json;d=json.load(sys.stdin);c=d.get('companies',[]);print(len(c),[x for x in c if x.get('symbol') in ('META','AAPL','BFLR','ANT')])" > fin/directory.txt 2>&1
+          curl -s -m 60 -o /dev/null -w 'earnings %{http_code}\n' "https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=earnings&cik=320193&symbol=AAPL" >> fin/directory.txt
+          git add fin && git commit -qm "fin probe" && git pull -q --rebase && git push -q
