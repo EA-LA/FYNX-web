@@ -1,6 +1,14 @@
 {
- "generatedAt": "2026-11-27T08:44:45.485Z",
+ "generatedAt": "2026-11-27T19:30:22.631Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Binance Helps UK Nonprofit Track Crypto Payments for Child Sexual Abuse Material",
+   "sources": [
+    "bloomingbit"
+   ],
+   "at": "2026-11-27T19:30:22.631Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "HUG International Housing and Urban Finance Forum... “AI to Detect Jeonse Fraud and Provide Early Warnings of Guarantee Incidents”",
@@ -73,30 +81,6 @@
     "Northern Virginia Magazine"
    ],
    "at": "2026-11-25T00:50:19.639Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Delhi police bust Alwar-based crypto fraud syndicate; 4 arrested | India News",
-   "sources": [
-    "Hindustan Times"
-   ],
-   "at": "2026-11-24T14:57:09.417Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "India's ₹556 Crore Fraud Case Raises Questions Over Crypto Regulation and Investor Safety",
-   "sources": [
-    "Coin Edition"
-   ],
-   "at": "2026-11-24T14:57:09.417Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Wall Street catches Jensen Huang fever, but is this all a dead cat bounce?",
-   "sources": [
-    "investingLive"
-   ],
-   "at": "2026-11-24T14:57:09.417Z"
   }
  ]
 }
