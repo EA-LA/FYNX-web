@@ -155,7 +155,7 @@ function fakeBridge(cfg) {
     terminalList: () => [...st.followed], saveTerminalList: async l => { st.saved.push(l); st.followed = l; acb.forEach(cb => cb(acct())); }
   };
 }
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null} = {}) {
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = ''} = {}) {
   const ctx = await browser.newContext({viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
   if (bridge) await page.addInitScript(fakeBridge, bridge);
@@ -206,7 +206,7 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
     return route.fulfill({status: 404, contentType: 'application/json', body: '{}'});
   });
   const errors = []; page.on('pageerror', e => errors.push(String(e)));
-  await page.goto(ORIGIN + '/terminal.html');
+  await page.goto(ORIGIN + '/terminal.html' + (url || ''));
   await page.clock.runFor(2000);
   await page.waitForFunction(() => document.querySelector('#fx-main')?.getAttribute('aria-busy') === 'false', null, {timeout: 20000});
   return {ctx, page, errors, seen};
@@ -504,6 +504,10 @@ test('FOCUS: typing a ticker turns every box to it; ✕ returns to ALL with the 
   const fb = await boxes(page); assert.ok(fb.includes('squote') && fb.includes('snews') && fb.includes('srisk'), 'market boxes');
   await page.waitForFunction(() => /AAPL/.test(document.querySelector('#t-squote')?.textContent || ''));
   assert.match(await page.textContent('#fx-deskbar-note'), /Every box shows AAPL/);
+  // Thanksgiving: the quote says it is delayed and that the US market is closed (holiday), never 'live'.
+  assert.match(await page.textContent('#b-squote .fx-sqasof'), /^Delayed/);
+  assert.equal(await page.textContent('#b-squote .fx-sess'), 'CLOSED'); assert.match(await page.getAttribute('#b-squote .fx-sess', 'title'), /US market (closed|holiday)/i);
+  assert.match(await page.textContent('#fx-live'), /FEEDS \d+\/\d+ · DELAYED/); assert.doesNotMatch(await page.textContent('#fx-live'), /LIVE/);
   assert.match(await page.textContent('#t-earn'), /Earnings · AAPL/, 'earnings filtered to the focus');
   await page.click('#fx-symchip .fx-symx:last-child'); await page.clock.runFor(800);
   assert.equal(await mode(page), 'ALL* FOCUS COMPARE');
@@ -650,4 +654,144 @@ test('guest: the bell asks to sign in; following needs an account; nothing is se
   assert.deepEqual(await page.evaluate(() => [window.__bridge.saved, window.__bridge.emits]), [[], []]);
   assert.deepEqual(errors, []);
   await ctx.close();
+});
+
+test('HEADLINES ticker: items never overlap; time, title and source stay apart; no restart on data refresh', async () => {
+  for (const [w, h] of [[1920, 1080], [390, 844], [3440, 1440]]) {
+    const {ctx, page, errors} = await boot({width: w, height: h});
+    await page.waitForSelector('#fx-news-track .fx-hl');
+    const r = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('#fx-news-track .fx-hl')]; let overlap = 0, inner = 0, clipped = 0;
+      for (let i = 1; i < items.length; i++) { const a = items[i - 1].getBoundingClientRect(), b = items[i].getBoundingClientRect(); if (b.left < a.right - 0.5) overlap++; }
+      for (const it of items) { const k = [...it.children].map(c => c.getBoundingClientRect()); for (let i = 1; i < k.length; i++) if (k[i].left < k[i - 1].right - 0.5) inner++; if (it.scrollWidth > it.clientWidth + 1) clipped++; }
+      const tr = document.getElementById('fx-news-track'), cs = getComputedStyle(tr);
+      return {n: items.length, overlap, inner, clipped, anim: cs.animationName, h: document.querySelector('.fx-news').getBoundingClientRect().height, itemH: Math.max(...items.map(i => i.getBoundingClientRect().height))};
+    });
+    assert.equal(r.overlap, 0, `${w}px: items overlap ${JSON.stringify(r)}`); assert.equal(r.inner, 0, `${w}px: time/title/source overlap`); assert.equal(r.clipped, 0, `${w}px: text cut inside an item`);
+    assert.ok(r.itemH <= r.h, `${w}px: items fit the strip height ${JSON.stringify(r)}`);
+    // A routine refresh with the same headlines must not rebuild the strip (rebuilding restarts and jerks it).
+    const before = await page.evaluateHandle(() => document.querySelector('#fx-news-track .fx-hl')); await page.clock.runFor(125000);
+    assert.equal(await before.evaluate(el => el.isConnected), true, `${w}px: strip rebuilt although headlines did not change`);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+test('long session: 6 simulated hours of desks, focus, compare and pages do not grow timers, DOM or memory', async () => {
+  // Reuse the standard harness (fixtures, clock) and add the interval counter.
+  const {ctx: c2, page, errors} = await boot({width: 1920, height: 1080});
+  await page.evaluate(() => { const live = new Set(), si = window.setInterval, ci = window.clearInterval; window.setInterval = function (...a) { const id = si.apply(this, a); live.add(id); return id; }; window.clearInterval = function (id) { live.delete(id); return ci.call(this, id); }; window.__intervals = () => live.size; });
+  const cdp = await c2.newCDPSession(page); await cdp.send('HeapProfiler.enable');
+  const measure = async () => { await cdp.send('HeapProfiler.collectGarbage'); const {usedSize} = await cdp.send('Runtime.getHeapUsage'); return {heap: usedSize / 1048576, dom: await page.evaluate(() => document.getElementsByTagName('*').length), intervals: await page.evaluate(() => window.__intervals()), listeners: (await cdp.send('DOMDebugger.getEventListeners', {objectId: (await cdp.send('Runtime.evaluate', {expression: 'window'})).result.objectId})).listeners.length}; };
+  const cycle = async i => {
+    await command(page, ['STOCKS', 'FOREX', 'CRYPTO', 'ALL'][i % 4]); await page.clock.runFor(4000);
+    await command(page, ['AAPL', 'EUR/USD', 'BTC-USD', 'NVDA'][i % 4]); await page.clock.runFor(4000);
+    await command(page, 'AAPL NVDA MSFT'); await page.clock.runFor(4000);
+    await command(page, ['HOURS', 'SENTIMENT', 'WIRE', 'INDUSTRIES'][i % 4]); await page.clock.runFor(6000);
+    await page.keyboard.press('Escape'); await command(page, 'CLEAR'); await page.clock.runFor(4000);
+    await page.clock.runFor(20 * 60000); // 20 minutes of refresh timers
+  };
+  for (let i = 0; i < 2; i++) await cycle(i); // warm-up
+  const a = await measure();
+  for (let i = 2; i < 18; i++) await cycle(i); // ≈ 6 hours
+  const b = await measure();
+  console.log('long session', JSON.stringify({a, b}));
+  assert.ok(b.intervals <= a.intervals + 2, `timers keep piling up: ${a.intervals} → ${b.intervals}`);
+  assert.ok(b.dom <= a.dom * 1.25 + 300, `DOM grows: ${a.dom} → ${b.dom}`);
+  assert.ok(b.heap <= a.heap * 1.6 + 8, `heap grows: ${a.heap.toFixed(1)} → ${b.heap.toFixed(1)} MB`);
+  assert.ok(b.listeners <= a.listeners + 10, `window listeners pile up: ${a.listeners} → ${b.listeners}`);
+  assert.deepEqual(errors, []);
+  await c2.close();
+});
+
+test('network: start-up and 10 minutes of refreshes fetch each data file only as often as its refresh schedule needs', async () => {
+  const {ctx, page, errors, seen} = await boot();
+  await page.clock.runFor(3000);
+  const count = list => list.reduce((m, u) => { const k = u.replace(/[?&](_|t|bust|v)=[^&]*/g, '').replace(/^https?:\/\/[^/]+/, ''); m[k] = (m[k] || 0) + 1; return m; }, {});
+  const data = list => list.filter(u => !/\.(js|css|svg|png|woff2?)(\?|$)/.test(u) && !/webOperationalEvent/.test(u)); // the error monitor throttles itself (12/min)
+  const boot1 = count(data(seen));
+  console.log('boot requests', JSON.stringify(boot1));
+  for (const [k, n] of Object.entries(boot1)) assert.ok(n <= 2, `${k} requested ${n}× during start-up`);
+  const mark = seen.length; await page.clock.runFor(10 * 60000);
+  const later = count(data(seen.slice(mark)));
+  console.log('10 min requests', JSON.stringify(later));
+  for (const [k, n] of Object.entries(later)) assert.ok(n <= 21, `${k} requested ${n}× in 10 minutes`);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+/* ---------- routing ---------- */
+const isPage = page => page.evaluate(() => document.body.classList.contains('fx-paging'));
+test('routing: deep links, refresh, back/forward, invalid routes never give a blank screen', async () => {
+  // Desk deep link.
+  let b = await boot({url: '?desk=forex'});
+  assert.equal(await b.page.textContent('.fx-desk.on'), 'FOREX'); await b.ctx.close();
+  // Invalid desk → ALL, and the grid is there.
+  b = await boot({url: '?desk=nope&cmp=,&sym='});
+  assert.equal(await b.page.textContent('.fx-desk.on'), 'ALL'); assert.ok(await b.page.$$eval('#fx-main > section.tp', s => s.length) >= 12); await b.ctx.close();
+  // Page deep link, back closes it, forward reopens it.
+  b = await boot({url: '#hours'});
+  await b.page.waitForSelector('.mkh-card'); assert.equal(await isPage(b.page), true);
+  await b.page.goBack(); await b.page.clock.runFor(300); assert.equal(await isPage(b.page), false, 'Back returns to the desk');
+  await b.page.goForward(); await b.page.clock.runFor(300); await b.page.waitForSelector('.mkh-card');
+  // Refresh keeps the page.
+  await b.page.reload(); await b.page.clock.runFor(2500); await b.page.waitForSelector('.mkh-card');
+  await b.ctx.close();
+  // Unknown page hash → the desk, not a blank screen.
+  b = await boot({url: '#doesnotexist/xyz'});
+  assert.equal(await isPage(b.page), false); assert.ok(await b.page.isVisible('#fx-main'));
+  // Focus + page: back from a page keeps the focused market.
+  await command(b.page, 'AAPL'); await b.page.clock.runFor(1200);
+  await command(b.page, 'FILINGS AAPL'); await b.page.waitForSelector('.fl-table');
+  await b.page.goBack(); await b.page.clock.runFor(400);
+  assert.match(b.page.url(), /sym=AAPL/); assert.equal(await b.page.textContent('#fx-modebar .on'), 'FOCUS');
+  assert.deepEqual(b.errors, []);
+  await b.ctx.close();
+});
+
+test('workflow: scanner → focus → follow → compare → back to ALL', async () => {
+  const {ctx, page, errors} = await boot({bridge: {followed: []}});
+  await command(page, 'SCAN'); await page.waitForSelector('.sc-table tr.pg-click');
+  await page.click('.sc-table tr.pg-click >> text=AAPL'); await page.clock.runFor(1500);
+  assert.equal(await page.textContent('#fx-modebar .on'), 'FOCUS'); assert.match(page.url(), /sym=AAPL/);
+  await page.click('.fx-follow'); assert.deepEqual(await page.evaluate(() => window.__bridge.saved.at(-1)), ['AAPL']);
+  await command(page, 'SCAN'); await page.waitForSelector('.sc-table tr.pg-click');
+  // The scanner fixture lists AAPL only; Shift-click it while focused adds nothing new, so add NVDA from the command bar.
+  await page.keyboard.press('Escape'); await command(page, '+NVDA'); await page.clock.runFor(1500);
+  assert.equal(await page.textContent('#fx-modebar .on'), 'COMPARE');
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['AAPL', 'NVDA']);
+  await page.click('#fx-modebar .fx-mode >> text=ALL'); await page.clock.runFor(800);
+  assert.equal(await page.textContent('#fx-modebar .on'), 'ALL'); assert.doesNotMatch(page.url(), /sym=|cmp=/);
+  assert.deepEqual(await page.evaluate(() => window.__bridge.followed), ['AAPL'], 'still followed after leaving focus');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('a paywall never stays over the next page (free pages stay free)', async () => {
+  const {ctx, page, errors} = await boot({plan: {tier: 'free', used: 5}});
+  await command(page, 'VCLUST'); await page.clock.runFor(800);
+  const opened = await page.$('.fxp-dlg, .fxp-lock'); assert.ok(opened, 'the premium page is gated');
+  for (const c of ['HOURS', 'OVERVIEW', 'HMAP', 'SENTIMENT']) { await command(page, c); await page.clock.runFor(600); assert.equal(await page.$('.fxp-dlg'), null, `${c}: no paywall left over`); assert.equal(await page.$('#fx-page .fxp-lock'), null, `${c} is free`); }
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('mobile 390px and ultrawide 3440px: mode switch, comparison chips and the bell fit on screen', async () => {
+  for (const [w, h] of [[390, 844], [820, 1180], [3440, 1440]]) {
+    const {ctx, page, errors} = await boot({width: w, height: h, bridge: {items: [{id: 'a', title: 'AAPL +5.10% today', category: 'market_alerts', read: false, timestamp: new Date(NOW).toISOString(), sourceUrl: '/terminal.html?sym=AAPL', metadata: {symbol: 'AAPL'}}]}});
+    await command(page, 'AAPL NVDA MSFT'); await page.clock.runFor(2000);
+    const box = sel => page.$eval(sel, n => { const r = n.getBoundingClientRect(); return {l: r.left, r: r.right, w: r.width, h: r.height, vis: r.width > 0 && r.height > 0}; });
+    const vw = await page.evaluate(() => document.documentElement.clientWidth);
+    for (const sel of ['#fx-modebar', '.fx-bell']) { const b = await box(sel); assert.ok(b.vis, `${w}px: ${sel} visible`); }
+    // Every compare chip can be reached (the chip strip scrolls rather than overflowing the page).
+    const over = await page.evaluate(() => { const vw = document.documentElement.clientWidth; const out = []; for (const n of document.querySelectorAll('body *')) { const r = n.getBoundingClientRect(); if (r.width && r.right > vw + 1) { let p = n.parentElement, clipped = false; while (p && p !== document.body) { const o = getComputedStyle(p); if (/(auto|scroll|hidden|clip)/.test(o.overflowX)) { const pr = p.getBoundingClientRect(); if (pr.right <= vw + 1) { clipped = true; break; } } p = p.parentElement; } if (!clipped) out.push((n.id ? '#' + n.id : '') + '.' + String(n.className).split(' ')[0] + ':' + Math.round(r.right)); } } return {sw: document.documentElement.scrollWidth, vw, out: out.slice(0, 8)}; });
+    assert.ok(over.sw <= over.vw + 1, `${w}px: no horizontal page scroll ${JSON.stringify(over)}`);
+    await shot(page, `compare-${w}-chips.png`);
+    const chips = await page.$$eval('.fx-cmpchip', ns => ns.map(n => { const r = n.getBoundingClientRect(); return r.width > 20 && r.height > 10; }));
+    assert.ok(chips.length === 3 && chips.every(Boolean), `${w}px: all three compare chips are visible ${chips}`);
+    await page.click('.fx-bell'); const d = await box('#fx-belldrop'); assert.ok(d.l >= 0 && d.r <= vw + 1, `${w}px: bell menu inside the screen ${JSON.stringify(d)}`);
+    await shot(page, `compare-${w}.png`);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
 });

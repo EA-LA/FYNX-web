@@ -72,7 +72,7 @@
     wrap.append(bell); if (top && $('fx-edit')) top.insertBefore(wrap, $('fx-edit')); document.body.append(drop);
     function toggle(force) {
       A.open = force ?? !A.open; drop.hidden = !A.open; bell.setAttribute('aria-expanded', String(A.open));
-      if (A.open) { const r = bell.getBoundingClientRect(); drop.style.top = Math.round(r.bottom + 6) + 'px'; drop.style.right = Math.max(8, Math.round(innerWidth - r.right)) + 'px'; draw(); drop.querySelector('button, a')?.focus({preventScroll: true}); }
+      if (A.open) { const r = bell.getBoundingClientRect(); drop.style.top = Math.round(r.bottom + 6) + 'px'; const vw = document.documentElement.clientWidth, w = Math.min(400, vw - 16); drop.style.right = 'auto'; drop.style.left = Math.round(Math.min(Math.max(8, r.right - w), vw - w - 8)) + 'px'; draw(); drop.querySelector('button, a')?.focus({preventScroll: true}); }
     }
     document.addEventListener('click', e => { if (A.open && !drop.contains(e.target) && !wrap.contains(e.target)) toggle(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && A.open) { toggle(false); bell.focus(); } });
@@ -101,7 +101,7 @@
       if (A.user && unread().length) head.append(btn('Mark all read', 'fx-belllink', async () => { const ids = unread().map(i => i.id); A.items.forEach(i => { i.read = true; }); paintBadge(); draw(); try { await A.bridge.markAllRead(ids); } catch (e) { T.report('notify-readall', e); } }));
       drop.append(head);
       if (!A.bridge) { drop.append(el('p', 'fx-bellnote', 'Notifications are loading…')); return; }
-      if (!A.user) { const p = el('p', 'fx-bellnote', 'Sign in to follow markets and get alerts for them here and on your desktop. '); const a = el('a', 'fx-belllink', 'Sign in'); a.href = '/auth/login.html?next=' + encodeURIComponent(location.pathname + location.search); p.append(a); drop.append(p); return; }
+      if (!A.user) { const p = el('p', 'fx-bellnote', 'Sign in to follow markets and get alerts for them here and on your desktop. '); const a = el('a', 'fx-belllink', 'Sign in'); a.href = '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search); p.append(a); drop.append(p); return; }
       const list = el('div', 'fx-belllist');
       const shown = A.items.filter(i => !i.archived).slice(0, 30);
       if (!shown.length) list.append(el('p', 'fx-bellnote', A.followed.length ? `No alerts yet for the ${A.followed.length} markets you follow.` : 'Follow markets with ★ (focus a market, then ★ Follow) to get alerts for them.'));

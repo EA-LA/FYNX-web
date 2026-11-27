@@ -356,9 +356,11 @@
   }
   function renderLive() {
     const ok = Object.values(S.feeds).filter(Boolean).length, total = Object.keys(S.feeds).length, live = $('fx-live');
-    live.lastChild.textContent = total ? `LIVE · ${ok}/${total} FEEDS` : 'CONNECTING';
+    // Connection status of the data feeds, not a claim about price timeliness: quotes are delayed (exchange delays
+    // apply) and are labelled so wherever they appear; only exchange order books stream in real time.
+    live.lastChild.textContent = total ? `FEEDS ${ok}/${total} · DELAYED` : 'CONNECTING';
     live.className = 'fx-live' + (total && ok < total ? ' fx-warn' : '');
-    live.title = Object.entries(S.feeds).map(([k, v]) => `${k}: ${v ? 'ok' : 'unavailable'}`).join(' · ') + ' · click for sources';
+    live.title = `${ok} of ${total} data feeds answering. Prices are delayed quotes (Yahoo Finance and exchange delays apply); crypto order books (Kraken, Coinbase) stream live. ` + Object.entries(S.feeds).map(([k, v]) => `${k}: ${v ? 'ok' : 'unavailable'}`).join(' · ') + ' · click for sources';
   }
   function stripSymbols() {
     const d = D();
@@ -378,8 +380,12 @@
     if (t) host.append(el('span', 'fx-dim', `Delayed quotes · ${hhmm(t)}`));
   }
   function renderNews() {
-    const track = $('fx-news-track'); track.replaceChildren();
+    const track = $('fx-news-track');
     const cat = D().news, items = (cat === 'all' ? S.briefing : S.desks[cat]?.items?.length ? S.desks[cat].items : S.briefing).slice(0, 18);
+    // Same headlines as on screen: leave the strip alone, so the scroll never restarts or jumps on a routine refresh.
+    const sig = cat + '|' + items.map(h => h.url || h.title).join('|');
+    if (sig === S.newsSig && track.childElementCount) return;
+    S.newsSig = sig; track.replaceChildren();
     // The strip can contain cached or delayed headlines: never claim a live feed solely because items exist.
     const headlineStatus = $('fx-headline-feed-status');
     if (headlineStatus) headlineStatus.textContent = items.length ? 'HEADLINES' : 'UNAVAILABLE';
@@ -410,7 +416,7 @@
     const head = el('div', 'fx-th'); head.append(el('span', '', 'SYMBOL'), el('span', '', 'LAST'), btn(S.mktSort === 1 ? 'CHG ▼' : S.mktSort === -1 ? 'CHG ▲' : 'CHG ↕', 'fx-sort', () => { S.mktSort = S.mktSort === 1 ? -1 : S.mktSort === -1 ? null : 1; renderMkts(); }, 'Sort by change')); host.append(head);
     if (!list.length) return pending(host, ['quotes', 'markets'], 'Loading quotes…', 'Quotes are unavailable right now. FYNX retries automatically.');
     for (const id of list) host.append(quoteRow(id, null, () => setSymbol({symbol: id})));
-    const src = list.some(id => S.quotes[id]) ? 'Live delayed quotes refresh every 30 s; others' : 'Delayed quotes';
+    const src = list.some(id => S.quotes[id]) ? 'Delayed quotes refresh every 30 s; others' : 'Delayed quotes';
     host.append(el('p', 'fx-foot', `${src} from the ${S.mk ? hhmm(S.mk.generatedAt) : ''} market snapshot (Yahoo Finance, exchange delays apply).`));
   }
   function renderList(kind, ids, foot) {
@@ -1151,7 +1157,7 @@
   function renderJournal(host) {
     const j = S.journal;
     if (j.status === 'signed-out') { host.append(el('p', 'fx-sub', 'Sign in to see your saved trades here.')); host.append(link('Sign in ↗︎', '/auth/login.html?return=/terminal.html', 'fx-chip fx-chip-link'), btn('Journal page ▸', 'fx-chip fx-chip-link', () => openPage('journal'))); return; }
-    if (j.status !== 'ready') return empty(host, j.status === 'error' ? 'Journal sync is unavailable right now.' : 'Loading your journal…');
+    if (j.status !== 'ready') return empty(host, j.status === 'error' ? 'Journal sync is unavailable right now.' : j.status === 'signed-out' ? 'Sign in to see your own trades here: they come from your FYNX Journal.' : 'Loading your journal…');
     const t = j.trades, pls = t.map(x => x.pl).filter(finite), net = pls.reduce((s, v) => s + v, 0), wins = pls.filter(v => v > 0).length;
     const out = el('div', 'fx-calcout'); const card = (k, v, cls) => { const d = el('div'); d.append(el('span', '', k), el('b', cls || '', v)); out.append(d); };
     card('TRADES', String(t.length)); card('WIN RATE', pls.length ? (wins / pls.length * 100).toFixed(0) + '%' : '—'); card('NET P/L', pls.length ? (net >= 0 ? '+$' : '−$') + Math.abs(net).toFixed(2) : '—', tone(net)); card('BEST', pls.length ? '$' + Math.max(...pls).toFixed(2) : '—');
@@ -1253,7 +1259,7 @@
     const q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || S.history[s.symbol]?.rows || [], dg = digitsOf(s.symbol);
     setText('t-squote', `${shortOf(s.symbol)} · ${d?.exchange || s.exchange || ''} ${d?.currency ? '· ' + d.currency : ''}`);
     if (!q) return pending(host, 'sym:' + s.symbol, 'Loading quote…', `No quote for ${shortOf(s.symbol)} is available from FYNX's market data providers right now.`);
-    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', '', q.asOf ? new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''));
+    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', 'fx-sqasof', `${q.delayed !== false || q.snapshot ? 'Delayed' : 'Last'}${q.asOf ? ' · ' + new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}`), sessionBadge(s.symbol, s.cls, S.symData[s.symbol]?.exchange || s.exchange));
     host.append(el('p', 'fx-sub fx-sqname', s.name || nameOf(s.symbol)), top);
     const st = el('div', 'fx-calcout fx-c4out');
     const card = (k, v, cls, key, raw) => { const x = el('div'); x.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); st.append(x); };
@@ -1263,6 +1269,16 @@
     if (rows.length > 30) { const p = el('div', 'fx-perfrow'); for (const [n, l] of [[5, '1W'], [21, '1M'], [63, '3M'], [126, '6M'], [251, '1Y']]) { const v = perfOf(rows, n); const x = el('span'); x.append(el('small', '', l), el('b', tone(v), finite(v) ? signed(v, 1, '%') : '—')); p.append(x); } host.append(p); }
     host.append(el('p', 'fx-foot', `${q.source || 'Delayed quote'} · prices adjusted for splits and dividends`));
   }
+  // Whether the market behind a quote is trading now, so a closed market's last price is never read as a live one.
+  function sessionInfo(symbol, cls, exchange, now = Date.now()) {
+    if (cls === 'crypto') return {state: 'open', text: 'Trades 24/7'};
+    if (cls === 'fx') { const ny = new Date(new Date(now).toLocaleString('en-US', {timeZone: 'America/New_York'})), wd = ny.getDay(), h = ny.getHours(); const shut = wd === 6 || (wd === 5 && h >= 17) || (wd === 0 && h < 17); return shut ? {state: 'closed', text: 'FX market closed for the weekend'} : {state: 'open', text: 'FX market open (24 h, Sun–Fri)'}; }
+    const us = /^(NMS|NYQ|NGM|NCM|PCX|ASE|BTS|NYSE|NASDAQ|NasdaqGS|NasdaqGM|NasdaqCM|NYSEArca)$/i.test(String(exchange || '')) || (!exchange && /^[A-Z]{1,5}(-[A-Z])?$/.test(symbol) && (cls === 'stock' || cls === 'fund'));
+    if (us && window.FynxMarketStatus) { const st = window.FynxMarketStatus.status(now); return {state: st.state === 'open' ? 'open' : st.state === 'pre' || st.state === 'post' ? 'ext' : 'closed', text: `US market ${st.label.toLowerCase()} · ${st.text}`}; }
+    if (/=F$/.test(symbol)) return {state: 'info', text: 'Futures: near-24 h electronic session (exchange hours)'};
+    return null;
+  }
+  function sessionBadge(symbol, cls, exchange) { const i = sessionInfo(symbol, cls, exchange); if (!i) return ''; const b = el('small', 'fx-sess fx-sess-' + i.state, i.state === 'open' ? 'OPEN' : i.state === 'closed' ? 'CLOSED' : i.state === 'ext' ? 'EXT HOURS' : 'HOURS'); b.title = i.text; return b; }
   async function renderSRisk() {
     const host = panel('srisk'), s = S.sym; if (!s) return empty(host, 'Focus a market to see its volatility, drawdown, VaR, beta and correlation: type a symbol in the command bar.');
     const bench = benchFor(s.symbol, s.cls); setText('t-srisk', `Risk vs ${shortOf(bench)} · 1 year`);
@@ -1489,6 +1505,16 @@
     await loadSeries(S.focus); R('focus');
   }
   function clearSymbol() { clearFocus(); }
+  // The address always carries the workspace selection (?desk, ?sym, ?cmp) so a refresh or a shared link restores it.
+  // Pages close by stepping browser history back, which lands on an older address: re-apply the selection after
+  // every history step (this listener runs after the pages router's own).
+  function syncWorkspaceUrl() {
+    const u = new URL(location.href), before = u.search;
+    if (S.cmp) { u.searchParams.set('cmp', S.cmp.join(',')); u.searchParams.delete('sym'); } else if (S.sym) { u.searchParams.set('sym', S.sym.symbol); u.searchParams.delete('cmp'); } else { u.searchParams.delete('sym'); u.searchParams.delete('cmp'); }
+    if (S.deskKey && S.deskKey !== 'all') u.searchParams.set('desk', S.deskKey); else u.searchParams.delete('desk');
+    if (u.search !== before) history.replaceState(history.state, '', u);
+  }
+  window.addEventListener('popstate', () => setTimeout(syncWorkspaceUrl, 0));
   // Back to ALL: drop the focus and the comparison, keep the desk, its layout and every preference.
   function clearFocus() {
     S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', '');
@@ -1806,7 +1832,9 @@
   }
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
   every(30000, async () => { await loadQuotes(); commitTicks(); renderQuotesAll(); R('story'); });
-  every(15000, async () => { if (!getSlots().includes('books') && S.deskKey !== 'all') return; await loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); commitTicks(); R('vix', 'books'); });
+  // Crypto top of book: every 15 s while the Book box is on screen, every 60 s when only the Risk box shows its spread line.
+  let bookTick = 0;
+  every(15000, async () => { const slots = getSlots(), full = slots.includes('books'); if (!full && !slots.includes('vix')) return; if (!full && bookTick++ % 4) return; await loadBooks(['BTC-USD', 'ETH-USD']); commitTicks(); R('vix', 'books'); });
   every(30000, () => { renderClocks(); R('cb', 'sess'); });
   every(120000, async () => { await Promise.allSettled([loadBriefing(), D().news !== 'all' ? loadNews(D().news, true) : null]); renderNews(); R('top', 'story', 'intel', 'official'); });
   every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); commitTicks(); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });

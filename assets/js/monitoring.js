@@ -8,7 +8,11 @@
   const raw=typeof error?.code==='string'?error.code.replace(/^functions\//,''):error?.name==='TimeoutError'?'timeout':error instanceof TypeError?'network':'unknown';
   const code=CODES.has(raw)?raw:'unknown',key=`${category}:${operation}:${code}`;
   if(count>=12||Date.now()-(seen.get(key)||0)<60000)return;seen.set(key,Date.now());count++;
-  fetch('https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category,operation,code,page:location.pathname}),keepalive:true,credentials:'omit'}).catch(()=>{});
+  // The collector accepts a fixed list of operations; a specific source (e.g. terminal-quotes) travels as 'source'
+  // under the generic operation, so reports from newer features are kept instead of being rejected.
+  const KNOWN={auth:['auth-login','auth-signup','auth-reset','session-bootstrap'],upload:['photo-upload'],save:['profile-save','preferences-save','security-save','notifications-save','journal-save','cloud-save','waitlist-save'],feed:['feed-load','macro-load','feed-probe'],runtime:['runtime']};
+  const cat=KNOWN[category]?category:'runtime',op=KNOWN[cat].includes(operation)?operation:(cat==='feed'?'feed-load':cat==='save'?'cloud-save':KNOWN[cat][0]),source=op===operation?undefined:String(operation||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,48)||undefined;
+  fetch('https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:cat,operation:op,code,page:location.pathname,source}),keepalive:true,credentials:'omit'}).catch(()=>{});
  }
  async function track(category,operation,action){try{return await action();}catch(error){report(category,operation,error);throw error;}}
  window.FynxMonitor={report,track};

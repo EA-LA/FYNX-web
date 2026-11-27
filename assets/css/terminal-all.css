@@ -702,7 +702,11 @@ html body.fx-terminal .ia-table tr:not(:first-child) th{text-align:left!importan
 .fx-rng i{display:block;position:relative;width:70px;height:4px;background:#26302c}.fx-rng i b{position:absolute;top:-3px;width:3px;height:10px;margin-left:-1px;background:var(--am)}
 .fx-corrm td{text-align:center!important;min-width:46px}.fx-corrm th{white-space:nowrap}
 .fx-symtag{margin-right:6px;font:700 9.5px 'IBM Plex Mono',monospace;padding:0 5px}
-@media (max-width:900px){.fx-mode{padding:0 6px;min-width:0}.fx-symchip{max-width:100%}}
+/* The chip shrinks with the desk bar and scrolls inside itself, so compare chips never push the page sideways. */
+.fx-symchip{flex:0 1 auto;min-width:0}
+@media (max-width:900px){.fx-mode{padding:0 6px;min-width:0}.fx-symchip{max-width:none;min-width:96px}}
+/* Phones: a focused or compared market gets its own row under the desk list instead of squeezing it. */
+@media (max-width:1100px){.fx-deskbar:has(.fx-symchip:not([hidden])){flex-wrap:wrap;height:auto;row-gap:4px;padding-top:4px;padding-bottom:4px}.fx-deskbar:has(.fx-symchip:not([hidden])) .fx-deskbar-list{flex:1 1 0}.fx-deskbar .fx-symchip:not([hidden]){order:9;flex:1 1 100%;max-width:100%}.fx-deskbar-note{display:none}}
 .fx-scroll{overflow-x:auto;max-width:100%}
 /* Notification bell (Terminal header) */
 .fx-bellwrap{position:relative;display:inline-flex}.fx-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:34px}
@@ -725,3 +729,8 @@ html body.fx-terminal .ia-table tr:not(:first-child) th{text-align:left!importan
 .fx-bellprefs .fx-belllink{margin-left:auto}
 .fx-bellfoot{margin:0;padding:5px 10px 8px;font:10.5px 'IBM Plex Mono',monospace;color:var(--mu)}
 .fx-follow{color:var(--mu)}.fx-follow.on{color:var(--am)}
+.fx-sess{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid var(--ln2);font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.5px;color:var(--mu);vertical-align:middle}
+.fx-sess-open{color:var(--up);border-color:var(--up)}.fx-sess-closed{color:var(--dn);border-color:var(--dn)}.fx-sess-ext{color:var(--am);border-color:var(--am)}
+/* Tablets and small laptops: the header row (clocks, feeds, plan, tour, build, bell, edit, exit) is wider than
+   the screen, which made the whole Terminal scroll sideways. Let it wrap to a second row and trim the clocks. */
+@media (min-width:761px) and (max-width:1365px){html body.fx-terminal>header.fx-top{height:auto!important;min-height:44px!important;flex-wrap:wrap!important;row-gap:4px;padding:4px 10px!important}html body.fx-terminal .fx-clocks{flex:1 1 auto;min-width:0;overflow:hidden}html body.fx-terminal .fx-cmd-msg{flex:0 1 160px}}

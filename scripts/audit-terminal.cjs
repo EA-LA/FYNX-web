@@ -35,7 +35,7 @@ const PATCH = {
 function inspect(scope) {
   const vis = n => { const r = n.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   const issues = [];
-  const boxes = scope === 'page' ? [document.querySelector('#fx-page, .fx-page, [data-page]') || document.body] : [...document.querySelectorAll('#fx-main > section.tp')];
+  const boxes = scope === 'page' ? [document.getElementById('fx-page')] : [...document.querySelectorAll('#fx-main > section.tp')];
   const report = [];
   for (const box of boxes) {
     if (!vis(box)) continue;

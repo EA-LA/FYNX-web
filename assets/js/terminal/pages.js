@@ -110,6 +110,7 @@ window.FynxTerminalPages = T => {
     show();
   }
   function show() {
+    window.FYNXPlan?.closePaywall?.();
     const top = stack.at(-1), main = $('fx-main');
     if (!top) { root.hidden = true; main.hidden = false; document.body.classList.remove('fx-paging'); document.title = `FYNX Terminal · ${T.D().label} desk`; return; }
     root.hidden = false; main.hidden = true; document.body.classList.add('fx-paging');
@@ -543,6 +544,7 @@ window.FynxTerminalPages = T => {
     setHead('JRNL', 'Your trading journal', 'Your saved trades, synced from your FYNX account');
     const j = S.journal;
     if (j.status === 'signed-out') return host.append(el('p', 'pg-lead', 'Sign in to see your saved trades here. Sign-in opens in a new tab; come back to this tab when you are done.'), chips([link('Sign in ↗︎', '/auth/login.html?return=/terminal.html%23journal', 'fx-chip fx-chip-link pg-primary'), link('Journal on the website ↗︎', '/journal.html', 'fx-chip fx-chip-link')]));
+    if (j.status === 'signed-out') { const p = el('p', 'fx-empty', 'Sign in to see your trading journal here: your own trades, win rate and P/L from the FYNX Journal. '); const a = el('a', 'fx-chip fx-chip-link', 'Sign in ▸'); a.href = '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search + location.hash); p.append(a); return host.append(p); }
     if (j.status !== 'ready') return host.append(el('p', 'fx-empty', j.status === 'error' ? 'Journal sync is unavailable right now.' : 'Loading your journal…'));
     const t = j.trades, pls = t.map(x => x.pl).filter(finite), net = pls.reduce((s, v) => s + v, 0), wins = pls.filter(v => v > 0), losses = pls.filter(v => v < 0);
     const pf = losses.length ? wins.reduce((s, v) => s + v, 0) / Math.abs(losses.reduce((s, v) => s + v, 0)) : null;
