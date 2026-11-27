@@ -13,3 +13,6 @@
 
 /* Keep the paid Journal download as one target when the label wraps on phones. */
 #workbench #result > a[download]{display:inline-block;max-width:100%}
+
+/* Long position names must not push numeric columns out of the paid results viewport. */
+#workbench #result .table-wrap > table > tbody > tr > td:first-child{overflow-wrap:anywhere}
