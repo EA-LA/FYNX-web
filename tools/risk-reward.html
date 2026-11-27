@@ -427,6 +427,20 @@
 <link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 <style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
 <script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
+<style id="rr-partials-style">
+.rr-partials-controls{display:flex;flex-wrap:wrap;gap:12px 20px;margin:0 0 12px}
+.rr-partials-controls>div{display:flex;flex-direction:column;gap:6px;min-width:150px}
+.rr-partials-controls select{font-size:16px;min-height:44px;max-width:14rem}
+.rr-partials-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 14px;max-width:100%}
+.rr-partials-table{border-collapse:collapse;width:100%;max-width:760px;font-size:14px}
+@media(max-width:480px){.rr-partials-table{font-size:13px}.rr-partials-table th,.rr-partials-table td{padding:8px 4px}.rr-partials-table th[scope=row]{white-space:normal}.rr-partials-table thead th{font-size:11px}}
+.rr-partials-table th,.rr-partials-table td{padding:10px 12px;border-bottom:1px solid var(--divider,rgba(127,127,127,.25));text-align:right;white-space:nowrap}
+.rr-partials-table thead th{font-size:12px;font-weight:700;white-space:normal;vertical-align:bottom}
+.rr-partials-table th[scope=row],.rr-partials-table thead th:first-child{text-align:left}
+.rr-partials-yours th,.rr-partials-yours td{font-weight:800}
+.rr-partials-table .rr-pos{color:var(--ok,#15803d)}.rr-partials-table .rr-neg{color:var(--danger,#b91c1c)}
+.rr-partials .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/risk-reward.html">
 <meta property="og:title" content="Risk-to-Reward Ratio Calculator | FYNX">
 <meta property="og:description" content="Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.">
@@ -653,6 +667,41 @@
     <p class="hint">This assumes the same fixed per-unit cost and exact fills at your stop and target. Actual fills and costs may differ. The cost input is not included in calculator share links, exports or Risk API checks.</p>
     <noscript><p>This comparison needs JavaScript.</p></noscript>
   </section>
+  <section class="tool-explainer rr-partials" id="rrPartials" aria-labelledby="rrPartialsTitle">
+    <h2 id="rrPartialsTitle">Take part off early?</h2>
+    <p>Compare closing part of the trade at an earlier first target with holding it all to your take profit. Results use the entry, stop and target above and are in R (multiples of your planned risk), before costs.</p>
+    <div class="rr-partials-controls">
+      <div>
+        <label for="rrPartialFirst">First target</label>
+        <select id="rrPartialFirst" class="field">
+          <option value="0.5">0.5R</option>
+          <option value="1" selected>1R</option>
+          <option value="1.5">1.5R</option>
+          <option value="2">2R</option>
+          <option value="3">3R</option>
+        </select>
+      </div>
+      <div>
+        <label for="rrPartialShare">Share you close there</label>
+        <select id="rrPartialShare" class="field">
+          <option value="25">25%</option>
+          <option value="33">33%</option>
+          <option value="50" selected>50%</option>
+          <option value="66">66%</option>
+          <option value="75">75%</option>
+        </select>
+      </div>
+    </div>
+    <p class="hint" id="rrPartialsStatus" role="status" aria-live="polite">Calculate a trade above to fill this table.</p>
+    <div class="rr-partials-scroll" id="rrPartialsWrap" hidden>
+      <table class="rr-partials-table">
+        <caption class="sr-only">Result in R for each share closed at the first target</caption>
+        <thead><tr><th scope="col">Closed at first target</th><th scope="col">Rest hits target</th><th scope="col">Rest stopped at original stop</th><th scope="col">Stop moved to entry, then hit</th></tr></thead>
+        <tbody id="rrPartialsBody"></tbody>
+      </table>
+    </div>
+    <p class="hint">"Rest stopped at original stop" means price reached the first target, then came back to your stop. A trade that is stopped before reaching the first target loses the full −1R whatever you planned. Closing part early lowers the result when the target is hit and softens the result when price turns back; it does not change how often each happens. Example figures, not advice.</p>
+  </section>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the ratio for your supplied prices.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
 <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a target with the planned downside</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter entry, stop and target; the calculator detects long or short from which side of entry the stop sits. Add your win rate from past trades to see expectancy and the losing streak to plan for, and use the 1R/2R/3R targets to compare exits without moving your stop simply to improve the ratio.</p><h3>The calculation or concept</h3><p>Reward-to-risk ratio = distance to target ÷ distance to stop, for the chosen direction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A long entry at $100 with a $98 stop and $106 target has $2 of price risk and $6 of potential reward per unit: 3:1 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A large ratio does not make a setup profitable. Win rate, execution costs and the frequency of reaching the target also matter.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/tools/stock.html"><strong>Stock Position Sizing Calculator</strong><span>Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
@@ -747,6 +796,7 @@
       el.resultStatus.textContent = message;
       el.emptyHint.style.display = "block";
       el.resultsBox.style.display = "none";
+      document.dispatchEvent(new CustomEvent("fynx:rr-reset"));
       el.rrOut.textContent = "—";
       el.entryOut.textContent = "—";
       el.slOut.textContent = "—";
@@ -846,6 +896,7 @@
       el.riskOut.textContent = money(risk);
       el.rewardOut.textContent = money(reward);
       el.rrOut.textContent = rrFmt(rr);
+      document.dispatchEvent(new CustomEvent("fynx:rr-calculated", {detail:{entry, sl, tp, decimals: priceDecimals}}));
       el.beOut.textContent = (100 / (1 + rr)).toFixed(1) + "%";
 
       const direction =
@@ -1016,6 +1067,7 @@ calculate();if(el.error.textContent)throw new Error(el.error.textContent);
 
 
 <script src="/assets/js/risk-reward-costs.js?v=20261125"></script>
+<script src="/assets/js/rr-partials.js?v=20261127-site-qa-119"></script>
 <script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
