@@ -25,6 +25,14 @@
     .item{padding:1rem;border:1px solid var(--border);border-radius:20px;background:var(--panel-2)}
     .item strong{display:block;margin-bottom:.3rem}
     .item span{color:var(--muted)}
+    .vix-observations{margin:1rem 0;border:1px solid var(--border);border-radius:16px;padding:.75rem;min-width:0}
+    .vix-observations summary{display:list-item;cursor:pointer;font-weight:800;padding:.65rem .25rem;min-height:44px}
+    .vix-observations summary:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .vix-observations table{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+    .vix-observations caption{text-align:left;color:var(--muted);padding:.6rem 0;overflow-wrap:anywhere}
+    .vix-observations th,.vix-observations td{padding:.55rem .25rem;text-align:left;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
+    .vix-observations tr > :last-child{text-align:right}
+    .vix-observations tbody th{font-weight:500}
     @media (max-width:1050px){.grid{grid-template-columns:1fr}}
   .grid,.grid-2{align-items:start}
 </style>
@@ -102,6 +110,15 @@
         </select>
       </div>
       <div id="volWidget" aria-live="polite"><p>Loading Cboe observations…</p></div>
+      <details class="vix-observations" id="vixObservationTable" hidden>
+        <summary>View daily closing values</summary>
+        <p class="desc">Exact source observations for the selected chart range. The source date and any refresh warnings above also apply to this table.</p>
+        <table>
+          <caption id="vixObservationCaption">Cboe VIX daily closes</caption>
+          <thead><tr><th scope="col">Date (UTC)</th><th scope="col">VIX close</th></tr></thead>
+          <tbody id="vixObservationRows"></tbody>
+        </table>
+      </details>
       <p class="desc">Daily closing observations, not an intraday quote. <a href="https://www.cboe.com/tradable_products/vix/vix_historical_data/" target="_blank" rel="noopener">Source: Cboe VIX history ↗︎</a></p><button class="btn" id="retryVix">Refresh</button>
     </div>
   </div>
@@ -123,7 +140,7 @@ applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>
-  <script src="../assets/js/vix-chart.js?v=20261126-lookback"></script>
+  <script src="../assets/js/vix-chart.js?v=20261127-observation-table"></script>
 
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
