@@ -46,6 +46,8 @@
   const a=dataset?.rows.find(r=>r.area===base.area),b=dataset?.rows.find(r=>r.area===quote.area);
   document.getElementById('rateDifference').textContent=a&&b?`${(a.value-b.value).toFixed(3)} percentage points`:'Comparison unavailable';
   document.getElementById('differenceDates').textContent=a&&b?`${base.currency}: ${a.observationDate} · ${quote.currency}: ${b.observationDate}. Reported policy instruments may differ.`:'Both published observations are required.';
+  // Carry estimate widget (assets/js/rate-carry.js) listens for this.
+  document.dispatchEvent(new CustomEvent('fynx:rate-difference',{detail:{base:base.currency,quote:quote.currency,baseRate:a?.value,quoteRate:b?.value}}));
  }
  async function load(){
   // Keep keyboard focus on Check data while a retry is in progress.
