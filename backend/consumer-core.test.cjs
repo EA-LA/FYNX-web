@@ -286,3 +286,37 @@ test('Trade Review shows the first unchecked item in order and a clear completed
  assert.equal(done.nextUncheckedItem,'All checklist items complete');
  assert.deepEqual([done.preTradePreparation,done.tradeFollowThrough,done.score],['3 of 3 complete','2 of 2 complete',100]);
 });
+
+test('paid Risk Planner explains when the risk budget cannot model even one minimum unit increment',()=>{
+ const input={...risk,balance:100,multiplier:1000000};
+ for(const prices of [{},{stop:102,target:96}]){
+  const result=run('risk',{...input,...prices});
+  assert.deepEqual([result.riskBudget,result.units,result.lossAtStop,result.profitAtTarget],[1,0,0,0]);
+  assert.match(result.notice,/No position can be modeled.*six-decimal unit precision/);
+  assert.match(result.notice,/calculated risk budget is unused/);
+  assert.equal(result.breakEvenWinRate,'33.333%');
+ }
+ const minimum=run('risk',{...input,stop:99});
+ assert.equal(minimum.units,0.000001);
+ assert.equal(minimum.lossAtStop,1);
+ assert.doesNotMatch(minimum.notice,/risk budget is unused/);
+ assert.doesNotMatch(run('risk',risk).notice,/risk budget is unused/);
+});
+
+test('paid Scenario Comparison identifies exactly the scenarios with zero modeled units',()=>{
+ const input={...risk,balance:100,multiplier:1000000};
+ const mixed=run('scenarios',input);
+ assert.deepEqual(mixed.scenarios.map(row=>row.units),[0,0,0,0.000001]);
+ assert.match(mixed.notice,/the 0\.5×, 1×, 1\.5× scenarios have zero units/);
+ assert.match(mixed.notice,/risk budgets are unused/);
+ const single=run('scenarios',{...input,stop:99});
+ assert.deepEqual(single.scenarios.map(row=>row.units),[0,0.000001,0.000001,0.000002]);
+ assert.match(single.notice,/the 0\.5× scenario has zero units; its calculated risk budget is unused/);
+ const all=run('scenarios',{...input,multiplier:1000000000});
+ assert.ok(all.scenarios.every(row=>row.units===0));
+ assert.match(all.notice,/the 0\.5×, 1×, 1\.5×, 2× scenarios have zero units/);
+ assert.doesNotMatch(run('scenarios',risk).notice,/zero units/);
+ const capped=run('scenarios',{...input,riskPct:80,multiplier:1000000000});
+ assert.match(capped.notice,/capped at 100%/);
+ assert.match(capped.notice,/zero units/);
+});

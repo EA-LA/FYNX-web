@@ -26,7 +26,7 @@ function analytics(trades){
 }
 const MAX_RISK_PCT=100;
 // Validate the customer's base risk before applying an internal scenario multiplier.
-function risk(d,scenarioFactor=1){const balance=number(d.balance,'Balance',1),riskPct=Math.min(MAX_RISK_PCT,number(d.riskPct,'Risk percent',0.01,MAX_RISK_PCT)*scenarioFactor),entry=number(d.entry,'Entry',0.000001),stop=number(d.stop,'Stop',0.000001),target=number(d.target,'Target',0.000001),multiplier=number(d.multiplier??1,'Contract multiplier',0.000001),rate=number(d.rate??1,'Quote-to-account rate',0.000001);if(entry===stop||(entry-stop)*(target-entry)<=0)throw Error('Stop and target must lie on opposite sides of entry.');const budget=balance*riskPct/100,perUnit=Math.abs(entry-stop)*multiplier*rate,units=Math.floor(budget/perUnit*1e6)/1e6;return {riskBudget:budget,units,lossAtStop:units*perUnit,profitAtTarget:units*Math.abs(target-entry)*multiplier*rate,rewardRisk:Math.abs(target-entry)/Math.abs(entry-stop),notice:'Model only. Units use your contract multiplier and conversion rate. Fees, slippage and broker lot increments are excluded.'};}
+function risk(d,scenarioFactor=1){const balance=number(d.balance,'Balance',1),riskPct=Math.min(MAX_RISK_PCT,number(d.riskPct,'Risk percent',0.01,MAX_RISK_PCT)*scenarioFactor),entry=number(d.entry,'Entry',0.000001),stop=number(d.stop,'Stop',0.000001),target=number(d.target,'Target',0.000001),multiplier=number(d.multiplier??1,'Contract multiplier',0.000001),rate=number(d.rate??1,'Quote-to-account rate',0.000001);if(entry===stop||(entry-stop)*(target-entry)<=0)throw Error('Stop and target must lie on opposite sides of entry.');const budget=balance*riskPct/100,perUnit=Math.abs(entry-stop)*multiplier*rate,units=Math.floor(budget/perUnit*1e6)/1e6;return {riskBudget:budget,units,lossAtStop:units*perUnit,profitAtTarget:units*Math.abs(target-entry)*multiplier*rate,rewardRisk:Math.abs(target-entry)/Math.abs(entry-stop),notice:'Model only. Units use your contract multiplier and conversion rate. Fees, slippage and broker lot increments are excluded.'+(units===0?' No position can be modeled at the tool’s six-decimal unit precision. The calculated risk budget is unused.':'')};}
 // With constant modeled wins and losses, L/(L+W) is the zero-expectancy win rate.
 function breakEvenWinRate(rewardRisk){
  const pct=Number((100/(1+rewardRisk)).toFixed(3));
@@ -58,7 +58,10 @@ function run(product,d={},trades=[]){
   const capped=multipliers.filter(f=>Number(d.riskPct)*f>MAX_RISK_PCT).map(f=>f+'×');
   const scope=capped.length===1?'scenario was':'scenarios were';
   const capNotice=capped.length?' The '+capped.join(' and ')+' '+scope+' capped at '+MAX_RISK_PCT+'% of account balance. Risk Multiplier shows the requested multiplier.':'';
-  return {base,scenarios:multipliers.map(f=>({riskMultiplier:f,...risk(d,f)})),breakEvenWinRate:breakEvenWinRate(base.rewardRisk),notice:breakEvenNotice+' Changing position size does not change this threshold.'+capNotice};
+  const scenarios=multipliers.map(f=>({riskMultiplier:f,...risk(d,f)}));
+  const zeroUnits=scenarios.filter(row=>row.units===0).map(row=>row.riskMultiplier+'×');
+  const zeroNotice=zeroUnits.length?' At the tool’s six-decimal unit precision, the '+zeroUnits.join(', ')+(zeroUnits.length===1?' scenario has zero units; its calculated risk budget is unused.':' scenarios have zero units; their calculated risk budgets are unused.'):'';
+  return {base,scenarios,breakEvenWinRate:breakEvenWinRate(base.rewardRisk),notice:breakEvenNotice+' Changing position size does not change this threshold.'+capNotice+zeroNotice};
  }
  if(product==='review'){
   const value=d.notes;
