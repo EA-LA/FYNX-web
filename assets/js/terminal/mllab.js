@@ -103,6 +103,39 @@
     ['Random forest', '#3ecf8e', (X, y) => ML.forestFit(X, y, {trees: 40, depth: 4, minLeaf: 30, seed: 7})],
     ['Neural net', '#c084fc', (X, y) => ML.mlpFit(X, y, {hidden: 12, epochs: 25, lr: 0.005, l2: 3e-3, seed: 7})]
   ];
+  function probabilityCalibration(probabilities, outcomes, test) {
+    const bins = Array.from({length: 5}, () => ({n: 0, pSum: 0, up: 0}));
+    for (const i of test) {
+      const p = probabilities[i], y = outcomes[i];
+      if (!finite(p) || p < 0 || p > 1 || (y !== 0 && y !== 1)) continue;
+      const bin = bins[Math.min(4, Math.floor(p * 5))];
+      bin.n++; bin.pSum += p; bin.up += y;
+    }
+    return bins.map(({n, pSum, up}) => ({n, forecast: n ? pSum / n : null, observed: n ? up / n : null}));
+  }
+  function calibrationCard(results) {
+    const picker = el('select'); picker.style.minHeight = '44px';
+    const label = el('label', '', 'Calibration model '); label.append(picker);
+    for (const [i, model] of results.entries()) {
+      const opt = el('option', '', model.name); opt.value = String(i); picker.append(opt);
+    }
+    const status = note(''); status.setAttribute('role', 'status');
+    const rows = el('div');
+    const refresh = () => {
+      const model = results[Number(picker.value)], bins = model.calibration;
+      const labels = ['0–<20%', '20–<40%', '40–<60%', '60–<80%', '80–100%'];
+      const n = bins.reduce((sum, b) => sum + b.n, 0);
+      status.textContent = `${model.name} · ${n.toLocaleString('en-US')} usable test days`;
+      const view = table(['Predicted up chance', 'Test days', 'Avg. prediction', 'Actual up-day rate'],
+        bins.map((b, i) => [labels[i], String(b.n), pct(b.forecast, 1), b.n >= 20 ? pct(b.observed, 1) : b.n ? 'Too few days' : '—']));
+      const tm = view.firstChild; tm.setAttribute('aria-label', 'Probability calibration by forecast range');
+      for (const th of tm.rows[0].cells) th.scope = 'col';
+      rows.replaceChildren(view);
+    };
+    picker.addEventListener('change', refresh); refresh();
+    return card('HOW WELL DID FORECAST PROBABILITIES MATCH?', label, status, rows,
+      note('Compares predicted chances with how often the market actually closed higher on held-out days. Bins with fewer than 20 test days do not display an outcome rate. These historical rates do not adjust today’s forecast.'));
+  }
   async function mlpredRun(sym, step) {
     const B = await dailyBars(sym, 1300), F = dirFeatures(B), n = F.X.length, start = Math.max(750, Math.floor(n * 0.4));
     const probs = MODELS.map(() => new Float64Array(n).fill(NaN));
@@ -118,7 +151,7 @@
       const longShare = test.filter(i => p[i] > 0.5).length / test.length;
       return {hits, acc, p: ML.binomTail(hits, test.length, Math.max(base, 1 - base)), strat, sharpe: ML.sharpe(strat), longShare};
     };
-    const res = MODELS.map((m, k) => ({name: m[0], color: m[1], ...evalModel(probs[k])}));
+    const res = MODELS.map((m, k) => ({name: m[0], color: m[1], ...evalModel(probs[k]), calibration: probabilityCalibration(probs[k], F.y, test)}));
     const bh = test.map(i => F.nxt[i]);
     // tomorrow: refit on everything
     const z = ML.standardizer(F.X), Xall = F.X.map(z), now = MODELS.map(m => m[2](Xall, F.y).predict(z(F.last)));
@@ -153,6 +186,7 @@
     const rows = r.res.map(m => [m.name, pct(m.acc, 1), `${m.hits} / ${r.test.length}`, pv(m.p), num(m.sharpe), pct(m.longShare, 0)]);
     rows.push([`Always ${r.base >= 0.5 ? 'up' : 'down'}`, pct(aU, 1), `${Math.round(aU * r.test.length)} / ${r.test.length}`, '—', num(r.bhSharpe), '100%']);
     out.append(card('SCORECARD (WALK-FORWARD, NEVER TRAINED ON THE DAYS IT PREDICTS)', table(['Model', 'Accuracy', 'Right', 'Binomial p', 'Sharpe', 'Long'], rows, (i, j) => j === 3 && i < 3 ? (r.res[i].p < 0.05 ? GREEN : GREY) : null)));
+    out.append(calibrationCard(r.res));
     out.append(card('HOW IT WORKS', ...[`Every trading day becomes 12 numbers: ${FEAT.join(', ').toLowerCase()}. The label is whether the next day closed higher.`, `Walk-forward: the models train on everything up to a date, predict the next ${r.step} days, then retrain with those days added. The first ${r.start.toLocaleString('en-US')} days are training only. Features are standardised with training statistics only.`, 'Logistic regression is linear; the random forest (40 trees, depth 4) and the neural net (12 tanh units, Adam) can find non-linear patterns, which also makes them easier to overfit.', 'The binomial test asks how likely this many right calls would be if the model were no better than always guessing the more common outcome. Delayed Yahoo Finance data. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       lineChart(eq, {series: [{v: cum(r.bh), color: GREY, width: 1.2, name: 'Buy & hold'}, ...r.res.map(m => ({v: cum(m.strat), color: m.color, width: 1.5, name: m.name}))], xs: r.test.map(i => r.B.day[r.F.idx[i]]), log: true, yfmt: v => v.toFixed(2) + '×', aria: 'Out-of-sample growth'});
@@ -557,5 +591,5 @@
       grid: {cols: '1fr 1fr 1fr', areas: ['s1 s2 s3', 's4 s5 s6']}};
     const si = T.DESK_ORDER.indexOf('strategy'), qi = T.DESK_ORDER.indexOf('quant'), at = si >= 0 ? si + 1 : qi >= 0 ? qi + 1 : 1; T.DESK_ORDER.splice(at, 0, 'ailab');
   }
-  T.MLLab = {dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
+  T.MLLab = {probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
 });
