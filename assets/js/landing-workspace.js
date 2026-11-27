@@ -67,7 +67,13 @@
     });
   });
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); }, { threshold: .25 }).observe(terminal);
+    new IntersectionObserver(entries => {
+      // isIntersecting alone remains true below the configured threshold.
+      const entry = entries[entries.length - 1];
+      if (!entry) return;
+      visible = entry.isIntersecting && entry.intersectionRatio >= .25;
+      sync();
+    }, { threshold: .25 }).observe(terminal);
   }
   // Pause while a desktop visitor is reading or comparing Market Desk panels.
   // Touch movement must not stop the slideshow; focus and manual pause remain independent.
@@ -81,10 +87,12 @@
   terminal.addEventListener('focusin', sync);
   terminal.addEventListener('focusout', () => queueMicrotask(sync));
   document.addEventListener('visibilitychange', sync);
-  motion?.addEventListener?.('change', () => {
+  function motionChanged() {
     if (motion.matches) userPaused = true;
     sync();
-  });
+  }
+  if (typeof motion?.addEventListener === 'function') motion.addEventListener('change', motionChanged);
+  else if (typeof motion?.addListener === 'function') motion.addListener(motionChanged);
   window.addEventListener('pagehide', () => { suspended = true; sync(); });
   window.addEventListener('pageshow', () => { suspended = false; sync(); });
   show(index);
