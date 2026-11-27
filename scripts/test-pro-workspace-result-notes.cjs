@@ -79,3 +79,22 @@ test('paid Journal path details have a 44 px minimum target without changing oth
     assert.notEqual(window.getComputedStyle(other).minHeight, '44px');
   });
 });
+
+test('paid Research Watchlist keeps long symbols visible without changing their news links', async () => {
+  await withPaidResult('watchlist', async ({window, document, lastRequest}) => {
+    const symbol = 'NASDAQ100WEEKLYCALL20261218USD';
+    const field = document.getElementById('tool-symbols');
+    field.value = symbol;
+    field.dispatchEvent(new window.Event('input', { bubbles: true }));
+    document.getElementById('runTool').click();
+    await new Promise(resolve => setImmediate(resolve));
+    const link = document.querySelector('#workbench #result > ul > li > a');
+    assert.ok(link);
+    assert.equal(lastRequest()?.product, 'watchlist');
+    assert.ok(link.textContent.startsWith(symbol));
+    assert.equal(link.getAttribute('href'), '/tools/symbol-news.html?q=' + symbol);
+    assert.equal(window.getComputedStyle(link).overflowWrap, 'anywhere');
+    link.focus();
+    assert.equal(document.activeElement, link);
+  });
+});
