@@ -196,9 +196,9 @@
       <div class="eyebrow">FYNX Learning Module</div>
       <h1>Finance &amp; Trading Quizzes</h1>
       <p>
-        A full quiz platform with <b>1,000 educational questions</b> across forex, crypto, stocks,
-        futures, funds, indices, bonds, economy, and options. Each attempt mixes fresh questions,
-        gives you <b>10 questions per test</b>, scores your results, and shows the correct and wrong answers at the end.
+        Practice with <b data-quiz-bank-count>educational questions</b> across forex, crypto, stocks,
+        futures, funds, indices, bonds, economy, and options. Each attempt gives you
+        <b>10 questions per test</b> in a shuffled order, scores your results, and shows the correct and wrong answers at the end.
       </p>
       <div class="hero-actions">
         <a class="btn primary" href="#setup">Start Setup</a>
@@ -206,8 +206,8 @@
         <a class="btn" href="#instructions">How It Works</a>
       </div>
       <div class="stats">
-        <div class="stat"><strong>1,000</strong><span>Total question bank</span></div>
-        <div class="stat"><strong>10</strong><span>Random questions per attempt</span></div>
+        <div class="stat"><strong id="quizBankTotal">—</strong><span>Total question bank</span></div>
+        <div class="stat"><strong>10</strong><span>Questions per attempt</span></div>
         <div class="stat"><strong>9</strong><span>Trading categories</span></div>
         <div class="stat"><strong>Instant</strong><span>Result + full answer review</span></div>
       </div>
@@ -216,7 +216,7 @@
     <section id="instructions" class="section">
       <div class="section-title">
         <h2>How it works</h2>
-        <p>Choose one market or choose all markets. Each attempt pulls a different set of 10 random questions from the full FYNX quiz bank.</p>
+        <p>Choose one market or choose all markets. Questions are shuffled for each attempt.</p>
       </div>
       <div class="grid instructions">
         <div class="card">
@@ -227,7 +227,7 @@
         <div class="card">
           <div class="tag">Quiz Rules</div>
           <h3>How the system behaves</h3>
-          <p>Every new attempt re-mixes the question set. If you choose Forex, you get Forex-only questions. If you choose All Markets, you get mixed questions from the entire 1,000-question bank.</p>
+          <p>If you choose Forex, you get Forex-only questions. If you choose All Markets, questions are drawn from the full bank. A category with only 10 questions uses the same questions in a shuffled order.</p>
         </div>
       </div>
     </section>
@@ -447,21 +447,12 @@
       options: "Options"
     };
 
-    const FULL_COUNTS = {
-      all: 1000,
-      forex: 120,
-      crypto: 110,
-      stocks: 120,
-      futures: 110,
-      funds: 110,
-      indices: 100,
-      bonds: 100,
-      economy: 120,
-      options: 110
-    };
+    const FULL_COUNTS = Object.fromEntries(Object.keys(CATEGORY_LABELS).map(key => [key, 0]));
+    for (const {category} of QUIZ_BANK) FULL_COUNTS[category]++;
+    FULL_COUNTS.all = QUIZ_BANK.length;
 
     const CATEGORY_DESCRIPTIONS = {
-      all: "Pulls random questions from the entire 1,000-question bank.",
+      all: "Draws questions from the full question bank.",
       forex: "Pairs, pips, leverage, margin, structure, and execution.",
       crypto: "Blockchain, wallets, tokenomics, volatility, and DeFi basics.",
       stocks: "Orders, earnings, valuation, sectors, and stock-market mechanics.",
@@ -697,6 +688,9 @@
       focusQuizStage(document.getElementById("quizSetupHeading"));
     });
 
+    const bankTotal = FULL_COUNTS.all.toLocaleString();
+    document.getElementById("quizBankTotal").textContent = bankTotal;
+    document.querySelector("[data-quiz-bank-count]").textContent = bankTotal + " educational questions";
     renderCategories();
   </script>
 
