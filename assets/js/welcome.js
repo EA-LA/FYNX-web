@@ -34,7 +34,11 @@
     plus: 'Your Plus plan is active. Every Terminal lab is open with room to work: 60 analyses, 50 backtests and 25 AI forecasts a day.',
     pro: 'Your Professional plan is active. Everything in FYNX is open, with no daily limits anywhere.'
   };
-  let step = 0, steps = [];
+  let step = 0, steps = [], activeMembership = null;
+  function paintAllowance() {
+    const m = P.meter('analysis');
+    $('wlToday').textContent = Number.isFinite(m.limit) ? `${m.left} of ${m.limit} analyses left` : 'Unlimited';
+  }
   function renderStep() {
     const host = $('wlSteps'); host.replaceChildren();
     const [title, text, cta, href, tag] = steps[step];
@@ -50,15 +54,17 @@
     $('wlPrev').disabled = step === 0;
     $('wlNext').textContent = step === steps.length - 1 ? 'Open your Terminal →' : 'Next →';
   }
-  function welcome(tier) {
+  function welcome(membership) {
+    const {tier, uid} = membership;
+    activeMembership = {tier, uid};
     show('wlWelcome');
-    const name = P.NAMES[tier], m = P.meter('analysis');
+    const name = P.NAMES[tier];
     document.title = `Welcome to FYNX ${name}`;
     $('wlKick').textContent = `${name.toUpperCase()} MEMBERSHIP ACTIVE`;
     $('wlTitle').textContent = `Thank you. Welcome to FYNX ${name}.`;
     $('wlLead').textContent = LEADS[tier];
     $('wlPlan').textContent = P.owner ? P.label : name; $('wlPrice').textContent = P.owner ? 'Lifetime · complimentary' : P.PRICES[tier] + ' / month';
-    $('wlToday').textContent = Number.isFinite(m.limit) ? `${m.left} of ${m.limit} analyses left` : 'Unlimited';
+    paintAllowance();
     const perks = $('wlPerks'); perks.replaceChildren();
     P.PERKS[tier].forEach((x, i) => { const li = document.createElement('li'); li.textContent = x; li.style.animationDelay = (i * 90) + 'ms'; perks.append(li); });
     $('wlStart').href = tier === 'starter' ? '/pro.html?tool=analytics#workbench' : tier === 'pro' ? '/terminal.html?desk=strategy' : '/terminal.html?desk=quant';
@@ -79,14 +85,26 @@
   $('wlPrev').addEventListener('click', () => { if (step > 0) { step--; renderStep(); } });
   $('wlNext').addEventListener('click', () => { if (step < steps.length - 1) { step++; renderStep(); } else location.href = $('wlStart').href; });
   $('wlTourBtn').addEventListener('click', () => $('wlTour').scrollIntoView({behavior: 'smooth', block: 'start'}));
+  // Usage synchronization completes after membership verification. Update the meter without
+  // resetting the tour, and stop displaying an old membership if the account or tier changes.
+  P.onChange(s => {
+    if (!activeMembership) return;
+    if (!s.signedIn || s.verified !== true || s.uid !== activeMembership.uid || s.tier !== activeMembership.tier) {
+      activeMembership = null;
+      show(s.signedIn ? 'wlPending' : 'wlGuest');
+      return;
+    }
+    paintAllowance();
+  });
   async function check() {
+    activeMembership = null;
     show('wlChecking');
     const s = await P.ready();
     if (!s.signedIn) { show('wlGuest'); return; }
     for (let i = 0; i < 6; i++) {
       const r = await P.refresh();
       if (!r.signedIn) { show('wlGuest'); return; }
-      if (r.verified === true && ['starter', 'plus', 'pro'].includes(r.tier)) { welcome(r.tier); return; }
+      if (r.verified === true && ['starter', 'plus', 'pro'].includes(r.tier)) { welcome(r); return; }
       await new Promise(res => setTimeout(res, 2500));
     }
     show('wlPending');
