@@ -55,3 +55,38 @@ test('page loads the module and renders the table', () => {
   assert.match(html, /id="multBody"/);
   assert.match(html, /renderMultiples\(\);/);
 });
+
+test('real ATR controls keep their node and pressed state after activation or opening a scenario', () => {
+  const { JSDOM } = require('jsdom');
+  const html = readFileSync(join(__dirname, '..', 'tools', 'atr-stop.html'), 'utf8');
+  const { window } = new JSDOM(html, { url: 'https://www.fynxfinanceworld.com/tools/atr-stop.html', runScripts: 'outside-only' });
+  try {
+    const doc = window.document;
+    const get = id => doc.getElementById(id);
+    const controller = [...doc.scripts].find(script => script.textContent.includes('function buildMultipleChips()'));
+    assert.ok(controller);
+    window.eval(readFileSync(join(__dirname, '..', 'assets', 'js', 'atr-multiples.js'), 'utf8'));
+    window.eval(controller.textContent);
+    const chips = [...get('multChips').querySelectorAll('button')];
+    const [buy, sell] = get('sideSeg').querySelectorAll('button');
+    const pressed = node => [...node.querySelectorAll('button[aria-pressed="true"]')];
+    assert.deepEqual(pressed(get('multChips')), [chips[1]]);
+    assert.deepEqual(pressed(get('sideSeg')), [buy]);
+    chips[2].focus();
+    chips[2].click();
+    assert.equal(doc.activeElement, chips[2]);
+    assert.deepEqual(pressed(get('multChips')), [chips[2]]);
+    assert.equal(get('stopOut').textContent, '1.09200');
+    assert.equal(chips[2].classList.contains('active'), true);
+    assert.equal(chips[1].classList.contains('active'), false);
+    get('side').value = 'sell';
+    get('mult').value = '3';
+    get('applyScenario').click();
+    assert.deepEqual([...get('multChips').querySelectorAll('button')], chips, 'scenario changes same controls, not replacement nodes');
+    assert.deepEqual(pressed(get('sideSeg')), [sell]);
+    assert.deepEqual(pressed(get('multChips')), [chips[4]]);
+    assert.equal(get('stopOut').textContent, '1.11200');
+  } finally {
+    window.close();
+  }
+});
