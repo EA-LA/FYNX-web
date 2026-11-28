@@ -50,5 +50,76 @@ function load() {
     const src = fs.readFileSync(path.join(__dirname, '../assets/js/fynx-plan.js'), 'utf8');
     assert.match(src, /!cached\.owner &&/); assert.ok(!/ha6876122/.test(src), 'no email check in the browser');
   }
+
+  // Paid membership responses must belong to the active verification, even when
+  // accounts change or sign out while the membership service is responding.
+  {
+    const paid = {mode: 'live', tier: 'pro', owner: true};
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let resolveOld;
+    ({P, store} = load());
+    P._test.set({config: {auth}, call: d => d.action === 'status'
+      ? new Promise(resolve => { resolveOld = resolve; }) : Promise.resolve({counts: {}})}, {});
+    const pending = P.refresh();
+    auth.currentUser = null;
+    await P.refresh();
+    resolveOld(paid);
+    await pending;
+    assert.equal(P.tier, 'guest', 'late paid status cannot restore access after sign-out');
+    assert.equal(P.owner, false);
+    assert.equal(store.has('fynx.plan.v1'), false, 'late status cannot repopulate the membership cache');
+  }
+  {
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let resolveOld, calls = 0, seen = [];
+    ({P, store} = load());
+    P._test.set({config: {auth}, call: d => d.action === 'status'
+      ? (++calls === 1 ? new Promise(resolve => { resolveOld = resolve; }) : Promise.resolve({mode: 'live', tier: 'starter'}))
+      : Promise.resolve({counts: {analysis: 3}})}, {tier: 'pro', uid: 'old', signedIn: true, verified: true, owner: true});
+    P.onChange(s => seen.push(s));
+    const pending = P.refresh();
+    assert.equal(seen[0].tier, 'free', 'the prior paid account is hidden during verification');
+    assert.equal(seen[0].owner, false);
+    auth.currentUser = {uid: 'paid-b'};
+    await P.refresh();
+    resolveOld({mode: 'live', tier: 'pro', owner: true});
+    await pending;
+    assert.equal(P.tier, 'starter');
+    assert.equal(P.owner, false);
+    assert.equal(JSON.parse(store.get('fynx.plan.v1')).uid, 'paid-b');
+    assert.equal(P.meter('analysis').left, 12);
+  }
+  {
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let resolveUsage, count = 0;
+    ({P, store} = load());
+    P._test.set({config: {auth}, call: d => {
+      if (d.action === 'status') return Promise.resolve({mode: 'live', tier: 'starter'});
+      return ++count === 1 ? new Promise(resolve => { resolveUsage = resolve; }) : Promise.resolve({counts: {analysis: 2}});
+    }}, {});
+    await P.refresh();
+    auth.currentUser = {uid: 'paid-b'};
+    await P.refresh();
+    assert.equal(P.meter('analysis').left, 13);
+    resolveUsage({counts: {analysis: 14}});
+    await Promise.resolve();
+    assert.equal(P.meter('analysis').left, 13, 'old account usage cannot overwrite the new paid allowance');
+    assert.equal(JSON.parse(store.get('fynx.usage.v1')).who, 'paid-b');
+  }
+  {
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let rejectOld, calls = 0;
+    ({P} = load());
+    P._test.set({config: {auth}, call: d => d.action === 'status'
+      ? (++calls === 1 ? new Promise((_, reject) => { rejectOld = reject; }) : Promise.resolve({mode: 'live', tier: 'plus'}))
+      : Promise.resolve({counts: {}})}, {});
+    const pending = P.refresh();
+    auth.currentUser = {uid: 'paid-b'};
+    await P.refresh();
+    rejectOld(new Error('old request failed'));
+    await pending;
+    assert.equal(P.tier, 'plus', 'an old failed verification cannot downgrade a newer paid account');
+  }
+
   console.log('FYNXPlan usage: server-counted allowances, storage reset resistance, repeats, offline fallback, guest limits and owner access passed');
 })().catch(e => { console.error(e); process.exit(1); });
