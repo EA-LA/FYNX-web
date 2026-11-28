@@ -513,6 +513,52 @@
     requestAnimationFrame(() => histogram(hb, r));
   }
 
+  // The simulation already returns ascending dollar P&L. This is a lower bound:
+  // paths exactly at the threshold are not losses strictly greater than it.
+  function lossThresholdStats(sorted, value, percent) {
+    if (!sorted?.length || !finite(value) || value <= 0 || !finite(percent) || percent < 0 || percent > 100) return null;
+    const amount = (percent / 100) * value;
+    let low = 0, high = sorted.length;
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      if (sorted[middle] < -amount) low = middle + 1;
+      else high = middle;
+    }
+    return {amount, count: low, paths: sorted.length, fraction: low / sorted.length};
+  }
+
+  let lossThresholdPercent = 10; // Current tab only; not part of a saved run or its allowance key.
+  function lossThresholdCard(r) {
+    const card = el('div', 'fx-ql-card fx-ql-loss-threshold');
+    card.append(el('h3', '', 'CUSTOM LOSS THRESHOLD'));
+    if (!finite(r.value) || r.value <= 0) {
+      card.append(el('p', 'fx-ql-note', 'A positive portfolio value is needed to express the threshold as a percentage.'));
+      return card;
+    }
+    const row = el('div', 'fx-ql-row'), label = el('label', '', 'Loss threshold (% of portfolio)');
+    const input = el('input');
+    input.type = 'number'; input.inputMode = 'decimal'; input.min = '0'; input.max = '100'; input.step = 'any';
+    input.value = lossThresholdPercent; input.style.width = '6em'; input.style.minHeight = '44px';
+    label.append(input); row.append(label);
+    const result = el('p', 'fx-ql-note'); result.setAttribute('role', 'status'); result.setAttribute('aria-atomic', 'true');
+    const currency = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'});
+    const update = () => {
+      const percent = input.valueAsNumber, stats = lossThresholdStats(r.sorted, r.value, percent);
+      if (!stats) {
+        input.setAttribute('aria-invalid', 'true');
+        result.textContent = 'Enter a percentage from 0 to 100.';
+        return;
+      }
+      input.removeAttribute('aria-invalid');
+      lossThresholdPercent = percent;
+      result.textContent = `${pct(stats.fraction, 2)} (${stats.count.toLocaleString()} of ${stats.paths.toLocaleString()} paths) lost more than ${percent}% (about ${currency.format(stats.amount)}) over ${r.fan.length} simulated day${r.fan.length === 1 ? '' : 's'}.`;
+    };
+    input.addEventListener('input', update);
+    card.append(row, result, el('p', 'fx-ql-note', 'Uses the paths already simulated above. This is a model estimate, not a forecast or a maximum possible loss.'));
+    update();
+    return card;
+  }
+
   async function renderMcvarPage(host, arg, alive) {
     PG.setHead('MCVAR', 'Portfolio risk simulator', `${PATHS.toLocaleString()} Monte Carlo futures · Value at Risk · backtest against reality`);
     const wrap = el('div', 'fx-ql fx-ql-page'); host.append(wrap);
@@ -544,6 +590,7 @@
     if (!out.isConnected) return; out.replaceChildren();
     if (r.symbolsMissing.length) out.append(el('p', 'fx-ql-note', `No price history for ${r.symbolsMissing.join(', ')}; simulated without them.`));
     kpis(out, [[`VALUE AT RISK ${Math.round(V.conf * 100)}%`, money(-r.VaR), `${pct(r.VaR / r.value)} over ${V.horizon} day${V.horizon > 1 ? 's' : ''}`, '#ffb000'], ['EXPECTED SHORTFALL', money(-r.es), 'average loss beyond VaR', '#ff5a4f'], ['MEDIAN OUTCOME', money(r.median), 'half of futures do better'], ['GOOD CASE (95TH)', money(r.best), '1 in 20 futures beat this'], ['P(LOSS > 10%)', pct(r.probLoss10, 1), `of ${PATHS.toLocaleString()} paths`]]);
+    out.append(lossThresholdCard(r));
     const split = el('div', 'fx-ql-split'), c1 = el('div', 'fx-ql-card'), c2 = el('div', 'fx-ql-card');
     c1.append(el('h3', '', `DISTRIBUTION OF ${PATHS.toLocaleString()} OUTCOMES`)); const hb = el('div', 'fx-ql-chart'); hb.style.height = '260px'; c1.append(hb);
     c1.append(el('p', 'fx-ql-note', `Red bars are the worst ${Math.round((1 - V.conf) * 100)}% of futures. The amber line is the VaR: the loss you should exceed only ${Math.round((1 - V.conf) * 100)} times in 100. The red dotted line is the Expected Shortfall, the average of those bad cases.`));
@@ -582,5 +629,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s5 s6 s7']}};
     const wi = T.DESK_ORDER.indexOf('world'); T.DESK_ORDER.splice(wi >= 0 ? wi + 1 : 1, 0, 'quant');
   }
-  T.QuantLab = {loadCloses, alignedReturns, quantile, erfc, cholesky, topEigen, kpis, UNIVERSE, SECTOR_OF};
+  T.QuantLab = {loadCloses, alignedReturns, quantile, erfc, cholesky, topEigen, kpis, UNIVERSE, SECTOR_OF, lossThresholdStats};
 });
