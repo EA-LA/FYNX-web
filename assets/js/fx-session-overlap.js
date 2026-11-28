@@ -10,10 +10,15 @@
   const date = get('fx-overlap-date');
   const displayZone = get('tz');
   const result = get('fx-overlap-result');
+  const calendar = get('fx-overlap-calendar');
+  const calendarStatus = get('fx-overlap-calendar-status');
+  // Cached planner HTML can load this newer script without the calendar markup.
+  const hasCalendar = !!(calendar && calendarStatus);
   const dayMs = 86_400_000;
   const minuteMs = 60_000;
   const formatters = new Map();
   let hasResult = false;
+  let calendarResult = null;
 
   for (const select of [first, second]) {
     for (const session of sessions.values()) {
@@ -73,8 +78,56 @@
     return `${format.format(start)} to ${format.format(end)}`;
   }
 
+  function clearCalendar() {
+    calendarResult = null;
+    if (calendar) calendar.disabled = true;
+    if (calendarStatus) calendarStatus.textContent = '';
+  }
+
+  const selectionKey = () => [first.value, second.value, date.value, displayZone.value].join('|');
+  function icsStamp(value) {
+    return new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  }
+
+  if (hasCalendar) calendar.addEventListener('click', () => {
+    if (!calendarResult || calendarResult.key !== selectionKey()) {
+      clearCalendar();
+      return;
+    }
+    const { pair, venues, periods, utcDate } = calendarResult;
+    const now = icsStamp(Date.now());
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FYNX//Forex Session Planner//EN', 'CALSCALE:GREGORIAN'];
+    for (const [start, end] of periods) {
+      lines.push('BEGIN:VEVENT',
+        `UID:fx-${pair}-${start.toString(36)}-${end.toString(36)}@fynxfinanceworld.com`,
+        `DTSTAMP:${now}`, `DTSTART:${icsStamp(start)}`, `DTEND:${icsStamp(end)}`,
+        `SUMMARY:${venues} forex overlap (indicative)`,
+        'DESCRIPTION:Modeled hours only. Not live or holiday-adjusted.',
+        'TRANSP:TRANSPARENT', 'END:VEVENT');
+    }
+    const payload = lines.concat('END:VCALENDAR', '').join('\r\n');
+    let url;
+    let link;
+    try {
+      url = URL.createObjectURL(new Blob([payload], { type: 'text/calendar;charset=utf-8' }));
+      link = document.createElement('a');
+      link.href = url;
+      link.download = `fynx-forex-overlap-${pair}-${utcDate}.ics`;
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      calendarStatus.textContent = 'Calendar file prepared. Open it in your calendar app to import.';
+    } catch {
+      calendarStatus.textContent = 'Could not prepare the calendar file in this browser.';
+    } finally {
+      link?.remove();
+      if (url) setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+  });
+
   form.addEventListener('submit', event => {
     event.preventDefault();
+    clearCalendar();
     const a = sessions.get(first.value);
     const b = sessions.get(second.value);
     const utcStart = Date.parse(`${date.value}T00:00:00.000Z`);
@@ -114,11 +167,18 @@
         return `${timeRange(start, end, 'UTC')} UTC${local} (${duration})`;
       });
       result.textContent = `${label}: ${times.join(' | ')}.`;
+      if (!hasCalendar) return;
+      // Sort the pair for stable event IDs when the two dropdowns are reversed.
+      const order = [a, b].sort((x, y) => x.id.localeCompare(y.id));
+      calendarResult = { key: selectionKey(), pair: order.map(s => s.id).join('-'),
+        venues: order.map(s => s.venue).join(' / '), periods, utcDate: date.value };
+      calendar.disabled = false;
     } catch {
       result.textContent = 'Could not convert these session hours. Try another date or display time zone.';
     }
   });
   const invalidate = () => {
+    clearCalendar();
     if (hasResult) result.textContent = 'Selection changed. Find overlap again for the current inputs.';
   };
   for (const input of [first, second, date, displayZone]) {

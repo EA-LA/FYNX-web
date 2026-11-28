@@ -610,6 +610,7 @@
     .fx-overlap-fields :is(select,input){width:100%;min-width:0;min-height:44px;font:inherit;padding:.55rem;color:inherit;background:var(--panel);border:1px solid var(--border);border-radius:.6rem}
     .fx-overlap-fields :is(select,input):focus-visible{outline:2px solid currentColor;outline-offset:3px}
     #fx-overlap-result{margin-top:.8rem;line-height:1.5;min-height:1.5em}
+    #fx-overlap-calendar:disabled{opacity:.6;cursor:not-allowed}
     @media(max-width:560px){.fx-overlap-fields{grid-template-columns:minmax(0,1fr)}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
@@ -755,6 +756,9 @@
     </form>
     <p id="fx-overlap-result" role="status" aria-live="polite" aria-atomic="true"></p>
     <p id="fx-overlap-limits">Uses modeled local weekday hours and daylight saving time. It is not a live status check and does not account for holidays, broker schedules, or interruptions.</p>
+    <button class="btn" id="fx-overlap-calendar" type="button" aria-describedby="fx-overlap-calendar-note" disabled>Download overlap (.ics)</button>
+    <p id="fx-overlap-calendar-note">Find an overlap to download its hours as a one-time calendar event. Open the file with your calendar app to import it.</p>
+    <p id="fx-overlap-calendar-status" role="status" aria-atomic="true"></p>
     <noscript><p>The session planner requires JavaScript.</p></noscript>
   </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Check sessions in the correct timezone</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose your timezone, identify the venue or currency session, and cross-check holiday exceptions before scheduling work.</p><h3>The calculation or concept</h3><p>Exchange hours and indicative forex sessions are different; holidays and daylight-saving changes affect them.</p></div><div class="tool-example"><h3>Worked example</h3><p>New York and London change daylight-saving time on different dates. Their overlap can shift during the intervening weeks.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A session label does not confirm that a particular instrument is tradable. Broker maintenance and venue interruptions can still apply.</p></details></section><!-- tool-guide:end -->
@@ -1580,7 +1584,7 @@ setInterval(tickClock, 15000);
 setInterval(tickMain, 30000);
 </script>
 
-<script src="/assets/js/fx-session-overlap.js?v=20261125"></script>
+<script src="/assets/js/fx-session-overlap.js?v=20261128-calendar-1"></script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>
