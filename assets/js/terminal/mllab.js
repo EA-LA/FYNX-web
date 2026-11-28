@@ -456,7 +456,7 @@
     }
     sig.sort((a, b) => a.p - b.p);
     const expected = m * 0.05, pChance = ML.binomTail(sig.length, m, 0.05), held = sig.filter(x => x.pTest < 0.05).length;
-    return {A, S, T, cut, pairs, m, sig, bonf, bhN: pairs.filter(x => x.bh).length, expected, pChance, held, cutDay: A.dates[cut - 1]};
+    return {A, S, T, cut, pairs, m, sig, bonf, bhN: pairs.filter(x => x.bh).length, expected, pChance, held, cutDay: A.dates[cut - 2]};
   }
   const pairsGet = () => { const u = pairUniverse(); return cached('pairs|' + u.join(','), () => pairsRun(u)); };
   async function renderPairsPanel() {
@@ -469,6 +469,32 @@
     requestAnimationFrame(() => bars(cb, {labels: hist.map((_, i) => `p ${i / 10}`), values: hist, colors: hist.map((_, i) => i === 0 ? AMBER : GREY), fmt: v => v.toFixed(0), hline: r.m / 10, hlabel: 'chance', aria: 'Histogram of pair p-values'}));
   }
   const pHist = r => { const h = new Array(10).fill(0); r.pairs.forEach(x => h[Math.min(9, Math.floor(x.p * 10))]++); return h; };
+  function pairSpreadSeries(pair, cut) {
+    // Aligned returns have one fewer date than the closes used to make the spread.
+    const z = pair.z.slice(1).map(v => finite(v) ? Math.max(-6, Math.min(6, v)) : NaN);
+    return {formation: z.map((v, i) => i + 1 < cut ? v : NaN), later: z.map((v, i) => i + 1 >= cut - 1 ? v : NaN)};
+  }
+  function pairSpreadCard(r) {
+    const legend = el('label', '', 'Pair to inspect ');
+    const picker = el('select'); picker.style.minHeight = '44px'; legend.append(picker);
+    for (const [i, pair] of r.sig.entries()) {
+      const item = el('option', '', `${pair.a} / ${pair.b}`); item.value = String(i); picker.append(item);
+    }
+    const details = note(''); details.setAttribute('role', 'status');
+    const plot = chartBox(280);
+    const update = () => {
+      if (!plot.isConnected) return;
+      const pair = r.sig[Number(picker.value)], {formation, later} = pairSpreadSeries(pair, r.cut);
+      details.textContent = `${pair.a} / ${pair.b}: formation p ${pv(pair.p)}; later p ${pv(pair.pTest)}. Spread uses the original fit: log ${pair.a} ${pair.beta < 0 ? '+' : '−'} ${Math.abs(pair.beta).toFixed(2)} × log ${pair.b}, minus its fitted intercept.`;
+      lineChart(plot, {series: [{v: formation, color: BLUE, width: 1.2, name: 'Formation'}, {v: later, color: AMBER, width: 1.2, name: 'Out of sample'}],
+        xs: r.A.dates, hline: [{v: 2, color: '#4b5953'}, {v: -2, color: '#4b5953'}, {v: 0, color: '#2a3530'}],
+        yfmt: v => v.toFixed(1), aria: `${pair.a} / ${pair.b} spread z-score`});
+    };
+    picker.addEventListener('change', update);
+    requestAnimationFrame(update);
+    return card('PAIR SPREAD · FORMATION VS LATER HISTORY', legend, details, plot,
+      note('Only pairs that passed the initial 5% screen are available here. The spread is scaled by its formation-period standard deviation and clipped to ±6 for display. A later p-value of 5% or higher does not confirm the earlier result. The existing simulation uses ±2 for entries and exits at zero, beyond ±4 or after its holding limit.'));
+  }
   async function renderPairs(host) {
     const {ic, out, rerun} = shell(host, 'PAIRS', 'Pairs trading and the multiple-testing trap', 'Engle–Granger on every pair, how many “cointegrated” pairs chance alone produces, and whether the survivors still work later');
     ic.append(chips([['large', 'Large caps (14)'], ['etf', 'ETFs (14)'], ['custom', 'My symbols']], AV.uni, v => { AV.uni = v; saveA(); rerun(); }));
@@ -484,12 +510,11 @@
     const hist = pHist(r);
     two.append(card('P-VALUES OF ALL PAIRS · UNDER PURE CHANCE THE BARS ARE FLAT', hc, note(`If no pair were truly cointegrated, the ${r.m} p-values would spread evenly (dashed line). A tall first bar means real structure.`)),
       card('SIGNIFICANT PAIRS (5%) · FORMATION VS OUT OF SAMPLE', k ? table(['Pair', 'p (formation)', 'Half-life', 'p (later)', 'Trades', 'Return'], r.sig.map(x => [`${x.a}/${x.b}`, pv(x.p), finite(x.half) ? x.half.toFixed(0) + 'd' : '∞', pv(x.pTest), String(x.trades), spct(x.ret)]), (i, j) => j === 3 ? (r.sig[i].pTest < 0.05 ? GREEN : RED) : j === 5 ? (r.sig[i].ret >= 0 ? GREEN : RED) : null) : note('No pair passed at 5%.')));
-    let zc = null;
-    if (k) { zc = chartBox(280); const x = r.sig[0]; out.append(card(`BEST PAIR ${x.a}/${x.b} · SPREAD Z-SCORE, FORMATION | OUT OF SAMPLE`, zc, note(`Spread = log ${x.a} − ${x.beta.toFixed(2)} × log ${x.b}, scaled by its formation-period standard deviation. Trades: short the spread above +2, long below −2, exit at 0. If the line drifts away after the split, the relationship broke.`))); }
+    if (k) out.append(pairSpreadCard(r));
     out.append(card('HOW IT WORKS', ...['Engle–Granger: regress one log price on the other over the formation period (first 60% of 5 years), then test the residual for a unit root (ADF with one lag). A strongly negative statistic means the spread mean-reverts.', 'P-values come from 1,000 simulations of two independent random walks of the same length, so they are exact for this test rather than read from a table.', 'Multiple testing: run enough tests and some pass by luck. Bonferroni divides 5% by the number of tests; Benjamini–Hochberg controls the share of false discoveries. Pairs that pass are then re-tested and traded on the later 40% they never saw. Delayed Yahoo Finance data. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       bars(hc, {labels: hist.map((_, i) => `${i / 10}–${(i + 1) / 10}`), values: hist, colors: hist.map((_, i) => i === 0 ? AMBER : GREY), fmt: v => v.toFixed(0), hline: r.m / 10, hlabel: 'chance', aria: 'Histogram of p-values'});
-      if (zc) { const x = r.sig[0], zs = x.z.map(v => Math.max(-6, Math.min(6, v))); lineChart(zc, {series: [{v: zs.map((v, t) => t < r.cut ? v : NaN), color: BLUE, width: 1.2, name: 'Formation'}, {v: zs.map((v, t) => t >= r.cut - 1 ? v : NaN), color: AMBER, width: 1.2, name: 'Out of sample'}], xs: r.A.dates, hline: [{v: 2, color: '#4b5953'}, {v: -2, color: '#4b5953'}, {v: 0, color: '#2a3530'}], yfmt: v => v.toFixed(1), aria: 'Spread z-score'}); }
+
     });
   }
 
@@ -621,5 +646,5 @@
       grid: {cols: '1fr 1fr 1fr', areas: ['s1 s2 s3', 's4 s5 s6']}};
     const si = T.DESK_ORDER.indexOf('strategy'), qi = T.DESK_ORDER.indexOf('quant'), at = si >= 0 ? si + 1 : qi >= 0 ? qi + 1 : 1; T.DESK_ORDER.splice(at, 0, 'ailab');
   }
-  T.MLLab = {regimeForwardStats, regimeHoldout, probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
+  T.MLLab = {pairSpreadSeries, regimeForwardStats, regimeHoldout, probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
 });
