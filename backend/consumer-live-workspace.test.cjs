@@ -5,7 +5,10 @@ const {PLANS}=require('./consumer-core.cjs');
 function harness(options={}){
  const data=new Map(),calls=[];let serial=0;
  const snapshot=path=>({exists:data.has(path),data:()=>data.get(path)});
- function ref(path){return {path,id:path.split('/').pop(),get:async()=>snapshot(path),set:async(v,o)=>data.set(path,o?.merge?{...data.get(path),...v}:v),collection:name=>collection(path+'/'+name)};}
+ // Firestore merge:true preserves omitted nested map fields; mergeFields can replace a whole map.
+ const mapLike=v=>v&&typeof v==='object'&&!Array.isArray(v);
+ function mergeMaps(previous,patch){const result={...previous};for(const [key,value] of Object.entries(patch)){result[key]=mapLike(value)&&Object.keys(value).length?mergeMaps(mapLike(result[key])?result[key]:{},value):value;}return result;}
+ function ref(path){return {path,id:path.split('/').pop(),get:async()=>snapshot(path),set:async(v,o)=>{const previous=data.get(path);if(o?.mergeFields){const next={...previous};for(const field of o.mergeFields)next[field]=v[field];return data.set(path,next);}return data.set(path,o?.merge?mergeMaps(previous,v):v);},collection:name=>collection(path+'/'+name)};}
  function collection(path){return {doc:id=>ref(path+'/'+(id||'auto'+(++serial))),orderBy(){return this;},limit(){return this;},get:async()=>{if(path.endsWith('/trades')&&state.failTrades)throw Error('Journal temporarily unavailable');return {docs:[...data].filter(([k])=>k.startsWith(path+'/')&&!k.slice(path.length+1).includes('/')).map(([k,v])=>({id:k.split('/').pop(),data:()=>v})),size:0};}};}
  const db={collection,runTransaction:async fn=>fn({get:async r=>snapshot(r.path),set:(r,v,o)=>r.set(v,o),create:(r,v)=>r.set(v),delete:r=>data.delete(r.path)})};
  function sub(tier='starter'){return {id:'sub_paid',customer:'cus_owner',livemode:true,status:'active',metadata:{product:PRODUCT,fynx_uid:'owner',tier},items:{data:[{quantity:1,price:{id:PRICES[tier],livemode:true,type:'recurring',unit_amount:PLANS[tier].cents,currency:'usd',recurring:{interval:'month',interval_count:1,usage_type:'licensed'}}}]},latest_invoice:{customer:'cus_owner',livemode:true,status:'paid',paid:true}};}
@@ -388,4 +391,26 @@ test('verified Apple website access survives missing live Stripe configuration w
  await assert.rejects(h.call({action:'status'}),{code:'failed-precondition'});
  await assert.rejects(h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),{code:'failed-precondition'});
  assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+});
+
+for(const tier of ['starter','plus'])test('replacement checkout preserves retry identity after an expired session ('+tier+')',async()=>{
+ const h=harness({customer:true}),path='fynxConsumerLive/owner';
+ h.data.set(path,{customer:'cus_owner',savedCount:7,checkoutAttempt:{tier:'starter',tool:'analytics',at:Date.now()-1000,key:'old-attempt',session:'cs_expired'}});
+ h.state.failCreate=true;
+ await assert.rejects(h.call({action:'checkout',tier,tool:'risk'}),/Timeout/);
+ const pending=h.data.get(path).checkoutAttempt;
+ assert.equal(Object.hasOwn(pending,'session'),false,'a new attempt must not inherit the old session');
+ assert.notEqual(pending.key,'old-attempt');
+ assert.equal(pending.tier,tier);
+ assert.equal(h.data.get(path).checkoutLockUntil,0);
+ h.state.failCreate=false;
+ await h.call({action:'checkout',tier,tool:'watchlist'});
+ const attempts=h.calls.filter(c=>c[0]==='checkout');
+ assert.equal(attempts.length,2);
+ assert.equal(attempts[0][2].idempotencyKey,attempts[1][2].idempotencyKey);
+ assert.deepEqual(attempts[0][1],attempts[1][1]);
+ assert.equal(h.data.get(path).checkoutAttempt.session,'cs_new');
+ assert.equal(h.data.get(path).savedCount,7);
+ assert.equal(h.data.get(path).customer,'cus_owner');
+ assert.equal(h.data.get(path).checkoutLockUntil,0);
 });

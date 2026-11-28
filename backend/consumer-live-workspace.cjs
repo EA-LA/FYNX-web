@@ -151,12 +151,13 @@ async function handler(data,ctx){
   const tool=TOOLS.has(data.tool)?data.tool:'analytics';
   let attempt=(await ref.get()).data()?.checkoutAttempt;
   if(attempt?.session){const previous=await s.checkout.sessions.retrieve(attempt.session);if(previous.status!=='open')attempt=null;}
-  if(!attempt||attempt.tier!==tier||Date.now()-attempt.at>23*60*60*1000){attempt={tier,tool,at:Date.now(),key:'fynx-consumer-live-checkout-'+require('crypto').randomUUID()};await ref.set({checkoutAttempt:attempt},{merge:true});}
+  if(!attempt||attempt.tier!==tier||Date.now()-attempt.at>23*60*60*1000){attempt={tier,tool,at:Date.now(),key:'fynx-consumer-live-checkout-'+require('crypto').randomUUID()};// Replace the attempt map: a merged write would retain an expired session from the previous attempt.
+   await ref.set({checkoutAttempt:attempt},{mergeFields:['checkoutAttempt']});}
   // Keep retry payloads identical, including attempts created before tool returns existed.
   const outcomeUrl=outcome=>Object.hasOwn(attempt,'tool')?returnUrl(attempt.tool,outcome):SITE+'?checkout='+outcome;
   const meta={product:PRODUCT,fynx_uid:uid,tier};
   const session=await s.checkout.sessions.create({mode:'subscription',customer,client_reference_id:uid,success_url:outcomeUrl('complete'),cancel_url:outcomeUrl('cancelled'),metadata:meta,subscription_data:{metadata:meta},payment_method_types:['card'],line_items:[{quantity:1,price:PRICES[tier]}]},{idempotencyKey:attempt.key});
-  await ref.set({checkoutAttempt:{...attempt,session:session.id}},{merge:true});
+  await ref.set({checkoutAttempt:{...attempt,session:session.id}},{mergeFields:['checkoutAttempt']});
   return {url:session.url,mode:'live'};
   } finally { await ref.set({checkoutLockUntil:0},{merge:true}); }
  }
