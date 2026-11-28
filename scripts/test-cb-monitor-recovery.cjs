@@ -205,6 +205,29 @@ async function settle() {
   assert.doesNotMatch(optionalStall.grid.innerHTML, /Next FOMC/);
   console.log('ok 14 - stalled optional odds feed does not hide verified rates');
 
+  // Missing observations do not move the comparison away from the actual as-of month.
+  const fullYear = Array.from({length: 14}, (_, i) =>
+    [monthFromNow(i - 13), i === 0 ? 4 : i === 12 ? 3.5 : 3.75]);
+  const cardWith = async history => {
+    const result = harness(async kind => json(kind === 'policy' ? {
+      areas: {US: {history}}
+    } : validDesk()));
+    await settle();
+    assert.match(result.grid.innerHTML, /Federal Reserve: policy rate 3.75 percent/);
+    assert.match(result.grid.innerHTML, /▲ \+25 bp · /);
+    return result.grid.innerHTML;
+  };
+  assert.match(await cardWith(fullYear), /12 months: 0 bp/);
+  assert.match(await cardWith(fullYear.filter(([ym]) => ym !== monthFromNow(-7))), /12 months: 0 bp/);
+  console.log('ok 15 - a gap does not shift the 12-month comparison');
+
+  assert.match(await cardWith(fullYear.filter(([ym]) => ym !== monthFromNow(-12))), /12 months: Unavailable/);
+  console.log('ok 16 - an absent reference is not replaced with an older month');
+
+  const sparseYear = fullYear.filter(([ym]) => [-12, -1, 0].some(offset => ym === monthFromNow(offset)));
+  assert.match(await cardWith(sparseYear), /12 months: 0 bp/);
+  console.log('ok 17 - an exact reference is usable even with fewer than 13 observations');
+
   // Older WebViews can support the rest of this module but lack Array.prototype.at.
   const legacyHistory = Array.from({length: 13}, (_, i) =>
     [monthFromNow(i - 12), i === 12 ? 4 : 3]);
@@ -219,7 +242,19 @@ async function settle() {
   assert.match(legacy.grid.innerHTML, /Federal Reserve/);
   assert.match(legacy.grid.innerHTML, /Bank of England/);
   assert.match(legacy.grid.innerHTML, /12 months: \+100 bp/);
-  assert.match(legacy.grid.innerHTML, /12 months: —/);
+  assert.match(legacy.grid.innerHTML, /12 months: Unavailable/);
   assert.doesNotMatch(legacy.grid.innerHTML, /Retry policy data/);
-  console.log('ok 15 - legacy arrays preserve verified rates and short-series behavior');
+  console.log('ok 18 - legacy arrays preserve verified rates and short-series behavior');
+
+  // Both public entry points must request the new shared monitor asset.
+  const asset = 'assets/js/cb-monitor.js';
+  const {ASSET_VERSIONS, VERSION} = require('./build-release-assets.cjs');
+  const version = ASSET_VERSIONS[asset];
+  assert.ok(version && version !== VERSION, 'The monitor needs its own cache version');
+  for (const page of ['news.html', 'news/news.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
+    const refs = [...html.matchAll(/src="(\/assets\/js\/cb-monitor\.js[^"]*)"/g)].map(match => match[1]);
+    assert.deepEqual(refs, ['/' + asset + '?v=' + version], page + ' references the exact release version');
+  }
+  console.log('ok 19 - both News routes use the exact monitor cache version');
 })().catch(error => {console.error(error);process.exitCode = 1;});
