@@ -9,6 +9,19 @@ const library=new JSDOM(fs.readFileSync(path.join(root,'explore.html'),'utf8'),{
 const directory=new JSDOM(fs.readFileSync(path.join(root,'directory.html'),'utf8'),{url:base+'/directory.html'});
 assert.equal(new Set(inventory.map(e=>e.url)).size,inventory.length,'Duplicate resource URL');
 assert.equal(directory.window.document.querySelectorAll('script').length,0,'Light directory must not require scripts');
+// The not-found page can render for a deep URL, so recovery uses root-relative links.
+{
+ const notFound=new JSDOM(fs.readFileSync(path.join(root,'404.html'),'utf8'),{url:base+'/retired/path/'});
+ const doc=notFound.window.document;
+ const recovery=doc.querySelector('main nav[aria-label="Find your way"]');
+ assert(recovery,'The not-found page must have recovery navigation');
+ for(const target of ['/explore.html','/directory.html','/','/home.html','/calculator.html','/learn.html']){
+  const link=recovery.querySelector(`a[href="${target}"]`);
+  assert(link&&link.href===base+target,'Missing root-relative recovery link: '+target);
+ }
+ notFound.window.close();
+}
+
 const links=new Set([...library.window.document.querySelectorAll('a[href]')].map(a=>a.pathname));
 const plainLinks=new Set([...directory.window.document.querySelectorAll('a[href]')].map(a=>a.pathname));
 // The no-script directory must outlive the rolling article inventory.
