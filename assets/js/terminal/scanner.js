@@ -187,15 +187,23 @@
   function number(value, placeholder, onChange) { const i = document.createElement('input'); i.type = 'number'; i.inputMode = 'decimal'; i.step = 'any'; i.className = 'sc-in'; i.placeholder = placeholder; i.value = value ?? ''; i.addEventListener('change', () => onChange(i.value === '' ? '' : Number(i.value))); return i; }
 
   PG.add('scan', 'Market scanner', async (host, arg, alive) => {
-    let st = restoreScanState(read('scan-state', null));
+    const visit = PG.pageState?.('scan'), current = visit?.scan;
+    let st = restoreScanState(current ?? read('scan-state', null));
     const argAsset = ASSETS.find(a => a[0] === String(arg || '').toLowerCase())?.[0];
     const presetArg = arg && !argAsset ? String(arg).toLowerCase() : null;
-    if (!st || argAsset || presetArg) {
+    if (!st || (!current && (argAsset || presetArg))) {
       const asset = argAsset || (presetArg && Object.keys(PRESETS).find(a => PRESETS[a].some(p => p[0] === presetArg || (a === 'stocks' && presetArg === p[0])))) || (st ? st.asset : deskAsset());
       const p = PRESETS[asset].find(x => x[0] === presetArg) || PRESETS[asset][0];
       st = {asset, preset: p[0], f: {...p[2], ...(asset === 'markets' && deskGroup() ? {group: deskGroup()} : {})}, sort: p[3], limit: 100};
     }
-    const setSt = next => { st = {...st, ...next}; save('scan-state', st); PG.rerender(); };
+    // The command or deep link seeds this visit once. Redraws reuse the user's edits.
+    if (visit) visit.scan = st;
+    const setSt = next => {
+      st = {...st, ...next};
+      if (visit) visit.scan = st;
+      save('scan-state', st);
+      PG.rerender();
+    };
     PG.setHead('SCAN', 'Market scanner', 'Screen every US stock and ETF, the top 500 crypto assets and FYNX’s cross-asset markets');
     host.append(el('p', 'fx-empty', 'Loading the market universe…'));
     const d = await load(); if (!alive()) return; host.replaceChildren();
