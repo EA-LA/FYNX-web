@@ -120,9 +120,73 @@
   });
   sizeForm.hidden=false;
  }
+ const focusPanel=kind==='correlation'?root.querySelector('[data-correlation-focus]'):null;
+ const focusSelect=focusPanel?.querySelector('#correlationPair');
+ const focusStatus=focusPanel?.querySelector('[data-correlation-focus-status]');
+ const focusList=focusPanel?.querySelector('[data-correlation-focus-list]');
+ let focusPairs=[];
+ function observationStale(data){
+  return !!data.stale||(kind==='liquidity'?!isFreshLiquidity(data):Date.now()-Date.parse(data.observationDate)>7*86400000);
+ }
+ function updateCorrelationFocus(){
+  // Older cached markup can fetch this same script without the new panel.
+  if(!focusSelect||!focusStatus||!focusList)return;
+  const announce=text=>{if(focusStatus.textContent!==text)focusStatus.textContent=text;};
+  focusList.replaceChildren();
+  focusList.hidden=true;
+  if(!last||observationStale(last)){
+   announce(last||refreshFailed?'No current matrix for ranking. Refresh data to retry.':'Waiting for the selected observation window.');
+   return;
+  }
+  if(new Set(last.pairs).size!==last.pairs.length){
+   announce('This matrix does not identify unique pairs to rank.');
+   return;
+  }
+  if(focusPairs.length!==last.pairs.length||focusPairs.some((pair,i)=>pair!==last.pairs[i])){
+   const selected=focusSelect.value;
+   focusPairs=[...last.pairs];
+   const options=['',...focusPairs].map(pair=>{
+    const option=document.createElement('option');
+    option.value=pair;
+    option.textContent=pair||'Choose a pair';
+    return option;
+   });
+   focusSelect.replaceChildren(...options);
+   focusSelect.value=focusPairs.includes(selected)?selected:'';
+   focusSelect.disabled=false;
+  }
+  const pair=focusSelect.value;
+  const index=focusPairs.indexOf(pair);
+  if(index===-1){
+   announce('Choose a currency pair to rank its peers.');
+   return;
+  }
+  const peers=focusPairs.map((label,i)=>({label,value:last.matrix[index][i],i}))
+   .filter(peer=>peer.i!==index&&peer.value!==null)
+   .sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)||a.i-b.i);
+  const omitted=focusPairs.length-1-peers.length;
+  if(!peers.length){
+   announce(`No measured peers for ${pair} in this window.`);
+   return;
+  }
+  announce(`${pair} across ${last.observations} daily returns: ${peers.length} measured ${peers.length===1?'peer':'peers'}${omitted?`, ${omitted} without a coefficient`:''}.`);
+  for(const {label,value} of peers){
+   const row=document.createElement('li');
+   const sign=value<0?'−':value>0?'+':'';
+   const magnitude=Math.abs(value);
+   const shown=magnitude>0&&magnitude<0.0005?'<0.001':magnitude.toFixed(3);
+   row.textContent=`${label} · ${sign}${shown}`;
+   focusList.append(row);
+  }
+  focusList.hidden=false;
+ }
  restoreSharedView();
  syncSourceLink();
  attachSizeCheck();
+ if(focusSelect&&focusStatus&&focusList){
+  focusPanel.hidden=false;
+  focusSelect.addEventListener('change',updateCorrelationFocus);
+ }
  function render(data){
   // Build the next table off-screen; a malformed response must not erase the last good one.
   const table=document.createElement('table'),caption=document.createElement('caption');
@@ -167,8 +231,9 @@
     throw Error('Invalid correlation observation');
   }
  }
- function updateStatus(){if(!last)return;const stale=last.stale||(kind==='liquidity'?!isFreshLiquidity(last):Date.now()-Date.parse(last.observationDate)>7*86400000);
+ function updateStatus(){if(!last)return;const stale=observationStale(last);
  if(kind==='liquidity')updateSizeForSnapshot(last);
+ else updateCorrelationFocus();
  status.textContent=`${stale?'Stale data — ':''}${last.source} · ${kind==='liquidity'?'Source time '+new Date(last.observationTime).toLocaleString():'Observation window '+last.startDate+' to '+last.observationDate} · Retrieved ${new Date(last.fetchedAt).toLocaleString()}.${refreshFailed?' Refresh failed; previous observations remain.':''}`;}
  function syncSourceLink(){
   if(kind!=='liquidity')return;
@@ -188,7 +253,11 @@
   const selected=select.value;
   button.disabled=true;
   if(last){updateStatus();status.textContent+=' Checking for updated observations…';}
-  else status.textContent='Loading source observations…';
+  else {
+   refreshFailed=false;
+   status.textContent='Loading source observations…';
+   updateCorrelationFocus();
+  }
   // Race the entire request (including JSON decoding), even when abort is unavailable or ignored.
   const timeout=setTimeout(()=>{const error=Error('Market observations timed out');error.name='TimeoutError';active.cancel(error);},20000);
   try{
@@ -204,8 +273,12 @@
   }catch(error){
    if(current!==version)return; // A replaced request cannot overwrite the new market's state.
    window.FynxMonitor?.report('feed','feed-load',error);
-   if(last){last.stale=true;refreshFailed=true;updateStatus();}
-   else status.textContent='Source data is unavailable. Retry or open the source link below. No estimated values are shown.';
+   refreshFailed=true;
+   if(last){last.stale=true;updateStatus();}
+   else {
+    status.textContent='Source data is unavailable. Retry or open the source link below. No estimated values are shown.';
+    updateCorrelationFocus();
+   }
   }finally{
    clearTimeout(timeout);
    if(current===version){controller=null;button.disabled=false;}

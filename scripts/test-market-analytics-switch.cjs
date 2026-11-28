@@ -22,7 +22,7 @@ function element(tag = 'div') {
   };
 }
 
-function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = true } = {}) {
+function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = true, focusMarkup = 'full' } = {}) {
   const select = element('select');
   select.value = kind === 'liquidity' ? 'BTC-USD' : '30';
   select.options = (kind === 'liquidity' ? ['BTC-USD', 'ETH-USD'] : ['30', '60', '90']).map(value => ({value}));
@@ -38,6 +38,15 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
     '#liquidityOrderSize': sizeInput, '#liquiditySizeSide': sizeSide,
     '[data-size-label]': sizeLabel, '[data-size-result]': sizeResult
   }[name] || null);
+  const focusPanel = element('section'), focusSelect = element('select');
+  const focusStatus = element('p'), focusList = element('ol');
+  focusPanel.hidden = true;
+  focusSelect.disabled = true;
+  focusPanel.querySelector = name => ({
+    '#correlationPair': focusSelect,
+    '[data-correlation-focus-status]': focusStatus,
+    '[data-correlation-focus-list]': focusMarkup === 'partial' ? null : focusList
+  }[name] || null);
   link.href = 'https://www.coinbase.com/advanced-trade/spot/BTC-USD';
   const root = {
     dataset: { marketAnalysis: kind },
@@ -47,7 +56,8 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
         '[data-analysis-output]': output, '[data-market-source]': link,
         '[data-analysis-share]': shareButton, '[data-analysis-share-status]': shareStatus,
         '[data-analysis-share-fallback]': shareFallback,
-        '[data-liquidity-size]': kind === 'liquidity' ? sizeForm : null
+        '[data-liquidity-size]': kind === 'liquidity' ? sizeForm : null,
+        '[data-correlation-focus]': kind === 'correlation' && focusMarkup !== 'old' ? focusPanel : null
       }[name] || null;
     }
   };
@@ -81,7 +91,8 @@ function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = tr
   };
   vm.runInNewContext(source, context, { filename: 'market-analytics.js' });
   return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports, timeouts,
-    sizeForm, sizeInput, sizeSide, sizeLabel, sizeResult, checkSize: () => sizeForm.trigger('submit', { preventDefault(){} }) };
+    sizeForm, sizeInput, sizeSide, sizeLabel, sizeResult, checkSize: () => sizeForm.trigger('submit', { preventDefault(){} }),
+    focusPanel, focusSelect, focusStatus, focusList };
 }
 
 function sample(product = 'BTC-USD') {
@@ -401,7 +412,7 @@ test('both public market research views expose accessible share controls and cur
     assert.match(html, /data-analysis-share>/);
     assert.match(html, /data-analysis-share-status[^>]*role="status"/);
     assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
-    const version = name === 'liquidity' ? '20261127-order-size-1' : '20261126-request-deadline-1';
+    const version = name === 'liquidity' ? '20261127-order-size-1' : '20261128-correlation-focus-1';
     assert.ok(html.includes('market-analytics.js?v=' + version), 'script version is refreshed on the affected route');
   }
 });
@@ -600,4 +611,87 @@ test('a new snapshot invalidates a prior check without silently reusing the old 
   assert.equal(h.sizeInput.value, '2');
   await h.checkSize();
   assert.match(h.sizeResult.textContent, /exceeds the 1 BTC/);
+});
+
+
+function focusFixture(window = 60) {
+  return {
+    ...correlation(window),
+    pairs: ['EURUSD', 'USDCAD', 'GBPUSD', 'AUDUSD', 'EURJPY', 'USDJPY'],
+    matrix: [
+      [1, -0.85, 0.72, 0.0002, 0, null],
+      [-0.85, 1, 0.1, 0.3, 0.4, null],
+      [0.72, 0.1, 1, 0.21, -0.11, null],
+      [0.0002, 0.3, 0.21, 1, 0.2, null],
+      [0, 0.4, -0.11, 0.2, 1, null],
+      [null, null, null, null, null, 1]
+    ]
+  };
+}
+
+test('focus shortlist ranks absolute magnitude, labels signs, and omits self and unavailable peers', async () => {
+  const h = setup('correlation', {search: '?window=60'});
+  assert.equal(h.focusPanel.hidden, false);
+  assert.equal(h.focusSelect.disabled, true);
+  await settle(h.calls[0], focusFixture());
+  assert.equal(h.focusSelect.disabled, false);
+  assert.deepEqual(h.focusSelect.children.map(x => x.value), ['', ...focusFixture().pairs]);
+  h.focusSelect.value = 'EURUSD';
+  await h.focusSelect.trigger('change');
+  assert.deepEqual(h.focusList.children.map(x => x.textContent), ['USDCAD · −0.850', 'GBPUSD · +0.720', 'AUDUSD · +<0.001', 'EURJPY · 0.000']);
+  assert.match(h.focusStatus.textContent, /60 daily returns: 4 measured peers, 1 without a coefficient/);
+  assert.equal(h.output.children.length, 1);
+  assert.equal(h.calls.length, 1);
+  h.focusSelect.value = 'USDJPY';
+  await h.focusSelect.trigger('change');
+  assert.match(h.focusStatus.textContent, /No measured peers for USDJPY/);
+  assert.equal(h.focusList.hidden, true);
+});
+
+test('window changes and outages hide old rankings, but preserve a still-available selected pair', async () => {
+  const h = setup('correlation', {search: '?window=60'});
+  await settle(h.calls[0], focusFixture());
+  h.focusSelect.value = 'EURUSD';
+  await h.focusSelect.trigger('change');
+  assert.equal(h.focusList.hidden, false);
+  h.select.value = '30';
+  h.select.trigger('change');
+  assert.equal(h.focusList.hidden, true);
+  assert.match(h.focusStatus.textContent, /Waiting/);
+  await fail(h.calls[1]);
+  assert.match(h.focusStatus.textContent, /No current matrix/);
+  await h.focusSelect.trigger('change');
+  assert.match(h.focusStatus.textContent, /No current matrix/);
+  h.button.trigger('click');
+  await settle(h.calls[2], focusFixture(30));
+  assert.equal(h.focusSelect.value, 'EURUSD');
+  assert.match(h.focusStatus.textContent, /30 daily returns/);
+  assert.equal(h.focusList.hidden, false);
+  h.button.trigger('click');
+  await fail(h.calls[3]);
+  assert.equal(h.focusList.hidden, true);
+  assert.equal(h.output.children.length, 1, 'existing matrix falls back independently');
+});
+
+test('stale or non-unique pair feeds cannot be ranked', async () => {
+  const h=setup('correlation', {search: '?window=60'});
+  await settle(h.calls[0], {...focusFixture(), stale:true});
+  assert.equal(h.focusSelect.disabled, true);
+  assert.match(h.focusStatus.textContent, /No current matrix/);
+  h.button.trigger('click');
+  const payload=focusFixture();
+  payload.pairs[1]='EURUSD';
+  await settle(h.calls[1], payload);
+  assert.equal(h.focusSelect.disabled, true);
+  assert.match(h.focusStatus.textContent, /does not identify unique pairs/);
+});
+
+test('the current script still renders the original matrix with old or partial panel markup', async () => {
+  for(const focusMarkup of ['old','partial']){
+    const h=setup('correlation',{search:'?window=60',focusMarkup});
+    await settle(h.calls[0], focusFixture());
+    assert.equal(h.output.children.length, 1);
+    assert.match(h.status.textContent, /ECB/);
+    assert.equal(h.focusPanel.hidden, true);
+  }
 });
