@@ -35,6 +35,12 @@ let fail = 0; const ok = (c, m) => { if (!c || process.env.VERBOSE) console.log(
   const p = await L.mlpredRun('SPY', 252);
   ok(p.res.length === 3 && p.res.every(m => m.acc > 0.4 && m.acc < 0.62 && m.p >= 0 && m.p <= 1) && p.now.every(v => v > 0 && v < 1), 'MLPRED: walk-forward accuracies ' + p.res.map(m => m.acc.toFixed(3)).join(', ') + ' vs always-up ' + Math.max(p.base, 1 - p.base).toFixed(3));
   ok(p.test.length > 1000 && p.test[0] >= 750 && Math.abs(p.imp.reduce((a, b) => a + b, 0) - 1) < 1e-9, 'MLPRED: ' + p.test.length + ' test days, never trained on them');
+  const bins = L.probabilityCalibration([0, .2, .399, .4, .6, .8, 1, NaN, -1, .5], [0, 1, 0, 1, 0, 0, 1, 1, 1, 2], [0,1,2,3,4,5,6,7,8,9]);
+  ok(bins.map(b => b.n).join(',') === '1,2,1,1,2' && bins[1].observed === .5 && bins[4].observed === .5 &&
+    Math.abs(bins[4].forecast - .9) < 1e-12, 'MLPRED: reliability bins handle boundaries and skip invalid forecasts/outcomes');
+  ok(L.probabilityCalibration([.5], [1], [])[2].observed === null, 'MLPRED: empty holdouts do not fabricate a zero outcome');
+  ok(p.res.every(m => m.calibration.reduce((n, b) => n + b.n, 0) === p.test.length &&
+    Math.abs(m.calibration.reduce((n, b) => n + b.n * (b.observed || 0), 0) - p.ups) < 1e-8), 'MLPRED: real run calibration reconciles with holdout days and up days');
   const v = await L.volmlRun('SPY', 5);
   ok(v.M.garch.qlike < v.M.naive.qlike && v.M.har.qlike < v.M.naive.qlike, `VOLML on GARCH data: QLIKE garch ${v.M.garch.qlike.toFixed(3)}, har ${v.M.har.qlike.toFixed(3)}, gbm ${v.M.gbm.qlike.toFixed(3)} < naive ${v.M.naive.qlike.toFixed(3)}`);
   ok(Object.values(v.now).every(x => x > 0.03 && x < 2) && Number.isFinite(v.dm.gbmNaive.t), 'VOLML: forecasts and Diebold–Mariano finite');
