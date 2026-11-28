@@ -46,10 +46,25 @@ ok(st.rho > 0.8 && st.rhoN === 5, `tone ranks with reactions: rho ${st.rho.toFix
 ok(near(E.spearman([1, 2, 3, 4], [10, 20, 30, 40]), 1) && near(E.spearman([1, 2, 3, 4], [4, 3, 2, 1]), -1) && Number.isNaN(E.spearman([1, 2], [1, 2])), 'Spearman rank correlation edge cases');
 
 // Next date: the calendar wins; otherwise estimated from the usual spacing, always in the future.
-T.S.earn = {events: [{symbol: 'BRK.B', date: '2026-12-02', time: 'After close', epsForecast: 1.31, lastYearEPS: 1.1, estimates: 9, fiscalQuarter: 'Oct/2026'}]};
+const dateFromNow = offset => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+const scheduledDate = dateFromNow(4);
+T.S.earn = {events: [{symbol: 'BRK.B', date: scheduledDate, time: 'After close', epsForecast: 1.31, lastYearEPS: 1.1, estimates: 9, fiscalQuarter: 'Oct/2026'}]};
 const n1 = E.upcoming('BRK-B', st.rows), n2 = E.upcoming('XYZ', st.rows);
-ok(n1.confirmed && n1.date === '2026-12-02' && n1.eps === 1.31 && n1.ests === 9, 'calendar date and consensus used when listed (BRK-B ↔ BRK.B)');
+ok(n1.confirmed && n1.date === scheduledDate && n1.eps === 1.31 && n1.ests === 9, 'calendar date and consensus used when listed (BRK-B ↔ BRK.B)');
 ok(!n2.confirmed && Date.parse(n2.date) >= Date.now() - 86400000 && E.upcoming('XYZ', []) === null, `estimated date ${n2.date} from the reporting rhythm`);
+// A cached calendar can retain past releases while the publisher is unavailable.
+const pastRelease = {symbol: 'BRK.B', date: dateFromNow(-1), epsForecast: 1};
+const futureRelease = {symbol: 'BRK.B', date: dateFromNow(1), epsForecast: 2};
+const todayRelease = {symbol: 'BRK.B', date: dateFromNow(0), epsForecast: 3};
+T.S.earn = {stale: true, events: [pastRelease, futureRelease]};
+const later = E.upcoming('BRK-B', []);
+ok(later?.confirmed && later.date === futureRelease.date && later.eps === 2, 'past calendar row cannot mask a later scheduled release or leak its EPS');
+T.S.earn.events = [pastRelease, todayRelease, futureRelease];
+ok(E.upcoming('BRK-B', [])?.date === todayRelease.date, 'today remains available before rolling the calendar forward');
+T.S.earn.events = [pastRelease];
+ok(E.upcoming('BRK-B', []) === null, 'stale row alone does not become the next report');
+ok(E.upcoming('BRK-B', st.rows)?.confirmed === false, 'the historical estimate remains unconfirmed when no upcoming calendar row exists');
+
 // Ordinary variance is 2 (%²) per calendar day in every expiry; only the 2026-12-05 expiry also holds a 6% report move.
 T.S.opts = {generatedAt: '2026-11-19', underlyings: {XYZ: {expiries: [{date: '2026-11-21', dte: 2, movePercent: 2}, {date: '2026-11-28', dte: 9, movePercent: Math.sqrt(18)}, {date: '2026-12-02', dte: 13, movePercent: Math.sqrt(26)}, {date: '2026-12-05', dte: 16, movePercent: Math.sqrt(32 + 36)}]}}};
 const im = E.impliedMove('XYZ', {date: '2026-12-02', time: 'After close'}, 0.01);

@@ -1,0 +1,20 @@
+name: Terminal earnings preview regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/earnings.js'
+      - 'scripts/test-terminal-earnings.cjs'
+      - '.github/workflows/terminal-earnings-preview.yml'
+permissions:
+  contents: read
+jobs:
+  earnings-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/terminal/earnings.js
+      - run: node scripts/test-terminal-earnings.cjs
