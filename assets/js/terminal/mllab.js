@@ -277,6 +277,30 @@
   const RV = loadState('regime', {sym: 'SPY', K: 3}, (k, v) => k === 'sym' ? SYM_RE.test(v) : [2, 3, 4].includes(v));
   const saveR = saver('regime', RV);
   const RCOL = ['#3ecf8e', '#5b8def', '#ffb000', '#ff5a4f'];
+  const REGIME_VOL_LABELS = {2: ['Calm', 'Stressed'], 3: ['Calm', 'Normal', 'Stressed'], 4: ['Calm', 'Normal', 'Turbulent', 'Crisis']};
+  function regimeForwardStats(groups, nextReturns, K) {
+    const buckets = Array.from({length: K}, () => ({days: 0, next: []}));
+    for (const [i, group] of groups.entries()) {
+      const b = buckets[group];
+      if (!b) continue;
+      b.days++;
+      if (finite(nextReturns[i])) b.next.push(nextReturns[i]);
+    }
+    return buckets.map(({days, next}) => ({days, n: next.length, nextVol: next.length >= 20 ? sd(next) * Math.sqrt(252) : NaN}));
+  }
+  function regimeHoldout(rows, idx, nextReturns, K) {
+    const cut = Math.floor(rows.length * 0.7), train = rows.slice(0, cut);
+    const zTrain = ML.standardizer(train), fit = ML.gmmFit(train.map(zTrain), K, {seed: 5});
+    // Rank components using the training data alone, then assign the later observations with that same fit.
+    const raw = Array.from({length: K}, (_, k) => {
+      let w = 0, vol = 0;
+      for (let i = 0; i < cut; i++) { const p = fit.post[i][k]; w += p; vol += p * train[i][1]; }
+      return {k, vol: vol / w};
+    }).sort((a, b) => a.vol - b.vol);
+    const ranks = new Map(raw.map((row, j) => [row.k, j]));
+    const groups = rows.slice(cut).map(row => { const p = fit.predict(zTrain(row)); return ranks.get(p.indexOf(Math.max(...p))); });
+    return {cut, stats: regimeForwardStats(groups, idx.slice(cut).map(i => nextReturns[i + 1]), K)};
+  }
   async function regimeRun(sym, K) {
     const B = await dailyBars(sym, 1000), c = B.c, r = returns(c), v20 = rollSd(r, 20), rows = [], idx = [];
     for (let i = 21; i < c.length; i++) { const f = [Math.log(c[i] / c[i - 20]), Math.log(v20[i] * Math.sqrt(252) + 1e-4)]; if (f.every(finite)) { rows.push(f); idx.push(i); } }
@@ -286,7 +310,7 @@
     // order regimes by average volatility
     const raw = Array.from({length: K}, (_, k) => { let w = 0, a = 0, b = 0; Z.forEach((_, i) => { const p = fit.post[i][k]; w += p; a += p * rows[i][0]; b += p * rows[i][1]; }); return {k, trend: a / w, vol: Math.exp(b / w)}; }).sort((x, y) => x.vol - y.vol);
     const rank = new Map(raw.map((x, j) => [x.k, j])), state = Z.map((_, i) => rank.get(fit.post[i].indexOf(Math.max(...fit.post[i]))));
-    const VOLW = {2: ['Calm', 'Stressed'], 3: ['Calm', 'Normal', 'Stressed'], 4: ['Calm', 'Normal', 'Turbulent', 'Crisis']}[K];
+    const VOLW = REGIME_VOL_LABELS[K];
     const regimes = raw.map((x, j) => {
       const days = state.map((s, i) => s === j ? i : -1).filter(i => i >= 0), dr = days.map(i => r[idx[i]]), fwd = days.filter(i => idx[i] + 20 < c.length).map(i => Math.log(c[idx[i] + 20] / c[idx[i]]));
       let runs = 0; for (let i = 0; i < state.length; i++) if (state[i] === j && state[i - 1] !== j) runs++;
@@ -295,12 +319,9 @@
     const trans = Array.from({length: K}, () => new Float64Array(K)); for (let i = 1; i < state.length; i++) trans[state[i - 1]][state[i]]++;
     trans.forEach(row => { const s = row.reduce((a, b) => a + b, 0) || 1; for (let j = 0; j < K; j++) row[j] /= s; });
     const nowP = raw.map(x => fit.post[Z.length - 1][x.k]);
-    // out-of-sample: fit on the first 70%, label the rest, check the regimes still sort by realised volatility
-    const cut = Math.floor(Z.length * 0.7), f2 = ML.gmmFit(Z.slice(0, cut), K, {seed: 5});
-    const raw2 = Array.from({length: K}, (_, k) => { let w = 0, b = 0; for (let i = 0; i < cut; i++) { w += f2.post[i][k]; b += f2.post[i][k] * rows[i][1]; } return {k, vol: b / w}; }).sort((x, y) => x.vol - y.vol), rank2 = new Map(raw2.map((x, j) => [x.k, j]));
-    const oosState = Z.slice(cut).map(row => { const p = f2.predict(row); return rank2.get(p.indexOf(Math.max(...p))); });
-    const oos = Array.from({length: K}, (_, j) => { const ii = oosState.map((s, q) => s === j ? cut + q : -1).filter(i => i >= 0), nx = ii.filter(i => idx[i] + 1 < c.length).map(i => r[idx[i] + 1]); return {n: ii.length, nextVol: nx.length > 5 ? sd(nx) * Math.sqrt(252) : NaN}; });
-    const oosOrdered = oos.filter(x => finite(x.nextVol)).every((x, j, a) => !j || x.nextVol >= a[j - 1].nextVol * 0.9);
+    const {cut, stats: oos} = regimeHoldout(rows, idx, r, K);
+    const enough = oos.every(x => finite(x.nextVol));
+    const oosOrdered = enough ? oos.every((x, j) => !j || x.nextVol >= oos[j - 1].nextVol * 0.9) : null;
     return {B, K, idx, state, regimes, trans, nowP, now: state[state.length - 1], bic, oos, oosOrdered, cutDay: B.day[idx[cut]]};
   }
   const regimeGet = () => cached(['regime', RV.sym, RV.K].join('|'), () => regimeRun(RV.sym, RV.K));
@@ -332,7 +353,16 @@
     const g = r.regimes[r.now], bestK = [2, 3, 4][r.bic.indexOf(Math.min(...r.bic))];
     headline(out, g.name.toUpperCase(), g.color, `${r.B.name || RV.sym}: today looks like the “${g.name}” regime (probability ${pct(r.nowP[r.now], 0)}). Regimes like this lasted ${Math.round(g.dur)} trading days on average.`);
     kpis(out, r.regimes.map((x, j) => [x.name.toUpperCase(), pct(x.share, 0) + ' of days', `return ${spct(x.ret, 0)}/yr · vol ${pct(x.vol, 0)}`, x.color]));
-    out.append(verdict(`${r.oosOrdered ? 'Out-of-sample check passed: ' : 'Out-of-sample check is mixed: '}a mixture fitted only on data before ${r.cutDay} labelled the later days, and the next-day volatility in each regime was ${r.oos.map((x, j) => `${r.regimes[j].name.split(' ')[0].toLowerCase()} ${finite(x.nextVol) ? pct(x.nextVol, 0) : 'not seen'}`).join(', ')}. ${r.oosOrdered ? 'The regimes kept their meaning, so they are useful for sizing risk. ' : 'The ordering did not fully hold, so treat the labels loosely. '}Average returns per regime are in-sample descriptions, not forecasts. BIC prefers ${bestK} regimes.`, r.oosOrdered));
+    const result = r.oosOrdered === true ? 'The test broadly preserved the volatility ordering.' :
+      r.oosOrdered === false ? 'The volatility ordering did not fully hold in the test.' :
+      'The test is inconclusive: at least one regime has fewer than 20 usable next-day returns.';
+    out.append(verdict(`${result} The test uses later observations from ${r.cutDay}. Average returns per regime below are in-sample descriptions, not forecasts. BIC prefers ${bestK} regimes.`, r.oosOrdered));
+    const evidence = table(['Training volatility rank', 'Later days labeled', 'Usable next-day returns', 'Next-day vol. (annualized)'],
+      r.oos.map((item, j) => [REGIME_VOL_LABELS[r.K][j], item.days.toLocaleString('en-US'), item.n.toLocaleString('en-US'), pct(item.nextVol, 1)]));
+    evidence.firstChild.setAttribute('aria-label', 'Held-out regime validation');
+    for (const th of evidence.firstChild.rows[0].cells) th.scope = 'col';
+    out.append(card('REGIME VALIDATION · LATER DATA ONLY', evidence,
+      note('The first 70% of observations set the scaling, model and volatility ranks. Each later day is scored using its next observed daily return when available. A dash means fewer than 20 returns. Adjacent ranks are treated as broadly ordered if the next rank is no more than 10% lower.')));
     const cb = chartBox(320); out.append(card('PRICE (LOG SCALE) SHADED BY REGIME', cb, legend(r)));
     const two = el('div', 'fx-ml-grid');
     const tr = table(['From \\ to', ...r.regimes.map(x => x.name.split(' ')[0])], r.trans.map((row, i) => [r.regimes[i].name, ...Array.from(row, v => pct(v, 1))]), (i, j) => j && i === j - 1 ? AMBER : null);
@@ -591,5 +621,5 @@
       grid: {cols: '1fr 1fr 1fr', areas: ['s1 s2 s3', 's4 s5 s6']}};
     const si = T.DESK_ORDER.indexOf('strategy'), qi = T.DESK_ORDER.indexOf('quant'), at = si >= 0 ? si + 1 : qi >= 0 ? qi + 1 : 1; T.DESK_ORDER.splice(at, 0, 'ailab');
   }
-  T.MLLab = {probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
+  T.MLLab = {regimeForwardStats, regimeHoldout, probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
 });
