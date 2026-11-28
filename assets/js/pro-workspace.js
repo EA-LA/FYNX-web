@@ -91,6 +91,45 @@ function chartValues(product,curve){
  if(!['analytics','simulation'].includes(product)||!Array.isArray(curve)||!curve.length||!curve.every(Number.isFinite))return [];
  return product==='analytics'?[0,...curve]:curve;
 }
+// Keep reported net P/L unchanged. Rank contributions from the server-returned rows only.
+function renderPortfolioDrivers(area,rows){
+ if(selected!=='portfolio'||!Array.isArray(rows)||!rows.length)return;
+ const bySymbol=new Map();
+ for(const row of rows){
+  if(typeof row?.symbol!=='string'||!Number.isFinite(row.scenarioPL))return;
+  const symbol=row.symbol.trim().toUpperCase();
+  if(!symbol)return;
+  bySymbol.set(symbol,(bySymbol.get(symbol)??0)+row.scenarioPL);
+ }
+ const symbols=[...bySymbol];
+ const losses=symbols.filter(([,pl])=>pl<0).sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
+ const gains=symbols.filter(([,pl])=>pl>0).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+ const totalLoss=losses.reduce((total,[,pl])=>total-pl,0),totalGain=gains.reduce((total,[,pl])=>total+pl,0);
+ const amount=pl=>pl!==0&&Math.abs(pl)<0.0005?Number(pl.toPrecision(3)).toString():fmt(pl);
+ const details=node('details',undefined,'portfolio-drivers');
+ details.append(node('summary','Inspect stress drivers by symbol'));
+ details.append(node('p','Positions with the same symbol are combined before ranking. Losses and gains are shown separately, in account currency.'));
+ const wrap=node('div',undefined,'table-wrap'),table=node('table');
+ table.append(node('caption','Symbol contributions to this price shock'));
+ const head=node('tr'),thead=node('thead');
+ for(const label of ['Symbol','Impact','Scenario P/L','Share of impact group']){const th=node('th',label);th.scope='col';head.append(th);}
+ thead.append(head);table.append(thead);
+ const body=node('tbody');
+ for(const [entries,impact,total] of [[losses,'Loss',totalLoss],[gains,'Gain',totalGain]]){
+  for(const [symbol,pl] of entries){
+   const row=node('tr'),name=node('th',symbol);name.scope='row';
+   const share=Math.abs(pl)/total*100;
+   row.append(name,node('td',impact),node('td',amount(pl)),node('td',share<0.05?'<0.1%':share.toFixed(1)+'%'));body.append(row);
+  }
+ }
+ if(body.children.length){
+  table.append(body);wrap.append(table);
+  details.append(node('p',`Gross losses across losing symbols: ${amount(totalLoss)} · Gains across gaining symbols: ${amount(totalGain)}.`),wrap);
+ }else details.append(node('p','No symbol gains or loses value under this shock.'));
+ const flatCount=symbols.length-losses.length-gains.length;
+ if(flatCount)details.append(node('p',`${flatCount} ${flatCount===1?'symbol has':'symbols have'} no net change.`));
+ area.append(details);
+}
 function render(result){clearExportUrl();hasCurrentResult=true;const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));exportUrl=url;a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>{expireExport(url);},60000),{once:true});area.append(a);return;}
  const metrics=node('div',undefined,'metric-grid');for(const [key,value] of Object.entries(result)){if(['notice','notes','curve'].includes(key)||(value!==null&&typeof value==='object'))continue;const card=node('div',undefined,'metric');card.append(node('small',title(key)),node('strong',fmt(value,key)));metrics.append(card);}if(metrics.children.length)area.append(metrics);
  const values=chartValues(selected,result.curve);
@@ -107,6 +146,7 @@ function render(result){clearExportUrl();hasCurrentResult=true;const area=$('res
   result[key].forEach(row=>{const tr=node('tr');cols.forEach(k=>tr.append(node('td',fmt(row[k],k))));tbody.append(tr);});
   table.append(tbody);wrap.append(table);area.append(wrap);
  }
+ renderPortfolioDrivers(area,result.rows);
  if(result.symbols){const list=node('ul');result.symbols.forEach(symbol=>{const li=node('li'),a=node('a',symbol+' — research news ↗︎');a.href='/tools/symbol-news.html?q='+encodeURIComponent(symbol);li.append(a);list.append(li);});area.append(list);}
  for(const key of ['completed','missing'])if(result[key])area.append(node('p',`${title(key)}: ${result[key].join(', ')||'None'}`));if(result.notes)area.append(node('p',result.notes));if(result.notice)area.append(node('p',result.notice));}
 async function perform(fn){if(busy)return;const epoch=authEpoch,buttonStates=new Map([...document.querySelectorAll('button')].map(b=>[b,b.disabled]));busy=true;for(const b of buttonStates.keys())b.disabled=true;status('Working…');try{await fn();}catch(e){if(epoch===authEpoch)status(e.message||'Unable to complete the request. Please retry.');}finally{busy=false;for(const [b,wasDisabled] of buttonStates)if(b.isConnected)b.disabled=wasDisabled;}}

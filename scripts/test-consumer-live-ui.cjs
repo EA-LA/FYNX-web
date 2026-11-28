@@ -736,3 +736,48 @@ test('paid portfolio stress rows have a portfolio-specific accessible caption',a
   assert.equal(h.document.querySelector('#result table caption').textContent,'Portfolio stress test results');
  }finally{h.close();}
 });
+
+test('paid Portfolio Stress groups repeated symbols and ranks losses separately from gains',async()=>{
+ const {run}=require('../backend/consumer-core.cjs');
+ const h=await load({user:true,tier:'plus',query:'?tool=portfolio',handler:d=>d.action==='run'?{result:run(d.product,d.input)}:undefined});
+ try{
+  const $=id=>h.document.getElementById(id);
+  $('tool-shock').value='-10';
+  $('tool-positions').value='AAPL, 6000\n aapl, -1000\nMSFT, 3000\nSPY, -2000\nQQQ, -1000\nflat, 5\nFLAT, -5';
+  $('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  const details=h.document.querySelector('.portfolio-drivers');assert.ok(details);assert.equal(details.open,false);
+  assert.match(details.textContent,/Gross losses across losing symbols: 800 · Gains across gaining symbols: 300/);
+  assert.match(details.textContent,/1 symbol has no net change/);
+  const rows=[...details.querySelectorAll('tbody tr')].map(r=>[...r.children].map(c=>c.textContent));
+  assert.deepEqual(rows,[['AAPL','Loss','-500','62.5%'],['MSFT','Loss','-300','37.5%'],['SPY','Gain','200','66.7%'],['QQQ','Gain','100','33.3%']]);
+  assert.equal($('result').querySelector('.table-wrap').querySelectorAll('tbody tr').length,7);
+  assert.match($('result').querySelector('.metric-grid').textContent,/Scenario P\/L-500/);
+  $('tool-shock').value='0';$('tool-shock').dispatchEvent(new h.document.defaultView.Event('input'));
+  assert.equal(h.document.querySelector('.portfolio-drivers'),null);
+  $('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  const flat=h.document.querySelector('.portfolio-drivers');
+  assert.match(flat.textContent,/No symbol gains or loses value/);
+  assert.match(flat.textContent,/5 symbols have no net change/);
+  assert.equal(flat.querySelector('table'),null);
+ }finally{h.close();}
+});
+
+test('portfolio breakdown works when opening an entitled saved result, but is absent when locked',async()=>{
+ const {run}=require('../backend/consumer-core.cjs');
+ const input={balance:10000,shock:10,positions:[{symbol:'ONE',value:1500},{symbol:'TWO',value:500}]};
+ const item={id:'fixture-portfolio',product:'portfolio',name:'Paid portfolio fixture',input,result:run('portfolio',input)};
+ for(const tier of ['plus','starter']){
+  const h=await load({user:true,tier,handler:d=>d.action==='list'?{items:[item],limit:25}:undefined});
+  try{
+   const open=h.document.querySelector('#savedItems article button');
+   assert.equal(open.disabled,tier==='starter');
+   open.click();
+   const details=h.document.querySelector('.portfolio-drivers');
+   if(tier==='plus'){
+    assert.match(details.textContent,/Gross losses across losing symbols: 0 · Gains across gaining symbols: 200/);
+    assert.match(details.textContent,/ONEGain15075.0%/);
+    await h.changeUser(null);assert.equal(h.document.querySelector('.portfolio-drivers'),null);
+   }else assert.equal(details,null);
+  }finally{h.close();}
+ }
+});
