@@ -394,3 +394,14 @@ test('paid Watchlist explains that repeated pasted entries count toward the exis
  assert.equal(result.notes,note);
  assert.throws(()=>run('watchlist',{symbols:[]}),/Add 1–30 symbols/);
 });
+
+test('paid Portfolio Stress names the invalid position and input without echoing entries',()=>{
+ const data={balance:10000,shock:-5,positions:[{symbol:'AAPL',value:'6000'},{symbol:'MSFT',value:'not-a-number'},{symbol:'SPY',value:'-2000'}]};
+ assert.throws(()=>run('portfolio',data),{message:'Signed position value for position 2 must be between -1000000000 and 1000000000.'});
+ data.positions[1]={symbol:'',value:'4000'};
+ assert.throws(()=>run('portfolio',data),{message:'Position 2 needs a symbol (1–30 characters).'});
+ data.positions[1].symbol='A'.repeat(31);
+ assert.throws(()=>run('portfolio',data),{message:'Position 2 needs a symbol (1–30 characters).'});
+ data.positions[1].symbol='MSFT';
+ assert.deepEqual(run('portfolio',data).rows.map(({symbol,value,scenarioPL})=>[symbol,value,scenarioPL]),[['AAPL',6000,-300],['MSFT',4000,-200],['SPY',-2000,100]]);
+});
