@@ -117,5 +117,34 @@ function setup(responses, options = {}) {
     assert.equal(clears,2);
   });
 
+  const h = setup([
+    {data:[entry('2026-11-15T00:00:00Z',70,'Greed'),entry('2026-11-14T00:00:00Z',50)]},
+    {data:[entry('2026-11-14T00:00:00Z',50)]},
+    new Error('offline'),
+    {data:[entry('2026-11-15T00:00:00Z',71,'Greed')]}
+  ]);
+  await h.settle();
+  await h.clicks[0]();
+  check('older refresh retains latest verified score and history with explicit status', () => {
+    assert.equal(h.elements.sentimentValue.textContent,'70 / 100');
+    assert.equal(h.elements.sentimentClass.textContent,'Greed');
+    assert.equal(h.elements.sentimentMeter.value,70);
+    assert.equal(h.rendered().length,2);
+    assert.match(h.elements.sentimentStatus.textContent,/older report.*2026-11-15 UTC/);
+    assert.equal(h.elements.sentimentRefresh.disabled,false);
+  });
+  await h.clicks[0]();
+  check('network failure retains prior verified observation with explicit status', () => {
+    assert.equal(h.elements.sentimentValue.textContent,'70 / 100');
+    assert.equal(h.rendered().length,2);
+    assert.match(h.elements.sentimentStatus.textContent,/refresh failed.*2026-11-15 UTC/);
+    assert.equal(h.elements.sentimentRefresh.disabled,false);
+  });
+  await h.clicks[0]();
+  check('same-date corrected score restores normal status', () => {
+    assert.equal(h.elements.sentimentValue.textContent,'71 / 100');
+    assert.match(h.elements.sentimentStatus.textContent,/^Observation:/);
+  });
+
   console.log('RESULT ' + n + ' checks passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});

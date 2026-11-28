@@ -7,6 +7,7 @@
   const classification = document.getElementById('sentimentClass');
   const meter = document.getElementById('sentimentMeter');
   let busy = false;
+  let lastVerified = null;
 
   function observation(item, now) {
     if (!item || typeof item !== 'object') return null;
@@ -47,7 +48,9 @@
     if (busy) return;
     busy = true;
     refresh.disabled = true;
-    status.textContent = 'Checking the latest daily observation…';
+    status.textContent = lastVerified
+      ? 'Checking for an update… Showing verified observation: ' + lastVerified.date + ' UTC.'
+      : 'Checking the latest daily observation…';
     try {
       const payload = await fetchObservation();
       const now = Date.now();
@@ -60,6 +63,11 @@
       if (!valid.length) throw new Error('Invalid feed');
 
       const latest = valid[0];
+      if (lastVerified && latest.at < lastVerified.at) {
+        status.textContent = 'Source returned an older report. Showing last verified observation: ' + lastVerified.date + ' UTC. Try again.';
+        return;
+      }
+      lastVerified = latest;
       value.textContent = latest.score + ' / 100';
       classification.textContent = latest.label;
       meter.value = latest.score;
@@ -77,6 +85,10 @@
       }
     } catch (error) {
       window.FynxMonitor?.report('feed', 'sentiment-load', error);
+      if (lastVerified) {
+        status.textContent = 'Daily sentiment refresh failed. Showing last verified observation: ' + lastVerified.date + ' UTC. Use the source link or try again.';
+        return;
+      }
       status.textContent = 'Daily sentiment feed is unavailable. Use the source link or try again. No estimated scores are displayed.';
       value.textContent = 'Unavailable';
       classification.textContent = '';
