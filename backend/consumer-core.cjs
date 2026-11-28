@@ -86,7 +86,8 @@ function run(product,d={},trades=[]){
   return {notes,completed,missing,score:completed.length*20,preTradePreparation:phase(preparation),tradeFollowThrough:phase(followThrough),nextUncheckedItem:missing.length?nextItem[missing[0]]:'All checklist items complete',notice:'Self-assessment of your trading process, not a performance rating.'};
  }
  if(product==='watchlist'){
-  if(!Array.isArray(d.symbols)||d.symbols.length<1||d.symbols.length>30)throw Error('Add 1–30 symbols.');
+  if(!Array.isArray(d.symbols)||d.symbols.length<1)throw Error('Add 1–30 symbols.');
+  if(d.symbols.length>30)throw Error('Add at most 30 symbol entries before duplicates are removed. Remove some entries and try again.');
   const notes=typeof d.notes==='string'?d.notes:'';
   if(notes.length>2000)throw Error('Research notes must be 2,000 characters or fewer.');
   const seen=new Set(),repeated=new Set();
