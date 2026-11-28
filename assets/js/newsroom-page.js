@@ -10,6 +10,7 @@
   app.dataset.newsroomReady = 'true';
   const $ = selector => app.querySelector(selector);
   const cadence = 5 * 60 * 1000;
+  const headlineURLs = new WeakMap();
   let requestNumber = 0, lastAttempt = 0, timer, rows = [], visibleLatest = 8, activeEdition = '', lastResult = null;
 
   function node(tag, className, text) {
@@ -86,6 +87,7 @@
     if (kind === 'lead') source.prepend(node('span', 'newsroom-lead-label', 'LATEST LEAD'), document.createTextNode(' '));
     const title = node(kind === 'lead' ? 'h2' : 'h3');
     const link = node('a', '', item.title);
+    headlineURLs.set(link, item.url);
     link.href = window.FYNXNewsReaderData?.href(item) || '/news/article.html';
     const arrow = node('span', 'newsroom-story-arrow', '→'); arrow.setAttribute('aria-hidden', 'true'); link.append(document.createTextNode(' '), arrow);
     title.append(link);
@@ -108,7 +110,22 @@
     sources.href = '#newsroom-sources'; box.append(sources);
     return box;
   }
+  function focusedHeadline() {
+    return headlineURLs.get(document.activeElement);
+  }
+  function restoreHeadlineFocus(url) {
+    if (!url) return;
+    const links = $('[data-newsroom-stories]').querySelectorAll('.newsroom-story h2 a, .newsroom-story h3 a');
+    const same = [...links].find(link => headlineURLs.get(link) === url);
+    if (same) { same.focus({preventScroll: true}); return; }
+    // A removed headline has no replacement. Keep keyboard focus inside this feed,
+    // at its status, without jumping to an unrelated headline.
+    const status = $('[data-newsroom-status]');
+    status.tabIndex = -1;
+    status.focus({preventScroll: true});
+  }
   function render() {
+    const focused = focusedHeadline();
     window.FYNXNewsReaderData?.prefetch(rows.slice(0,6));
     $('[data-newsroom-lead]').replaceChildren(story(rows[0], 'lead'));
     const secondary = $('[data-newsroom-secondary]');
@@ -119,6 +136,7 @@
     $('[data-newsroom-latest]').replaceChildren(...latest.slice(0, visibleLatest).map(item => story(item, 'latest')));
     $('[data-newsroom-count]').textContent = latest.length + (latest.length === 1 ? ' report' : ' reports');
     updateMore(latest.length);
+    restoreHeadlineFocus(focused);
   }
   function updateMore(count) {
     const more = $('[data-newsroom-more]');
@@ -164,6 +182,7 @@
     lastAttempt = Date.now();
     $('[data-newsroom-edition]').textContent = editionInfo(activeEdition).label + ' edition';
     if (changedEdition || !rows.length) {
+      const focused = focusedHeadline();
       rows = []; visibleLatest = 8; lastResult = null;
       $('[data-newsroom-secondary]').hidden = true;
       $('[data-newsroom-latest-section]').hidden = true;
@@ -255,9 +274,11 @@
     }
     if (rows.length) render();
     else {
+      const focused = focusedHeadline();
       $('[data-newsroom-secondary]').hidden = true;
       $('[data-newsroom-latest-section]').hidden = true;
       $('[data-newsroom-lead]').replaceChildren(message(result.status === 'unavailable' ? 'Coverage is temporarily unavailable.' : 'No recent reports in this edition.', 'The source directory and original FYNX reading guide remain available. You can refresh or choose another edition.'));
+      restoreHeadlineFocus(focused);
     }
     setStatus(result);
     $('[data-newsroom-refresh]').disabled = false;

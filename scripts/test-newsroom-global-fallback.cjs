@@ -27,7 +27,8 @@ const settle = async () => { await flush(); await flush(); await flush(); };
 function setup(loader) {
   const dom = new JSDOM(html, { url: 'https://www.fynxfinanceworld.com/markets/stocks.html', runScripts: 'outside-only' });
   const w = dom.window;
-  w.setInterval = () => 1; // Keep the real five-minute auto-refresh path from creating test timers.
+  let checkCoverage;
+  w.setInterval = cb => { checkCoverage = cb; return 1; }; // Do not create test timers.
   w.FynxEdition = { get: () => 'us', editions: [{ id: 'us', label: 'United States', locale: 'en-US' }] };
   if (loader !== undefined) w.FYNXMarketIntelligenceData = { loadHeadlines: loader };
   w.eval(source);
@@ -38,6 +39,12 @@ function setup(loader) {
     feed: doc.querySelector('[data-newsroom-stories]'),
     lead: doc.querySelector('[data-newsroom-lead]'),
     label: doc.querySelector('[data-newsroom-status-label]'),
+    advanceRefresh() {
+      Object.defineProperty(doc, 'hidden', { configurable: true, value: false });
+      const now = w.Date.now();
+      w.Date.now = () => now + 301000;
+      checkCoverage();
+    },
     close() { w.close(); }
   };
 }
@@ -252,5 +259,60 @@ test('Show more appends reporting without replacing the lead and focuses the fir
     assert.strictEqual(app.doc.activeElement,heading(cards()[16]));
     assert.equal(new Set(cards().map(card=>heading(card).textContent)).size,19,'no duplicates');
     assert.equal(app.doc.querySelector('[data-newsroom-count]').textContent,'19 reports');
+  } finally { app.close(); }
+});
+
+const focusStory = (id, rank) => ({
+  ...story('us'), title: id === 'one' || id === 'two' ? 'Same headline, different reports' : id,
+  url: 'https://example.com/' + encodeURIComponent(id), rank
+});
+const fresh = items => ({status:'fresh', fetchedAt:new Date().toISOString(), items});
+
+test('periodic refresh returns focus to the same report when it moves even if titles match', async () => {
+  let calls = 0;
+  const app = setup(async () => fresh(++calls === 1
+    ? [focusStory('one', 1), focusStory('two', 2)] : [focusStory('two', 1), focusStory('one', 2)]));
+  try {
+    await settle();
+    const selected = app.feed.querySelector('[data-newsroom-secondary] h3 a');
+    selected.focus();
+    assert.equal(app.doc.activeElement, selected);
+    app.advanceRefresh();
+    await settle();
+    assert.equal(calls, 2);
+    assert.equal(app.doc.activeElement, app.lead.querySelector('h2 a'));
+    assert.notEqual(app.doc.activeElement, selected, 'the first feed link was replaced');
+  } finally { app.close(); }
+});
+
+test('an expired focused report moves focus to the feed status instead of a different report', async () => {
+  let calls = 0;
+  const app = setup(async () => fresh([focusStory(++calls === 1 ? 'Selected report' : 'Another report', 1)]));
+  try {
+    await settle();
+    app.lead.querySelector('h2 a').focus();
+    app.advanceRefresh();
+    await settle();
+    assert.match(app.lead.textContent, /Another report/);
+    assert.equal(app.doc.activeElement, app.doc.querySelector('[data-newsroom-status]'));
+    assert.equal(app.doc.activeElement.tabIndex, -1);
+  } finally { app.close(); }
+});
+
+test('a refresh does not steal focus if a reader moved to a control while it was pending', async () => {
+  let resolveLater, calls = 0;
+  const app = setup(() => ++calls === 1 ? Promise.resolve(fresh([focusStory('Selected report', 1)]))
+    : new Promise(resolve => { resolveLater = resolve; }));
+  try {
+    await settle();
+    app.lead.querySelector('h2 a').focus();
+    app.advanceRefresh();
+    const outside = app.doc.createElement('button');
+    app.doc.body.append(outside);
+    outside.focus();
+    resolveLater(fresh([focusStory('New report', 1)]));
+    await settle();
+    assert.match(app.lead.textContent, /New report/);
+    assert.equal(app.doc.activeElement, outside);
   } finally { app.close(); }
 });
