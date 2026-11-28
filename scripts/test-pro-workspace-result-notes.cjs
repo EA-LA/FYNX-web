@@ -136,3 +136,32 @@ test('paid Portfolio Stress can wrap a long symbol without changing its numeric 
     assert.notEqual(window.getComputedStyle(cells[2]).overflowWrap, 'anywhere');
   }, 'plus');
 });
+
+test('print report isolates an available paid result without changing unrun or edited workspaces', async () => {
+  await withPaidResult('risk', async ({window, document}) => {
+    const styles = [...document.styleSheets].flatMap(sheet => [...sheet.cssRules]);
+    const print = styles.find(rule => rule.media?.mediaText === 'print');
+    assert.ok(print);
+    const hide = [...print.cssRules].find(rule => rule.style?.display === 'none');
+    assert.ok(hide);
+    const hiddenInPrint = element => element.matches(hide.selectorText);
+    const toolForm = document.getElementById('toolForm');
+    const result = document.getElementById('result');
+    const heading = document.getElementById('toolTitle');
+    const saved = document.getElementById('savedItems').closest('.workbench > *');
+    const header = document.querySelector('body > header');
+    assert.equal(hiddenInPrint(toolForm), false);
+    assert.equal(hiddenInPrint(header), false);
+    document.getElementById('runTool').click();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.ok(result.querySelector('.metric-grid'));
+    for (const shown of [result, heading]) assert.equal(hiddenInPrint(shown), false);
+    for (const hidden of [toolForm, saved, header, document.getElementById('toolGuide')])
+      assert.equal(hiddenInPrint(hidden), true);
+    assert.notEqual(window.getComputedStyle(toolForm).display, 'none', 'screen controls remain usable');
+    const entry = document.getElementById('tool-entry');
+    entry.value = '101';
+    entry.dispatchEvent(new window.Event('input', { bubbles: true }));
+    assert.equal(hiddenInPrint(toolForm), false);
+  });
+});
