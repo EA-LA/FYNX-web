@@ -222,6 +222,7 @@
     }
     .chip:hover{transform: translateY(-1px); background: rgba(0, 0, 0, .12); border-color: rgba(0, 0, 0, .16)}
     body.dark-mode .chip:hover{ background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .16); }
+    #sideSeg button:focus-visible,#multChips button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
     .chip.active{background: rgba(0, 0, 0, .16); border-color: rgba(0, 0, 0, .18)}
     body.dark-mode .chip.active{background: rgba(255, 255, 255, .20); border-color: rgba(255, 255, 255, .18)}
     label{
@@ -496,9 +497,9 @@
             </div>
             <div>
               <label>Side</label>
-              <div class="seg" id="sideSeg">
-                <button type="button" data-side="buy" class="active">Buy</button>
-                <button type="button" data-side="sell">Sell</button>
+              <div class="seg" id="sideSeg" role="group" aria-label="Side">
+                <button type="button" data-side="buy" class="active" aria-pressed="true">Buy</button>
+                <button type="button" data-side="sell" aria-pressed="false">Sell</button>
               </div>
             </div>
             <div>
@@ -520,7 +521,7 @@
           </div>
           <div style="margin-top:14px;">
             <label>ATR multiple</label>
-            <div class="chipsRow" id="multChips"></div>
+            <div class="chipsRow" id="multChips" role="group" aria-label="ATR multiple"></div>
           </div>
           <div class="chipsRow" style="margin-top:14px;">
             <select id="side" hidden aria-hidden="true" tabindex="-1"><option value="buy">buy</option><option value="sell">sell</option></select>
@@ -643,27 +644,38 @@
 
     const multiples = [1.0, 1.5, 2.0, 2.5, 3.0];
 
+    const multipleButtons = new Map();
+    function setPressed(button, active){
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    }
+
+    function syncMultipleChips(){
+      multipleButtons.forEach((button, multiple) => setPressed(button, multiple === currentMultiple));
+    }
+
     function buildMultipleChips(){
-      multChips.innerHTML = "";
       multiples.forEach(m => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "chip" + (m === currentMultiple ? " active" : "");
+        btn.className = "chip";
         btn.textContent = `${m.toFixed(1)}x ATR`;
         btn.addEventListener("click", () => {
           currentMultiple = m;
           document.getElementById("mult").value = String(m);
-          buildMultipleChips();
+          syncMultipleChips();
           updateCalc();
         });
+        multipleButtons.set(m, btn);
         multChips.appendChild(btn);
       });
+      syncMultipleChips();
     }
 
-    sideSeg.querySelectorAll("button").forEach(btn => {
+    const sideButtons = [...sideSeg.querySelectorAll("button")];
+    sideButtons.forEach(btn => {
       btn.addEventListener("click", () => {
-        sideSeg.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
+        sideButtons.forEach(button => setPressed(button, button === btn));
         currentSide = btn.dataset.side;
         document.getElementById("side").value = currentSide;
         updateCalc();
@@ -678,7 +690,7 @@
       const m = Number(document.getElementById("mult").value);
       if (multiples.includes(m)) currentMultiple = m;
       document.getElementById("mult").value = String(currentMultiple);
-      buildMultipleChips();
+      syncMultipleChips();
       updateCalc();
     });
 
