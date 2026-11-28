@@ -289,3 +289,43 @@ test('home can recheck a failed or malformed story inventory without hiding stor
     assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), savedPaths);
   } finally { dom.window.close(); }
 });
+
+test('cross-tab local storage clear resets saved controls', async () => {
+  const {dom, requests, one, two} = setup();
+  try {
+    one.click();
+    requests[0].resolve({ok: true, json: async () => [{url: resource}]});
+    await flush();
+    assert.equal(one.getAttribute('aria-pressed'), 'true');
+    dom.window.localStorage.clear();
+    dom.window.dispatchEvent(new dom.window.StorageEvent('storage', {key: null, storageArea: dom.window.localStorage}));
+    assert.equal(one.getAttribute('aria-pressed'), 'false');
+    assert.equal(two.getAttribute('aria-pressed'), 'false');
+  } finally { dom.window.close(); }
+});
+
+test('cross-tab recent changes and storage clear refresh both home lists', async () => {
+  const {dom, requests, saved, recent} = setupWorkspace();
+  try {
+    requests[0].resolve({ok: true, json: async () => [
+      {url: resource, title: 'Position size'}, {url: secondResource, title: 'Debt payoff'}
+    ]});
+    await flush();
+    assert.deepEqual(hrefs(saved), [resource]);
+    assert.deepEqual(hrefs(recent), [secondResource]);
+    const recentKey = 'fynx.recent-resources.v1';
+    dom.window.localStorage.setItem(recentKey, JSON.stringify([resource, secondResource]));
+    dom.window.dispatchEvent(new dom.window.StorageEvent('storage', {key: recentKey, storageArea: dom.window.localStorage}));
+    await flush();
+    assert.deepEqual(hrefs(recent), [resource, secondResource]);
+    assert.deepEqual(hrefs(saved), [resource]);
+    dom.window.localStorage.clear();
+    dom.window.dispatchEvent(new dom.window.StorageEvent('storage', {key: null, storageArea: dom.window.localStorage}));
+    await flush();
+    assert.deepEqual(hrefs(saved), []);
+    assert.deepEqual(hrefs(recent), []);
+    assert.match(saved.textContent, /Save tools and lessons/);
+    assert.match(recent.textContent, /recently opened resources will appear/);
+    assert.equal(requests.length, 1);
+  } finally { dom.window.close(); }
+});

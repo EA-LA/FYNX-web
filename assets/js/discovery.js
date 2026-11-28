@@ -262,6 +262,13 @@
   // Store resource paths only. Never record account pages, queries, inputs or trade data.
   const pathname=location.pathname;
   if(/^\/(tools|learn\/lessons|markets)\//.test(pathname))index().then(rows=>{if(rows.some(r=>r.url===pathname))write(recentKey,[pathname,...read(recentKey).filter(x=>x!==pathname)].slice(0,8));});
-  window.addEventListener('storage',event=>{if(event.key===savedKey){saved=new Set(read(savedKey));updateSaves();filterLibrary();renderWorkspace();}});
+  window.addEventListener('storage',event=>{
+    // clear() reports a null key; another tab can also update the recent list.
+    // Re-read persisted state rather than leaving the workspace visually stale.
+    if(event.key===null||event.key===savedKey){
+      saved=new Set(read(savedKey));updateSaves();filterLibrary();
+    }
+    if(event.key===null||event.key===savedKey||event.key===recentKey)renderWorkspace();
+  });
   updateSaves();renderWorkspace();
 })();
