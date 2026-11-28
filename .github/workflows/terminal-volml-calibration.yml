@@ -1,0 +1,24 @@
+name: Terminal VOLML calibration
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/mllab.js'
+      - 'assets/js/terminal/mllab-core.js'
+      - 'scripts/test-terminal-mllab.cjs'
+      - '.github/workflows/terminal-volml-calibration.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/terminal/mllab.js
+      - run: node scripts/test-terminal-mllab.cjs

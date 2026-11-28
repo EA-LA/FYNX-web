@@ -20,6 +20,7 @@ const base = walk(999); const coA = base, coB = base.map((v, i) => v * Math.exp(
 const T = {el: () => ({style: {}, append() {}}), btn: () => ({}), svg: () => ({}), $: () => null, panel: () => null, setText() {}, store: {get: () => null, set() {}}, empty() {}, finite: v => typeof v === 'number' && Number.isFinite(v), report() {},
   PANELS: {}, PANEL_DESC: {}, LINK_LABEL: {}, RENDER: {}, EXTRA_GROUPS: [], PAGE_NAMES: [], TABBED: new Set(), DESK_ORDER: ['all', 'world', 'quant', 'strategy'], DESK_DEFS: {all: {}},
   fnMarket: async q => {
+    if (q.op === 'bars' && q.symbol === 'SPARSE') { const B = market(1); B.h[780] = 0; return B; }
     if (q.op === 'bars') return q.symbol === 'CRASH' ? market(5, {crash: true}) : market(q.symbol === 'SPY' ? 1 : 3);
     const syms = q.symbols.split(','), last = q.range === '2y' ? 504 : 1260, ds = days.slice(-last);
     return {dates: ds, names: {}, failed: {}, series: Object.fromEntries(syms.map((s, k) => [s, (s === 'KO' ? coA : s === 'PEP' ? coB : (closes[s] ||= walk([...s].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0))).slice(-last)]))};
@@ -41,7 +42,48 @@ let fail = 0; const ok = (c, m) => { if (!c || process.env.VERBOSE) console.log(
   ok(L.probabilityCalibration([.5], [1], [])[2].observed === null, 'MLPRED: empty holdouts do not fabricate a zero outcome');
   ok(p.res.every(m => m.calibration.reduce((n, b) => n + b.n, 0) === p.test.length &&
     Math.abs(m.calibration.reduce((n, b) => n + b.n * (b.observed || 0), 0) - p.ups) < 1e-8), 'MLPRED: real run calibration reconciles with holdout days and up days');
-  const v = await L.volmlRun('SPY', 5);
+  const fitGBM = M.gbmFit;
+  let v;
+  for (const H of [5, 10, 22]) {
+    const fits = [];
+    M.gbmFit = (X, y, options) => { fits.push({size: X.length, labels: y.length}); return fitGBM(X, y, options); };
+    let result;
+    try { result = await L.volmlRun('SPY', H); }
+    finally { M.gbmFit = fitGBM; }
+    if (H === 5) v = result;
+    const ends = [];
+    for (let t0 = result.start; t0 < result.n; t0 += 252) ends.push(t0 - H);
+    ends.push(result.n);
+    ok(fits.length === ends.length * 2, `VOLML H=${H}: walk-forward years and latest forecast each run one inner fit`);
+    for (const [i, end] of ends.entries()) {
+      const outer = fits[2 * i], inner = fits[2 * i + 1], hold = end - 252, origin = result.idx[hold];
+      ok(outer?.size === end && outer.labels === end, `VOLML H=${H} fold ${i}: outer model fit is unchanged`);
+      ok(inner?.labels === inner?.size && result.idx[inner?.size - 1] + H <= origin
+        && (inner.size === hold || result.idx[inner.size] + H > origin), `VOLML H=${H} fold ${i}: helper uses every available label and no future return`);
+    }
+    if (process.env.VOLML_MEASURE) console.log(`VOLML H=${H}: synthetic GBM QLIKE=${result.M.gbm.qlike.toFixed(6)}, now=${(result.now.gbm * 100).toFixed(6)}%; folds=${ends.length}`);
+  }
+  // Dropped feature rows are not elapsed time. A label ending at the first
+  // calibration origin is valid, even when it is fewer than H rows back.
+  const ids = Array.from({length: 450}, (_, i) => 20 + 2 * i + Math.floor(i / 7));
+  const inputs = ids.map(i => [i]), labels = ids.map(() => 1), params = {minLeaf: 50};
+  const sparseFits = [], sparsePredictions = [];
+  M.gbmFit = (X, y) => { sparseFits.push({X, y}); return {predict: row => { sparsePredictions.push(row[0]); return 0; }}; };
+  try {
+    for (const H of [5, 10, 22]) {
+      const k = ids.length - 252, expected = ids.slice(0, k).filter(i => i + H <= ids[k]);
+      const bias = L.gbmHeldoutBias?.(inputs, labels, ids, H, ids.length, params);
+      const fit = sparseFits.shift();
+      ok(bias === 1 && fit?.X.map(row => row[0]).join(',') === expected.join(',') && fit.y.length === expected.length
+        && sparsePredictions.splice(0).join(',') === ids.slice(k).join(','), `VOLML H=${H}: gapped origins preserve the full held-out sample and use actual return endpoints`);
+    }
+    ok(L.gbmHeldoutBias?.(inputs, labels, ids, 22, 310, params) === 0 && sparseFits.length === 0,
+      'VOLML: no calibration fit or correction is reported when the separate training sample is too small');
+  } finally { M.gbmFit = fitGBM; }
+  let sparseRejected = false;
+  try { await L.volmlRun('SPARSE', 22); }
+  catch (error) { sparseRejected = /not enough complete observations/i.test(error.message); }
+  ok(sparseRejected, 'VOLML: too few complete feature rows cannot produce a backtest winner');
   ok(v.M.garch.qlike < v.M.naive.qlike && v.M.har.qlike < v.M.naive.qlike, `VOLML on GARCH data: QLIKE garch ${v.M.garch.qlike.toFixed(3)}, har ${v.M.har.qlike.toFixed(3)}, gbm ${v.M.gbm.qlike.toFixed(3)} < naive ${v.M.naive.qlike.toFixed(3)}`);
   ok(Object.values(v.now).every(x => x > 0.03 && x < 2) && Number.isFinite(v.dm.gbmNaive.t), 'VOLML: forecasts and Diebold–Mariano finite');
   const rg = await L.regimeRun('SPY', 2);
