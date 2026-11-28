@@ -12,6 +12,12 @@ function open(t) {
   const env = new JSDOM(html, { runScripts: 'outside-only', url: 'https://www.fynxfinanceworld.com/tools/market-hours.html' });
   t.after(() => env.window.close());
   const { document } = env.window;
+  const downloads = [];
+  const created = [];
+  env.window.Blob = Blob;
+  env.window.URL.createObjectURL = blob => { created.push(blob); return 'blob:local-test-' + created.length; };
+  env.window.URL.revokeObjectURL = () => {};
+  env.window.HTMLAnchorElement.prototype.click = function () { downloads.push({name: this.download, url: this.href}); };
   const id = name => document.getElementById(name);
   const page = Array.from(document.scripts).find(s => s.textContent.includes('const MARKETS = {'));
   assert.ok(page);
@@ -22,7 +28,7 @@ function open(t) {
     id(name).dispatchEvent(new env.window.Event('change', { bubbles: true }));
   };
   return {
-    id, select,
+    id, select, downloads, created, window: env.window,
     compare(first, second, date, zone = 'UTC') {
       select('fx-overlap-first', first);
       select('fx-overlap-second', second);
@@ -47,6 +53,7 @@ test('Home links to free Market Hours, and planner loads after the existing sche
   assert.equal(p.id('fx-overlap-second').value, 'newyork');
   assert.equal(p.id('fx-overlap-run').disabled, false);
   assert.equal(p.id('fx-overlap-result').getAttribute('role'), 'status');
+  assert.equal(p.id('fx-overlap-calendar').disabled, true);
   assert.doesNotMatch(feature, /localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest/);
 });
 
@@ -80,4 +87,66 @@ test('no overlap and duplicate inputs are distinguishable, and edits invalidate 
   assert.equal(p.id('fx-overlap-result').textContent, 'Selection changed. Find overlap again for the current inputs.');
   p.id('fx-overlap-run').click();
   assert.match(p.id('fx-overlap-result').textContent, /06:00 to .*11:00 America\/Boise \(5 hr\)/);
+});
+
+
+test('the downloaded .ics uses the overlap’s actual UTC instants, even with next-day display time', async t => {
+  const p = open(t);
+  assert.match(p.compare('london', 'newyork', '2026-03-11', 'Asia/Tokyo'), /12 Mar/);
+  const calendar = p.id('fx-overlap-calendar');
+  assert.equal(calendar.disabled, false);
+  calendar.click();
+  assert.deepEqual(p.downloads, [{name: 'fynx-forex-overlap-london-newyork-2026-03-11.ics', url: 'blob:local-test-1'}]);
+  assert.match(p.created[0].type, /^text\/calendar/);
+  const file = await p.created[0].text();
+  assert.match(file, /^BEGIN:VCALENDAR\r\nVERSION:2.0\r\n/);
+  assert.match(file, /DTSTAMP:\d{8}T\d{6}Z\r\nDTSTART:20260311T120000Z\r\nDTEND:20260311T170000Z\r\n/);
+  assert.match(file, /SUMMARY:London \/ New York forex overlap \(indicative\)\r\n/);
+  assert.match(file, /Not live or holiday-adjusted/);
+  assert.match(file, /TRANSP:TRANSPARENT\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n$/);
+  assert.ok(file.split('\r\n').every(line => Buffer.byteLength(line) <= 75));
+  assert.doesNotMatch(file, /ATTENDEE|ORGANIZER|RRULE|VALARM|Asia\/Tokyo/);
+  assert.match(p.id('fx-overlap-calendar-status').textContent, /Open it in your calendar/);
+});
+
+test('stable IDs use the paired sessions and timed window, not dropdown order or display zone', async t => {
+  const p = open(t);
+  const button = p.id('fx-overlap-calendar');
+  p.compare('london', 'newyork', '2026-03-11');
+  button.click();
+  p.compare('newyork', 'london', '2026-03-11', 'America/Boise');
+  button.click();
+  p.compare('newyork', 'london', '2026-03-12');
+  button.click();
+  const ids = await Promise.all(p.created.map(async blob => (await blob.text()).match(/UID:([^\r]+)/)[1]));
+  assert.equal(ids[0], ids[1]);
+  assert.notEqual(ids[1], ids[2]);
+});
+
+test('no overlap, edited selections and silently changed inputs cannot download old event data', t => {
+  const p = open(t);
+  const button = p.id('fx-overlap-calendar');
+  p.compare('london', 'newyork', '2026-03-11');
+  p.id('fx-overlap-date').value = '2026-03-12'; // no change event
+  button.click();
+  assert.equal(button.disabled, true);
+  assert.equal(p.downloads.length, 0);
+  p.compare('london', 'newyork', '2026-03-11');
+  p.select('tz', 'America/Boise');
+  assert.equal(button.disabled, true);
+  p.compare('london', 'newyork', '2026-03-14');
+  button.click();
+  assert.equal(button.disabled, true);
+  p.compare('london', 'london', '2026-03-11');
+  assert.equal(button.disabled, true);
+  assert.equal(p.downloads.length, 0);
+});
+
+test('download service unavailable recovers without implying the event was imported', t => {
+  const p = open(t);
+  p.compare('london', 'newyork', '2026-03-11');
+  p.window.URL.createObjectURL = undefined;
+  p.id('fx-overlap-calendar').click();
+  assert.equal(p.downloads.length, 0);
+  assert.match(p.id('fx-overlap-calendar-status').textContent, /Could not prepare the calendar file/);
 });
