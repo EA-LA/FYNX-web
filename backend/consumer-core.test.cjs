@@ -405,3 +405,21 @@ test('paid Portfolio Stress names the invalid position and input without echoing
  data.positions[1].symbol='MSFT';
  assert.deepEqual(run('portfolio',data).rows.map(({symbol,value,scenarioPL})=>[symbol,value,scenarioPL]),[['AAPL',6000,-300],['MSFT',4000,-200],['SPY',-2000,100]]);
 });
+
+test('Professional simulation excludes mathematically break-even paths from loss frequency',()=>{
+ const input={balance:12345.67,riskPct:5,winRate:50,rewardRisk:1/0.95,trades:2};
+ // A loss multiplies equity by 0.95, a win by its reciprocal.
+ // With this fixed seed, 127 paths lose twice and 235 have one win and one loss.
+ for(const balance of [1,12345.67,1e9]){
+  const result=run('simulation',{...input,balance});
+  assert.equal(result.lossFrequency,25.4);
+  assert.match(result.notice,/treated as break-even/);
+ }
+});
+
+test('Professional simulation still counts small genuine losses and long-horizon break-even correctly',()=>{
+ const input={balance:12345.67,riskPct:5,winRate:50,rewardRisk:1/0.95,trades:2};
+ assert.equal(run('simulation',{...input,rewardRisk:input.rewardRisk-1e-8}).lossFrequency,72.4);
+ assert.equal(run('simulation',{...input,rewardRisk:input.rewardRisk+1e-8}).lossFrequency,25.4);
+ assert.equal(run('simulation',{...input,trades:500}).lossFrequency,49);
+});
