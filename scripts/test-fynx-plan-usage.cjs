@@ -3,10 +3,10 @@
 const assert = require('node:assert/strict'), fs = require('fs'), path = require('path'), vm = require('vm');
 function load() {
   const store = new Map(), mk = () => ({getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k)});
-  const root = {__FYNX_PLAN_TEST__: true, localStorage: mk(), sessionStorage: mk(), document: undefined, location: {pathname: '/terminal.html', search: ''}, setTimeout, clearTimeout, Promise, Date, Math, JSON, Number, String, Object, Array, Set, Map, Infinity, NaN, console};
+  const root = {__FYNX_PLAN_TEST__: true, localStorage: mk(), sessionStorage: mk(), document: undefined, location: {pathname: '/terminal.html', search: '', hash: ''}, URL, setTimeout, clearTimeout, Promise, Date, Math, JSON, Number, String, Object, Array, Set, Map, Infinity, NaN, console};
   root.window = root; root.globalThis = root;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../assets/js/fynx-plan.js'), 'utf8'), root);
-  return {P: root.FYNXPlan, store};
+  return {P: root.FYNXPlan, store, location: root.location};
 }
 (async () => {
   // Server answers: free member with 2 AI runs a day, counted on the server.
@@ -14,7 +14,7 @@ function load() {
   const server = {call: async d => { calls.push(d); if (d.action !== 'usage') return {}; if (d.op === 'read') return {counts: {analysis: 0, ai: serverUsed, backtest: 0}, resetAt: Date.now() + 3600e3};
     if (d.key && seen.has(d.key)) return {allowed: true, used: serverUsed, repeat: true, resetAt: Date.now() + 3600e3};
     if (serverUsed >= 2) return {allowed: false, used: serverUsed, limit: 2, resetAt: Date.now() + 3600e3}; serverUsed++; if (d.key) seen.add(d.key); return {allowed: true, used: serverUsed, limit: 2, resetAt: Date.now() + 3600e3}; }};
-  let {P, store} = load(); P._test.set(server, {tier: 'free', uid: 'u1', signedIn: true, verified: true});
+  let {P, store, location} = load(); P._test.set(server, {tier: 'free', uid: 'u1', signedIn: true, verified: true});
   assert.equal(await P.charge('ai', 'a', {silent: true}), true); assert.equal(await P.charge('ai', 'b', {silent: true}), true);
   assert.equal(await P.charge('ai', 'c', {silent: true}), false, 'the server refuses the third free AI run');
   assert.equal(calls.filter(c => c.action === 'usage' && c.op === 'charge').length, 3, 'every new run asks the server');
@@ -119,6 +119,58 @@ function load() {
     rejectOld(new Error('old request failed'));
     await pending;
     assert.equal(P.tier, 'plus', 'an old failed verification cannot downgrade a newer paid account');
+  }
+
+  // A delayed premium checkout must never send the next account to the old Stripe session.
+  for (const change of ['sign-out', 'switch', 'switch-back', 'auth-before-listener']) {
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let resolveCheckout, started;
+    const startedPromise = new Promise(resolve => { started = resolve; });
+    ({P, store, location} = load());
+    P._test.set({config: {auth}, call: d => {
+      if (d.action === 'checkout') return new Promise(resolve => { resolveCheckout = resolve; started(); });
+      if (d.action === 'status') return Promise.resolve({mode: 'live', tier: 'starter'});
+      return Promise.resolve({counts: {}});
+    }}, {tier: 'starter', uid: 'paid-a', signedIn: true, verified: true});
+    const pending = P.checkout('plus');
+    await startedPromise;
+    auth.currentUser = change === 'sign-out' ? null : {uid: 'paid-b'};
+    if (change !== 'auth-before-listener') await P.refresh();
+    if (change === 'switch-back') { auth.currentUser = {uid: 'paid-a'}; await P.refresh(); }
+    resolveCheckout({url: 'https://checkout.stripe.com/c/pay/session-a'});
+    await assert.rejects(pending, /account or membership changed/, change);
+    assert.equal(location.href, undefined, 'stale checkout must not redirect: ' + change);
+    assert.equal(store.has('fynx.plan.return'), false, 'stale checkout must not write return state: ' + change);
+  }
+  {
+    const auth = {currentUser: {uid: 'paid-b'}};
+    let checkoutCalls = 0;
+    ({P, store, location} = load());
+    P._test.set({config: {auth}, call: async () => { checkoutCalls++; return {url: 'https://checkout.stripe.com/c/pay/session-a'}; }}, {tier: 'starter', uid: 'paid-a', signedIn: true, verified: true});
+    await assert.rejects(P.checkout('plus'), /account or membership changed/);
+    assert.equal(checkoutCalls, 0, 'mismatched auth must not create a checkout');
+    assert.equal(location.href, undefined);
+    assert.equal(store.has('fynx.plan.return'), false);
+  }
+  {
+    const auth = {currentUser: {uid: 'paid-a'}};
+    let requested;
+    ({P, store, location} = load());
+    P._test.set({config: {auth}, call: async d => { requested = d; return {url: 'https://checkout.stripe.com/c/pay/session-a'}; }}, {tier: 'starter', uid: 'paid-a', signedIn: true, verified: true});
+    await P.checkout('plus');
+    assert.equal(requested.tier, 'plus');
+    assert.equal(location.href, 'https://checkout.stripe.com/c/pay/session-a');
+    assert.equal(JSON.parse(store.get('fynx.plan.return')).path, '/terminal.html');
+    ({P, store, location} = load());
+    P._test.set({config: {auth}, call: async () => ({url: 'https://example.com/pay'})}, {tier: 'starter', uid: 'paid-a', signedIn: true, verified: true});
+    await assert.rejects(P.checkout('plus'), /Invalid checkout destination/);
+    assert.equal(location.href, undefined);
+    assert.equal(store.has('fynx.plan.return'), false);
+    ({P, store, location} = load());
+    P._test.set({call: async () => { throw new Error('guest must not call checkout'); }}, {tier: 'guest', signedIn: false, verified: true});
+    await P.checkout('plus');
+    assert.match(location.href, /^\/auth\/signup\.html\?returnTo=/);
+    assert.equal(JSON.parse(store.get('fynx.plan.return')).path, '/terminal.html');
   }
 
   console.log('FYNXPlan usage: server-counted allowances, storage reset resistance, repeats, offline fallback, guest limits and owner access passed');
