@@ -897,3 +897,32 @@ for(const action of ['checkout','portal']){
   }
  });
 }
+
+test('paid saved-workspace tool filter combines with text search, survives refresh, and resets across accounts',async()=>{
+ const items=[
+  {id:'r',product:'risk',name:'London Risk Plan',input:{},result:{}},
+  {id:'p',product:'portfolio',name:'London Stress Plan',input:{},result:{}},
+  {id:'w',product:'watchlist',name:'New York Watchlist',input:{},result:{}},
+  {id:'old',product:'legacy-tool',name:'Old London Plan',input:{},result:{}}
+ ];
+ const h=await load({user:true,tier:'plus',handler:d=>d.action==='list'?{items,limit:100}:undefined});
+ const $=id=>h.document.getElementById(id),filter=$('savedToolFilter');
+ const set=(el,value,event)=>{el.value=value;el.dispatchEvent(new h.document.defaultView.Event(event,{bubbles:true}));};
+ const visible=()=>[...$('savedItems').querySelectorAll('article:not([hidden])')].map(el=>el.querySelector('strong').textContent);
+ try{
+  assert.equal(filter.value,'');
+  assert.equal(filter.querySelector('option[value="export"]'),null);
+  assert.equal(visible().length,4);
+  const calls=h.calls.length;
+  set(filter,'portfolio','change');assert.deepEqual(visible(),['London Stress Plan']);
+  set($('savedSearch'),'risk','input');assert.deepEqual(visible(),[]);
+  assert.match($('savedSearchCount').textContent,/0 of 4/);
+  set($('savedSearch'),'london','input');assert.deepEqual(visible(),['London Stress Plan']);
+  assert.equal(h.calls.length,calls,'filtering does not call the service');
+  await $('loadSaved').onclick();
+  assert.equal(filter.value,'portfolio');assert.deepEqual(visible(),['London Stress Plan']);
+  await h.changeUser({uid:'other'});assert.equal(filter.value,'');assert.equal($('savedSearch').value,'');assert.equal(visible().length,4);
+  await h.changeUser(null);
+  assert.equal($('savedSearchControls').hidden,true);assert.equal(visible().length,0);
+ }finally{h.close();}
+});
