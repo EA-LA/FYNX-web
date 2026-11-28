@@ -28,6 +28,7 @@
       if (frame.dataset.src) { frame.src = frame.dataset.src; delete frame.dataset.src; }
       open.href = frame.getAttribute('src');
       panel._selected = frame;
+      frame._resizeEmbeddedFallback?.();
       if(navigate) routeFor(panel, frame);
     }
     frames.forEach(frame => {
@@ -67,6 +68,7 @@
           };
           releaseEmbedded = () => {
             active = false;
+            frame._resizeEmbeddedFallback = null;
             if (resizeObserver) resizeObserver.disconnect();
             doc.removeEventListener('click', forwardLink);
             style.remove();
@@ -78,6 +80,9 @@
           if (typeof ResizeObserver === 'function') {
             resizeObserver = new ResizeObserver(resize);
             resizeObserver.observe(doc.body);
+          } else {
+            // Re-measure after tab activation or viewport changes in older WebViews.
+            frame._resizeEmbeddedFallback = resize;
           }
           doc.addEventListener('click', forwardLink);
         } catch (_) { /* Cross-origin providers control their own layout. */ }
@@ -90,7 +95,10 @@
   }
   panels.forEach(prepare);
   function loadActive() {
-    panels.filter(panel => panel.classList.contains('active')).forEach(panel => panel._activate?.());
+    panels.filter(panel => panel.classList.contains('active')).forEach(panel => {
+      panel._activate?.();
+      panel._selected?._resizeEmbeddedFallback?.();
+    });
     document.querySelectorAll('[role=tab]').forEach(tab => {tab.tabIndex = tab.getAttribute('aria-selected') === 'true' ? 0 : -1;});
   }
   const observer = new MutationObserver(loadActive);
@@ -118,6 +126,9 @@
     loadActive(); const panel=panels.find(p=>p.classList.contains('active'));
     if(panel && (panel._selected || panel.querySelector('[data-news-intelligence]')))routeFor(panel,panel._selected);
   }));
+  window.addEventListener('resize', () => {
+    panels.filter(panel => panel.classList.contains('active')).forEach(panel => panel._selected?._resizeEmbeddedFallback?.());
+  });
   window.addEventListener('popstate',restoreRoute);
   restoreRoute();
 })();

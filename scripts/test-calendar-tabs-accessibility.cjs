@@ -148,6 +148,22 @@ try {
     for (const handler of linkHandlers) embedded.removeEventListener('click', handler);
   }
 
+  // Older WebViews without ResizeObserver must remeasure after orientation/viewport
+  // changes and after returning to a previously loaded but hidden tab.
+  window.ResizeObserver = undefined;
+  embedded.body.getBoundingClientRect = () => ({ height: 320 });
+  frame.dispatchEvent(new window.Event('load'));
+  assert.equal(frame.style.height, '324px');
+  embedded.body.getBoundingClientRect = () => ({ height: 450 });
+  window.dispatchEvent(new window.Event('resize'));
+  assert.equal(frame.style.height, '454px', 'viewport resize remeasures the active frame');
+  tabs[0].click();
+  embedded.body.getBoundingClientRect = () => ({ height: 700 });
+  window.dispatchEvent(new window.Event('resize'));
+  assert.equal(frame.style.height, '454px', 'hidden frames are not resized');
+  tabs[2].click();
+  assert.equal(frame.style.height, '704px', 'reactivated frame is measured again');
+
   // A reload must release the old document's observer and forwarding listener.
   // A queued old callback must not resize the replacement document.
   const observers = [];
