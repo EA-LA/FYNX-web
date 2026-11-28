@@ -358,7 +358,7 @@
     .px-table th:first-child,.px-table td:first-child{text-align:left;font-weight:800;color:var(--text-muted)}
     .px-table thead th{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted)}
     .px-table .px-chosen{color:var(--text-strong);font-weight:900}
-    .px-table tr.px-pp td{font-weight:900;color:var(--text-strong)}
+    .px-table tr.px-pp :is(th,td){font-weight:900;color:var(--text-strong)}
     .px-table th:first-child,.px-table td:first-child{position:sticky;left:0;background:linear-gradient(var(--result-bg),var(--result-bg)),var(--bg-solid,#fff);z-index:1}
     .px-short{display:none}
     .px-zones{list-style:none;margin:0;padding:0}
@@ -795,7 +795,7 @@
         const p = raw === "" ? NaN : Number(raw);
         const order = ["R4", "R3", "R2", "R1", "PP", "S1", "S2", "S3", "S4"];
         const rows = order.map(k => ({ k, v: ms.map(m => (k === "PP" ? m.pp : m.lv[k])), sort: k === "PP" ? 0 : (k[0] === "R" ? 10 - Number(k[1]) : -Number(k[1])) }));
-        const head = `<tr><th scope="col">Level</th>${ms.map(m => `<th scope="col"${m.name === methodName ? ' class="px-chosen"' : ""}><span class="px-long">${m.name}</span><span class="px-short" aria-hidden="true">${m.short}</span></th>`).join("")}</tr>`;
+        const head = `<tr><th scope="col">Level</th>${ms.map(m => `<th scope="col" aria-label="${m.name}"${m.name === methodName ? ' class="px-chosen"' : ""}><span class="px-long">${m.name}</span><span class="px-short" aria-hidden="true">${m.short}</span></th>`).join("")}</tr>`;
         // [site-qa] run 105: with a Current Price, mark in every column the levels that bracket it
         // (same locate() as the cards), so the methods can be compared at a glance.
         const hasP = Number.isFinite(p) && p > 0;
@@ -814,7 +814,7 @@
           const mk = marks[i][k] ? `<span class="px-mk" aria-hidden="true">${MK[marks[i][k]][0]}</span><span class="px-sr">, ${MK[marks[i][k]][1]}</span>` : "";
           return `<td${cls ? ` class="${cls}"` : ""}>${v === undefined ? "–" : formatValue(v) + mk}</td>`;
         };
-        const body = rows.map(r => `<tr${r.k === "PP" ? ' class="px-pp"' : ""}><td>${r.k}</td>${r.v.map((v, i) => cell(v, i, r.k)).join("")}</tr>`).join("");
+        const body = rows.map(r => `<tr${r.k === "PP" ? ' class="px-pp"' : ""}><th scope="row">${r.k}</th>${r.v.map((v, i) => cell(v, i, r.k)).join("")}</tr>`).join("");
         const legend = hasP ? ` Shaded: in each column, the nearest level above and below your current price ${formatValue(p)}, or a level at that price.` : "";
         return `<div class="px-card" id="pxCompare"><h3>All methods for this candle</h3><div class="px-hint">Swipe the table sideways to see every method.</div><div class="px-wrap"><table class="px-table"><caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pivot levels by method</caption><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="px-note">Same High/Low/Close in every column; your method is the first column, in bold. Only Camarilla has R4/S4. Where several methods put a level close together, traders often treat that area as more important.${legend}</div></div>`;
       }
