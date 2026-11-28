@@ -24,11 +24,23 @@
   const day = iso => new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso).toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'});
   // Bound remote reads so a stalled feed cannot strand the page in a skeleton state.
   async function getJSON(url) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timer;
     try {
-      const response = await fetch(url, {cache: 'no-cache', credentials: 'omit', signal: controller.signal});
-      return response.ok ? await response.json() : null;
+      const deadline = new Promise(resolve => {
+        timer = setTimeout(() => {
+          resolve(null);
+          controller?.abort();
+        }, 12000);
+      });
+      const request = (async () => {
+        const options = {cache: 'no-cache', credentials: 'omit'};
+        if (controller) options.signal = controller.signal;
+        const response = await fetch(url, options);
+        return response.ok ? await response.json() : null;
+      })();
+      // Include body decoding in the deadline even if fetch ignores abort.
+      return await Promise.race([request, deadline]);
     } catch (_) {
       return null;
     } finally {
