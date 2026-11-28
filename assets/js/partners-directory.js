@@ -16,10 +16,10 @@
   }));
   function category() { const value=location.hash.slice(1);return sections.some(s=>s.id===value)?value:'all'; }
   function render() {
-    const selected=category();const query=normalizeSearch(search.value);let total=0;
+    const selected=category();const query=normalizeSearch(search.value);const words=query.split(' ').filter(Boolean);let total=0;
     for(const {section,cards} of entries){
       let count=0;
-      for(const {card,searchFields} of cards){const visible=(selected==='all'||selected===section.id)&&(!query||searchFields.some(field=>field.includes(query)));card.hidden=!visible;if(visible)count++;}
+      for(const {card,searchFields} of cards){const visible=(selected==='all'||selected===section.id)&&words.every(word=>searchFields.some(field=>field.includes(word)));card.hidden=!visible;if(visible)count++;}
       section.hidden=count===0;total+=count;
     }
     for(const link of links){const active=link.dataset.partnerCategory===selected;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','true');else link.removeAttribute('aria-current');}
