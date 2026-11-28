@@ -7,9 +7,10 @@ async function load(options={}){
  dom.window.HTMLElement.prototype.scrollIntoView=()=>{};
  if(options.newsDraft)dom.window.sessionStorage.setItem('fynx.news.researchDraft.v1',JSON.stringify(options.newsDraft));
  if(options.rememberedTool)dom.window.sessionStorage.setItem('fynxProCheckoutTool',options.rememberedTool);
+ const auth={currentUser:options.user?{uid:'owner'}:null};
  const modules={
-  '../../auth/firebase.js':{app:{},auth:{},authPersistenceReady:Promise.resolve()},
-  'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js':{onAuthStateChanged:(_,fn)=>{authChanged=fn;ready=fn(options.user?{uid:'owner'}:null);}},
+  '../../auth/firebase.js':{app:{},auth,authPersistenceReady:Promise.resolve()},
+  'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js':{onAuthStateChanged:(_,fn)=>{authChanged=u=>{auth.currentUser=u;return fn(u);};ready=authChanged(auth.currentUser);}},
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js':{getFunctions:()=>({}),httpsCallable:(_,name)=>{assert.equal(name,'consumerLiveWorkspace');return async data=>{
    calls.push(data);if(options.handler){const result=await options.handler(data);if(result!==undefined)return {data:result};}
    if(data.action==='status')return {data:{mode:'live',tier:options.statusTier?options.statusTier(++statusCalls):options.tier||null,hasBillingAccount:!!options.billing,billingUnavailable:!!options.unavailable,plans:PLANS}};
@@ -21,7 +22,7 @@ async function load(options={}){
  vm.runInNewContext(fs.readFileSync('assets/js/pro-catalog.js','utf8'),context);
  const source=fs.readFileSync('assets/js/pro-workspace.js','utf8').replace(/\bimport\(/g,'loadModule(');
  await vm.runInNewContext('(async()=>{'+source+'})()',context);await ready;
- return {document:dom.window.document,location,calls,changeUser:authChanged,close:()=>dom.window.close()};
+ return {document:dom.window.document,location,calls,changeUser:authChanged,setFirebaseUser:u=>{auth.currentUser=u;},close:()=>dom.window.close()};
 }
 test('all three membership buttons send guests to sign-in with the selected tool',async()=>{const h=await load({query:'?tool=risk'});assert.equal(h.document.querySelectorAll('[data-plan]').length,3);assert.equal(h.document.querySelectorAll('#productCards button').length,8);assert.doesNotMatch(h.document.body.textContent,/test plan|test mode|TEST CHECKOUT|no real charges/i);await h.document.querySelector('[data-plan="starter"]').onclick();assert.match(h.location.href,/auth\/login/);assert.match(h.location.search,/tool%3Drisk/);assert.equal(h.calls.length,0);h.close();});
 test('member subscription sends selected tier and tool to live backend',async()=>{const h=await load({user:true,query:'?tool=portfolio'});await h.document.querySelector('[data-plan="plus"]').onclick();const request=h.calls.find(c=>c.action==='checkout');assert.equal(request.tier,'plus');assert.equal(request.tool,'portfolio');assert.equal(h.location.hostname,'checkout.stripe.com');h.close();});
@@ -838,3 +839,61 @@ test('comparison never loads saved runs and clears a pinned run on access loss o
   assert.equal(panel().querySelector('button').textContent,'Pin as baseline');
  }finally{h.close();}
 });
+
+for(const action of ['checkout','portal']){
+ const openBilling=h=>action==='checkout'?h.document.querySelector('[data-plan="plus"]').onclick():h.document.getElementById('manageBilling').onclick();
+ const storedTool=h=>h.document.defaultView.sessionStorage.getItem('fynxProCheckoutTool');
+ test('Pro '+action+' rejects an account mismatch before calling the backend',async()=>{
+  const h=await load({user:true,billing:true,query:'?tool=risk'});
+  try{
+   h.setFirebaseUser({uid:'other'});
+   await openBilling(h);
+   assert.equal(h.calls.filter(c=>c.action===action).length,0);
+   assert.equal(h.location.hostname,'www.fynxfinanceworld.com');
+   assert.equal(storedTool(h),null);
+  }finally{h.close();}
+ });
+ test('Pro '+action+' rejects late responses across account transitions',async()=>{
+  for(const next of [null,{uid:'other'}])for(const notify of [false,true]){
+   let finish;
+   const h=await load({user:true,billing:true,query:'?tool=risk',handler:d=>d.action===action?new Promise(resolve=>{finish=resolve;}):undefined});
+   try{
+    const pending=openBilling(h);
+    assert.equal(h.calls.find(c=>c.action===action).accountUid,'owner');
+    assert.equal(typeof finish,'function');
+    if(notify)await h.changeUser(next);else h.setFirebaseUser(next);
+    finish({url:'https://billing.stripe.com/p/session'});
+    await pending;
+    assert.equal(h.location.hostname,'www.fynxfinanceworld.com');
+    assert.equal(storedTool(h),null);
+   }finally{h.close();}
+  }
+ });
+ test('Pro '+action+' rejects a session from before sign-out and re-sign-in',async()=>{
+  let finish;
+  const h=await load({user:true,billing:true,handler:d=>d.action===action?new Promise(resolve=>{finish=resolve;}):undefined});
+  try{
+   const pending=openBilling(h);
+   await h.changeUser(null);await h.changeUser({uid:'owner'});
+   finish({url:'https://billing.stripe.com/p/session'});
+   await pending;
+   assert.equal(h.location.hostname,'www.fynxfinanceworld.com');
+   assert.equal(storedTool(h),null);
+  }finally{h.close();}
+ });
+ test('Pro '+action+' preserves a verified same-account redirect and rejects untrusted hosts',async()=>{
+  for(const valid of [true,false]){
+   const destination=valid?'https://'+(action==='checkout'?'checkout':'billing')+'.stripe.com/p/session':'https://billing.stripe.com.invalid/p/session';
+   const h=await load({user:true,billing:true,query:'?tool=risk',destination});
+   try{
+    await openBilling(h);
+    const request=h.calls.find(c=>c.action===action);
+    assert.equal(request.accountUid,'owner');
+    assert.equal(request.tool,'risk');
+    if(action==='checkout')assert.equal(request.tier,'plus');
+    assert.equal(h.location.hostname,valid?(action==='checkout'?'checkout':'billing')+'.stripe.com':'www.fynxfinanceworld.com');
+    assert.equal(storedTool(h),valid&&action==='checkout'?'risk':null);
+   }finally{h.close();}
+  }
+ });
+}

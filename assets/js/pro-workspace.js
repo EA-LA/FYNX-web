@@ -1,4 +1,4 @@
-let call;
+let call,billingAuth;
 const $=id=>document.getElementById(id);
 const catalog=window.FynxProCatalog;
 const riskFields=[['balance','Account balance','10000'],['riskPct','Risk per trade (%)','1'],['entry','Entry price','100'],['stop','Stop price','98'],['target','Target price','104'],['multiplier','Contract multiplier','1'],['rate','Quote → account conversion rate','1']];
@@ -10,7 +10,7 @@ const checkoutToolKey='fynxProCheckoutTool';
 // Keep unsaved inputs in this page only; never carry them across account changes.
 const toolDrafts=new Map();
 const checkoutOutcome=()=>new URLSearchParams(location.search).get('checkout');
-function rememberTool(){try{sessionStorage.setItem(checkoutToolKey,selected);}catch{}}
+function rememberTool(tool){try{sessionStorage.setItem(checkoutToolKey,tool);}catch{}}
 const requestedTool=()=>{let key=new URLSearchParams(location.search).get('tool');if(['complete','cancelled'].includes(checkoutOutcome())){try{const saved=sessionStorage.getItem(checkoutToolKey);if(Object.hasOwn(catalog,saved))key=saved;}catch{}}return Object.hasOwn(catalog,key)?key:'analytics';};
 const returnPath=()=>'/pro.html?tool='+selected+'#workbench';
 const signInPath=()=>'/auth/login.html?returnTo='+encodeURIComponent(returnPath());
@@ -272,9 +272,19 @@ $('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in 
  try{await loadSaved();}catch(e){if(epoch!==authEpoch)throw e;message+=' '+e.message;}
  if(epoch===authEpoch)status(message);
 });
-function navigateStripe(url){const u=new URL(url);if(u.protocol!=='https:'||!['checkout.stripe.com','billing.stripe.com'].includes(u.hostname))throw Error('Invalid checkout destination.');location.href=u.href;}
-document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){location.href=signInPath();return;}rememberTool();const d=(await call({action:'checkout',tier:b.dataset.plan,tool:selected})).data;navigateStripe(d.url);}));
-$('manageBilling').onclick=()=>perform(async()=>{navigateStripe((await call({action:'portal',tool:selected})).data.url);});$('loadSaved').textContent='Refresh membership and saved workspaces';$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();showMembershipStatus('Membership and saved workspaces refreshed.');});
+function navigateStripe(url,checkoutTool){const u=new URL(url);if(u.protocol!=='https:'||!['checkout.stripe.com','billing.stripe.com'].includes(u.hostname))throw Error('Invalid checkout destination.');if(checkoutTool)rememberTool(checkoutTool);location.href=u.href;}
+async function openBilling(action,tier){
+ const uid=user?.uid,epoch=authEpoch,tool=selected;
+ // Firebase can change currentUser before its observer updates the workbench.
+ const current=()=>uid&&user?.uid===uid&&billingAuth?.currentUser?.uid===uid&&authEpoch===epoch;
+ if(!current())throw Error('Account changed. Please retry.');
+ // The backend already validates accountUid against the authenticated token.
+ const d=(await call({action,accountUid:uid,tool,...(action==='checkout'?{tier}:{})})).data;
+ if(!current())throw Error('Account changed. Please retry.');
+ navigateStripe(d.url,action==='checkout'?tool:undefined);
+}
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){if(billingAuth?.currentUser)throw Error('Account changed. Please retry.');location.href=signInPath();return;}await openBilling('checkout',b.dataset.plan);}));
+$('manageBilling').onclick=()=>perform(()=>openBilling('portal'));$('loadSaved').textContent='Refresh membership and saved workspaces';$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();showMembershipStatus('Membership and saved workspaces refreshed.');});
 function showMembershipStatus(fallback){
  if(state.billingUnavailable){status(state.hasBillingAccount?'Membership verification is temporarily unavailable. You can still open Manage subscription. Refresh to try again.':'Membership verification is temporarily unavailable. Refresh to try again.');return;}
  if(checkoutOutcome()==='complete'){
@@ -299,6 +309,7 @@ try {
  ]);
  const request=functionsSDK.httpsCallable(functionsSDK.getFunctions(config.app,'us-central1'),'consumerLiveWorkspace');
  call=async data=>{const epoch=authEpoch,result=await request(data);if(epoch!==authEpoch)throw Error('Account changed. Please retry.');return result;};
+ billingAuth=config.auth;
  await config.authPersistenceReady;authSDK.onAuthStateChanged(config.auth,async u=>{
   const epoch=++authEpoch;user=u;state={tier:null,plans:{}};
   saveAttempt=null;$('workspaceName').value='';$('savedSearch').value='';$('savedSearchControls').hidden=true;$('savedSearchCount').textContent='';$('savedItems').replaceChildren();selectTool(selected,undefined,{reset:true});
