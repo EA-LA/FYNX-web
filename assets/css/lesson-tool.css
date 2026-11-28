@@ -43,3 +43,12 @@
 .lesson-tool-table.lev-table.lev-summary th:nth-child(2),.lesson-tool-table.lev-table.lev-summary td:nth-child(2),.lesson-tool-table.lev-table.lev-summary th:nth-child(3),.lesson-tool-table.lev-table.lev-summary td:nth-child(3){display:none}
 @media(max-width:400px){.lesson-tool-table.lev-table th:nth-child(4),.lesson-tool-table.lev-table td:nth-child(4){display:table-cell}.lesson-tool-table.lev-table th:nth-child(3),.lesson-tool-table.lev-table td:nth-child(3){display:none}}
 @media(max-width:360px){.lesson-tool-table.lev-table{font-size:12px}.lesson-tool-table.lev-table th,.lesson-tool-table.lev-table td{padding:8px 3px}}
+/* site-qa run 123: futures margin lesson */
+.lesson-tool-table.fm-table thead th{white-space:normal;vertical-align:bottom}
+.lesson-tool-table.fm-table td.fm-call{color:#b54708;font-weight:600}
+.lesson-tool-table.fm-table td.fm-gone{color:#b42318;font-weight:700}
+body.dark-mode .lesson-tool-table.fm-table td.fm-call{color:#fdb022}
+body.dark-mode .lesson-tool-table.fm-table td.fm-gone{color:#f97066}
+@media(max-width:400px){.lesson-tool-table.fm-table th:nth-child(4),.lesson-tool-table.fm-table td:nth-child(4){display:table-cell}}
+@media(max-width:520px){.lesson-tool-table.fm-table th:nth-child(2),.lesson-tool-table.fm-table td:nth-child(2){display:none}.lesson-tool-table.fm-table td:last-child{white-space:normal;min-width:5.5em}.lesson-tool-table.fm-table tbody th{white-space:normal}}
+@media(max-width:360px){.lesson-tool-table.fm-table{font-size:12px}.lesson-tool-table.fm-table th,.lesson-tool-table.fm-table td{padding:8px 3px}.lesson-tool-table.fm-table td:last-child{min-width:0}}
