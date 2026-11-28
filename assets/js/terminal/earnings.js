@@ -65,8 +65,13 @@
       rho: spearman(withTone.map(r => r.tone.tone), withTone.map(r => r.react)), rhoN: withTone.length,
       beats: beats.length, beatN, beatReact: mean(beats.filter(r => r.surprise.surprisePct > 0).map(r => r.react)), missReact: mean(beats.filter(r => outcome(r) === 'miss').map(r => r.react))};
   }
+  function upcomingEvents() {
+    // The snapshot can retain the last successful calendar. Use the same UTC day boundary as the desk calendar.
+    const today = new Date().toISOString().slice(0, 10);
+    return (T.S.earn?.events || []).filter(e => typeof e?.date === 'string' && e.date >= today);
+  }
   function upcoming(sym, rows) {
-    const ev = (T.S.earn?.events || []).find(e => e.symbol === sym || e.symbol === sym.replace('-', '.'));
+    const ev = upcomingEvents().find(e => e.symbol === sym || e.symbol === sym.replace('-', '.'));
     if (ev) return {date: ev.date, time: ev.time, confirmed: true, eps: ev.epsForecast, ests: ev.estimates, lastYear: ev.lastYearEPS, quarter: ev.fiscalQuarter};
     if (rows.length >= 2) { const gaps = rows.slice(1).map((r, i) => (Date.parse(r.filed) - Date.parse(rows[i].filed)) / 86400000).sort((a, b) => a - b), g = gaps[Math.floor(gaps.length / 2)], last = rows[rows.length - 1].filed; let t = Date.parse(last) + g * 86400000; while (t < Date.now()) t += g * 86400000; const wd = new Date(t).getUTCDay(); if (wd === 6) t += 2 * 86400000; else if (wd === 0) t += 86400000; return {date: new Date(t).toISOString().slice(0, 10), confirmed: false}; }
     return null;
@@ -128,7 +133,7 @@
     const wrap = el('div', 'fx-ql fx-ql-page'); host.append(wrap); const rerun = () => { if (wrap.isConnected) PG.rerender(); };
     const ic = el('div', 'fx-ql-card'); ic.append(el('h3', '', 'COMPANY'));
     ic.append(symbolBox(EV.sym, s => { EV.sym = s; save(); rerun(); }, 'US stock: AAPL, NVDA, JPM, NKE'));
-    const soon = (T.S.earn?.events || []).filter(e => e.marketCap > 5e10).slice(0, 6).map(e => [e.symbol, `${e.symbol} · ${e.date.slice(5)}`]);
+    const soon = upcomingEvents().filter(e => e.marketCap > 5e10).slice(0, 6).map(e => [e.symbol, `${e.symbol} · ${e.date.slice(5)}`]);
     ic.append(chips(soon.length ? soon : [['AAPL', 'Apple'], ['NVDA', 'Nvidia'], ['MSFT', 'Microsoft'], ['JPM', 'JPMorgan'], ['NKE', 'Nike'], ['COST', 'Costco']], EV.sym, s => { EV.sym = s; save(); rerun(); }));
     wrap.append(ic);
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note(`Reading two years of ${EV.sym} earnings releases from SEC EDGAR (about 10 seconds the first time)…`));
