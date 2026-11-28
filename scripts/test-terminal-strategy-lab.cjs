@@ -67,6 +67,12 @@ const P = {o: [], h: [], l: [], c: [], v: [], t: [], day: []}; let q = 100;
 for (let i = 0; i < 1500; i++) { const o = q; q = o * Math.exp(0.01 * Math.sin(2 * Math.PI * i / 25)); P.o.push(o); P.c.push(q); P.h.push(Math.max(o, q) * 1.001); P.l.push(Math.min(o, q) * 0.999); P.v.push(100); P.t.push(i); P.day.push('d' + i); }
 const FE = S.features(P, 20); const f = S.forecastAt(P, FE, 1499, 20, 10, 30);
 ok(f && f.analogs.every(e => e <= 1499 - 10), 'analogs only use windows whose future is known');
+const analogRows = S.fcastAnalogRows(P, f, 10);
+ok(analogRows.length === 5 && analogRows.every((x, i) => x.rank === i + 1 && x.match === f.analogs[i] && x.outcome === f.analogs[i] + 10 && x.outcome <= 1499), 'evidence preserves similarity order and correct end-of-horizon candles');
+ok(analogRows.every((x, i) => Math.abs(x.actual - (P.c[x.outcome] / P.c[x.match] - 1)) < 1e-12 && Math.abs(x.scaled - Math.expm1(f.paths[i][9])) < 1e-12), 'historical close returns and volatility-scaled fan endpoints are separate');
+const sparseRows = S.fcastAnalogRows({c: [100, 90]}, {analogs: [0], paths: [[Math.log(0.8)]]}, 1);
+ok(sparseRows.length === 1 && Math.abs(sparseRows[0].actual + 0.1) < 1e-12 && Math.abs(sparseRows[0].scaled + 0.2) < 1e-12, 'a short ranking cannot invent rows or replace a real scaled return with actual return');
+
 let hits = 0, n = 0; for (let t = 600; t <= 1489; t += 10) { const g = S.forecastAt(P, FE, t, 20, 10, 30); if (!g) continue; n++; if ((g.q50[9] > 0) === (Math.log(P.c[t + 10] / P.c[t]) > 0)) hits++; }
 ok(hits / n > 0.9, 'periodic pattern forecast hit rate ' + (hits / n).toFixed(2));
 // FINSABER-style significance: identical to buy & hold, a planted edge, random positions
