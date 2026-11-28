@@ -50,3 +50,7 @@
   #workbench #result:has(> .metric-grid) :is(th,td){padding:4pt}
   #workbench #result:has(> .metric-grid) :is(tr,svg){break-inside:avoid}
 }
+
+/* Match the saved workspace toolbar width without crowding the search field. */
+.saved-tool-filter{display:grid;gap:4px;margin-block-start:10px}
+.saved-tool-filter select{width:100%;min-width:0;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--bg);color:var(--ink);font:inherit}
