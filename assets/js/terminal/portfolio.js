@@ -99,7 +99,8 @@
     const cmpKey = 'cmp-list', drawKey = 'draw-' + sym;
     PG.setHead('GP', `${shortOf(sym)} · ${nameOf(sym)}`, 'Candles, volume, comparison and drawing tools · daily bars');
     const bar = el('div', 'pg-toolbar'), box = el('div', 'pg-chart'), info = el('p', 'pg-note'), msg = el('p', 'pg-measure', '');
-    host.append(PG.chips([btn(`Load every box for ${shortOf(sym)} ▸`, 'fx-chip fx-chip-link pg-primary', () => T.setSymbol({symbol: sym})), PG.go('Security page', 'des', sym), btn('Change market ▸', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Chart a market', onPick: m => { PG.closeAll(); T.openPage('chart', m.symbol); }}))]), bar, msg, box, info);
+    // Keep the current chart in the history stack. Closing it first queues a Back that would close the new chart.
+    host.append(PG.chips([btn(`Load every box for ${shortOf(sym)} ▸`, 'fx-chip fx-chip-link pg-primary', () => T.setSymbol({symbol: sym})), PG.go('Security page', 'des', sym), btn('Change market ▸', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Chart a market', onPick: m => T.openPage('chart', m.symbol)}))]), bar, msg, box, info);
     const data = await T.symHistory(sym, '5y'); if (!alive()) return;
     if (!data?.rows?.length) { box.append(el('p', 'fx-empty', 'Daily history is not available for this market.')); return; }
     const compareList = () => read(cmpKey, ['SPY']).filter(s => typeof s === 'string' && /^[A-Za-z0-9.\-=^&]{1,24}$/.test(s));
