@@ -545,3 +545,52 @@ test('delete removes the account copy even when the list still says "this browse
     server.close();
   }
 });
+
+test('Builder separators support keyboard resize and persist local pane widths', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
+  try {
+    const page = await browser.newPage({viewport: {width: 1365, height: 850}});
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => window.__fxbOpen());
+    const projects = page.getByRole('separator', {name: 'Resize projects'});
+    const preview = page.getByRole('separator', {name: 'Resize preview'});
+    await projects.focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await projects.getAttribute('aria-valuenow'), '280');
+    assert.equal(await projects.getAttribute('aria-valuetext'), '280 pixels');
+    assert.equal(await projects.getAttribute('aria-controls'), 'fxb-projects-pane');
+    assert.equal(await page.locator('#fxb-projects-pane').count(), 1);
+    await page.keyboard.press('Home');
+    assert.equal(await projects.getAttribute('aria-valuenow'), await projects.getAttribute('aria-valuemin'));
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await projects.getAttribute('aria-valuenow'), '200');
+    await preview.focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await preview.getAttribute('aria-valuenow'), '400', 'the divider moves left as the right pane grows');
+    await page.keyboard.press('End');
+    assert.equal(await preview.getAttribute('aria-valuenow'), await preview.getAttribute('aria-valuemax'));
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => window.__fxbOpen());
+    assert.equal(await projects.getAttribute('aria-valuenow'), '200');
+    assert.equal(await preview.getAttribute('aria-valuenow'), '700');
+    assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('fx-term-builder-panes'))), {side: 200, preview: 700});
+    const grip = await projects.boundingBox();
+    assert.ok(grip, 'the desktop divider has a pointer target');
+    const x = grip.x + grip.width / 2, y = grip.y + 25;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 40, y);
+    await page.mouse.up();
+    assert.equal(await projects.getAttribute('aria-valuenow'), '240', 'pointer resize also announces width');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('fx-term-builder-panes')).side), 240);
+    await page.setViewportSize({width: 390, height: 850});
+    assert.equal(await projects.count(), 0);
+    assert.equal(await preview.count(), 0);
+    assert.ok(await page.locator('.fxb-editor').isVisible(), 'the compact page still displays its editor');
+  } finally {
+    await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});
