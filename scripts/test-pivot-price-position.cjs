@@ -153,3 +153,20 @@ test('where the methods agree: FX candle, price inside a zone, no price, flat ca
   dom = run({ high: '100', low: '100', close: '100', method: 'classic', price: '' });
   assert.equal(text(dom, 'pxAgree'), null);
 });
+
+test('all methods table keeps full method names and marks every pivot level as a row header', () => {
+  const dom = run({ ...EUR, method: 'camarilla', price: '1.08702' });
+  try {
+    const doc = dom.window.document;
+    const columns = [...doc.querySelectorAll('#pxCompare thead th')];
+    assert.equal(columns[0].textContent, 'Level');
+    assert.deepEqual(columns.slice(1).map(th => th.getAttribute('aria-label')), ['Camarilla', 'Classic', 'Fibonacci', 'Woodie']);
+    assert(columns.every(th => th.scope === 'col'));
+    assert(columns.slice(1).every(th => th.querySelector('.px-short').getAttribute('aria-hidden') === 'true'), 'visual abbreviations are not repeated');
+    const rowHeads = [...doc.querySelectorAll('#pxCompare tbody th[scope="row"]')];
+    assert.deepEqual(rowHeads.map(th => th.textContent), ['R4', 'R3', 'R2', 'R1', 'PP', 'S1', 'S2', 'S3', 'S4']);
+    assert(rowHeads.every(th => th.cellIndex === 0 && th.parentElement.querySelectorAll('td').length === 4));
+  } finally {
+    dom.window.close();
+  }
+});
