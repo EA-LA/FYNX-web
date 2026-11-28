@@ -10,6 +10,9 @@
     definition: card.querySelector('p')?.textContent.trim()
   })).filter(item => item.term && item.topic && item.definition);
   if (!core.length) return;
+  // Keep the full combined deck available, and include its terms in each subject
+  // shown on the badge (the same subject membership as the glossary finder).
+  const topicKeys = topic => [...new Set([topic, ...topic.split('/').map(part => part.trim()).filter(Boolean)])];
 
   const select = byId('glossary-study-topic');
   const term = byId('glossary-study-term');
@@ -19,7 +22,7 @@
   const back = byId('glossary-study-back');
   const next = byId('glossary-study-next');
 
-  for (const topic of [...new Set(core.map(item => item.topic))].sort()) {
+  for (const topic of [...new Set(core.flatMap(item => topicKeys(item.topic)))].sort()) {
     const option = document.createElement('option');
     option.value = topic;
     option.textContent = topic;
@@ -50,7 +53,7 @@
   }
 
   select.addEventListener('change', () => {
-    deck = select.value ? core.filter(item => item.topic === select.value) : core;
+    deck = select.value ? core.filter(item => topicKeys(item.topic).includes(select.value)) : core;
     if (!deck.length) {
       select.value = '';
       deck = core;

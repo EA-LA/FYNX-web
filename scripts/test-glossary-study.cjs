@@ -81,3 +81,33 @@ test('topic selection resets the card and does not depend on glossary search vis
   p.change('');
   assert.equal(p.id('term').textContent,p.cards[0].querySelector('h3').textContent);
 });
+
+test('a term with multiple topics appears in each subject deck without duplicating the card',t=>{
+  const p=open(t);
+  const shared=p.cards.find(card=>card.querySelector('h3')?.textContent.trim()==='Market Cap');
+  assert.equal(shared.querySelector('.badge').textContent.trim(),'Stocks/Crypto');
+  const definition=shared.querySelector('p').textContent.trim();
+  const labels=[...p.id('topic').options].map(option=>option.value);
+  for(const label of ['Crypto','Stocks','Stocks/Crypto']){
+    assert.equal(labels.filter(option=>option===label).length,1);
+    const expected=p.cards.filter(card=>{
+      const tag=card.querySelector('.badge').textContent.trim();
+      return tag===label || tag.split('/').map(part=>part.trim()).includes(label);
+    }).map(card=>card.querySelector('h3').textContent.trim());
+    p.change(label);
+    const visited=[];
+    for(let i=0;i<expected.length;i++){
+      const current=p.id('term').textContent;
+      visited.push(current);
+      if(current==='Market Cap'){
+        assert.equal(p.id('definition').hidden,true);
+        p.id('reveal').click();
+        assert.equal(p.id('definition').textContent,definition);
+      }
+      if(i+1<expected.length) p.id('next').click();
+    }
+    assert.deepEqual(visited,expected);
+    assert.equal(visited.filter(term=>term==='Market Cap').length,1);
+    assert.equal(p.id('next').disabled,expected.length===1);
+  }
+});
