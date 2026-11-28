@@ -112,7 +112,16 @@
     for(const item of (Array.isArray(items)?items:[]).slice(0,60)) {
       const o=options(item); if(!o||!item.reader)continue;
       try { const article=normalized(item.reader,o),old=records.get(key(o));
-        if(old?.complete&&Date.now()-old.at<FRESH&&old.article.updatedAt===article.updatedAt)continue;
+        if(old&&Date.now()-old.at<FRESH){
+          // Background feed previews can arrive out of order. Keep the more
+          // recent report, and do not downgrade complete reports on equal dates.
+          const revision = report => {
+            const updated = Date.parse(report.updatedAt);
+            return Number.isFinite(updated) ? updated : Date.parse(report.preparedAt);
+          };
+          const previous = revision(old.article), incoming = revision(article);
+          if(incoming < previous || (old.complete && incoming === previous))continue;
+        }
         put(o,article,false);
       } catch {}
     }

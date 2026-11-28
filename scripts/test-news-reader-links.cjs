@@ -221,3 +221,35 @@ test('shared story lookup without AbortController times out and retries without 
  await assert.rejects(h.api.resolveArticle({id:ID}),err=>err.status===410);
  assert.equal(h.timerCount(),0);
 });
+
+test('older feed previews cannot downgrade a fresh complete report or extend its cache lifetime',async()=>{
+ const h=harness({fetch:async()=>response(article({title:'Complete report'}))});
+ await h.api.loadArticle(baseOptions);
+ h.advance(200000);
+ h.api.remember([{...baseOptions,reader:article({title:'Older preview',updatedAt:iso(-120000)})}]);
+ assert.equal(h.api.getCachedArticle(baseOptions).title,'Complete report');
+ await h.api.loadArticle(baseOptions);assert.equal(h.calls.length,1);
+ h.advance(100001);assert.equal(h.api.getCachedArticle(baseOptions),null);
+});
+
+test('older previews cannot replace newer previews, but new revisions can invalidate complete reports',async()=>{
+ const h=harness();
+ h.api.remember([{...baseOptions,reader:article({title:'New preview',updatedAt:iso(-10000)})}]);
+ h.api.remember([{...baseOptions,reader:article({title:'Old preview',updatedAt:iso(-120000)})}]);
+ assert.equal(h.api.getCachedArticle(baseOptions).title,'New preview');
+ await h.api.loadArticle(baseOptions);
+ h.api.remember([{...baseOptions,reader:article({title:'Same revision preview'})}]);
+ assert.notEqual(h.api.getCachedArticle(baseOptions).title,'Same revision preview');
+ h.api.remember([{...baseOptions,reader:article({title:'New revision preview',updatedAt:iso(-10000)})}]);
+ assert.equal(h.api.getCachedArticle(baseOptions).title,'New revision preview');
+ await h.api.loadArticle(baseOptions);assert.equal(h.calls.length,2);
+});
+
+test('feed previews without update timestamps compare their verified preparation times',async()=>{
+ const h=harness({fetch:async()=>response(article({title:'Complete report',updatedAt:undefined}))});
+ await h.api.loadArticle(baseOptions);
+ h.api.remember([{...baseOptions,reader:article({title:'Older preview',updatedAt:undefined,preparedAt:iso(-120000)})}]);
+ assert.equal(h.api.getCachedArticle(baseOptions).title,'Complete report');
+ h.api.remember([{...baseOptions,reader:article({title:'Newer preview',updatedAt:undefined,preparedAt:iso(-10000)})}]);
+ assert.equal(h.api.getCachedArticle(baseOptions).title,'Newer preview');
+});
