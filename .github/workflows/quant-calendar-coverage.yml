@@ -1,0 +1,26 @@
+name: Quant Analyst calendar coverage
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/quant/app.js'
+      - 'assets/js/quant/public-history.js'
+      - 'quant-analyst.html'
+      - 'tests/quant/calendar-coverage.test.cjs'
+      - '.github/workflows/quant-calendar-coverage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  calendar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/quant/calendar-coverage.test.cjs

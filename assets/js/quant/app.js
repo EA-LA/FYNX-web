@@ -269,10 +269,24 @@
       try{data=await window.FynxQuantArchive.upcoming(currencies,from,to);}catch{throw error;}
     }
     if(state.symbol!==requestedSymbol||(historical&&(from!==$('historyFrom').value||to!==$('historyTo').value))){if(historical)throw new Error('Research settings changed while calendar history was loading.');return;}
-    const events=(data.events||[]).map(e=>({...e,name:e.name||e.title,impact:String(e.impact).toLowerCase()}));
     if(historical){state.events=confirmedHistory(data,symbol(),from,to);return;}
-    $('calendarStatus').textContent=data.scheduled?`${data.source} · scheduled releases through ${String(data.to).slice(0,10)} · updated ${String(data.updatedAt).slice(0,10)}`:`${data.source||'Economic calendar'} · upcoming high-impact releases`;
-    $('upcomingEvents').innerHTML=events.slice(0,5).map(e=>`<div class="event">${esc(e.name)}<small>${esc(e.currency)} · ${esc(new Date(e.time).toLocaleString())}${e.timing==='estimated'?' · estimated':''}</small><small>Actual ${esc(e.actual??'—')} · Forecast ${esc(e.forecast??'—')} · Previous ${esc(e.previous??'—')}</small></div>`).join('')||'<p class="note">No upcoming high-impact events reported for this market in the available calendar.</p>';
+    let events=(data.events||[]).map(e=>({...e,name:e.name||e.title,impact:String(e.impact).toLowerCase()}));
+    let status=`${data.source||'Economic calendar'} · upcoming high-impact releases`;
+    let empty='No upcoming high-impact events reported for this market in the available calendar.';
+    if(data.scheduled||data.status==='scheduled'){
+      const utc=ms=>new Date(ms).toISOString().replace(/:00\.000Z$/,'Z').replace(/\.000Z$/,'Z').replace('T',' ').replace(/Z$/,' UTC');
+      const requestedStart=Math.max(Date.now(),Date.parse(from)),requestedEnd=Date.parse(to);
+      const start=Math.max(requestedStart,Date.parse(data.from)),end=Math.min(requestedEnd,Date.parse(data.to));
+      if(!(start<end))throw new Error('No current scheduled calendar coverage.');
+      const earlyGap=start>requestedStart,laterGap=end<requestedEnd;
+      events=events.filter(e=>{const t=Date.parse(e.time);return t>=start&&t<end&&e.impact==='high'&&currencies.includes(e.currency);});
+      const limits=[earlyGap?'Earlier requested dates are unavailable.':'',laterGap?'Later dates in the requested window are unavailable.':''].filter(Boolean).join(' ');
+      const updatedAt=Date.parse(data.updatedAt);
+      status=[`${data.source||'Economic calendar'} · Schedule covers ${earlyGap?`from ${utc(start)} until `:'dates before '}${utc(end)}`,limits,Number.isFinite(updatedAt)?`Updated ${utc(updatedAt)}.`:''].filter(Boolean).join(' · ');
+      if(earlyGap||laterGap)empty='No high-impact events listed for this market in the covered interval.';
+    }
+    $('calendarStatus').textContent=status;
+    $('upcomingEvents').innerHTML=events.slice(0,5).map(e=>`<div class="event">${esc(e.name)}<small>${esc(e.currency)} · ${esc(new Date(e.time).toLocaleString())}${e.timing==='estimated'?' · estimated':''}</small><small>Actual ${esc(e.actual??'—')} · Forecast ${esc(e.forecast??'—')} · Previous ${esc(e.previous??'—')}</small></div>`).join('')||`<p class="note">${empty}</p>`;
   }
   async function loadHeadlines() {
     const requestedSymbol=state.symbol;
@@ -323,7 +337,7 @@
     })();return quoteRequest;
   }
   async function refreshContext() {
-    const requestedSymbol=state.symbol;state.events=[];renderMarketQuotes();await Promise.allSettled([loadCalendar().catch(e=>{if(state.symbol!==requestedSymbol)return;$('calendarStatus').textContent=/QUANT_.*KEY|not.*import|importer/i.test(e.message)?'Verified calendar history is not configured for this range. News research needs recorded releases.':e.message;$('upcomingEvents').replaceChildren();}),loadHeadlines(),refreshMarketQuotes()]);
+    const requestedSymbol=state.symbol;state.events=[];renderMarketQuotes();await Promise.allSettled([loadCalendar().catch(()=>{if(state.symbol!==requestedSymbol)return;$('calendarStatus').textContent='Upcoming calendar unavailable. The requested dates could not be checked.';$('upcomingEvents').replaceChildren();}),loadHeadlines(),refreshMarketQuotes()]);
   }
   // Saved work is isolated by resolved Firebase identity. Guest records never auto-migrate.
   let identityTask, identityReady=false, identityVersion=0, localReadFailed=false;

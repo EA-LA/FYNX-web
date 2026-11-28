@@ -17,9 +17,13 @@
       return await response.json();
     } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
   }
-  async function archive(file,validate,signal) {
+  async function archive(file,validate,signal,revalidateCache=false) {
     if(signal?.aborted)throw new Error('Cancelled.');
-    const cached=saved.get(file);if(cached&&Date.now()-cached.time<10*minute)return cached.data;
+    const cached=saved.get(file);
+    if(cached&&Date.now()-cached.time<10*minute){
+      if(!revalidateCache)return cached.data;
+      try{return validate(cached.data);}catch{saved.delete(file);}
+    }
     const roots=window.FynxResearchService?.production?[branch,local]:[local];
     for(const base of roots){
       try{
@@ -57,12 +61,19 @@
     });
   }
   async function upcoming(currencies,from,to) {
+    const requestedStart=Date.parse(from),requestedEnd=Date.parse(to);
+    if(!Number.isFinite(requestedStart)||!Number.isFinite(requestedEnd)||requestedStart>=requestedEnd)throw new Error('Invalid schedule request.');
     const data=await archive('calendar.json',d=>{
-      if(!freshTimestamp(d?.updatedAt)||!validDate(d.from)||!validDate(d.to)||!Array.isArray(d.events)||!d.source||Date.parse(d.to)<Date.now())throw new Error('Calendar archive expired.');
+      const from=Date.parse(d?.from),to=Date.parse(d?.to);
+      if(!freshTimestamp(d?.updatedAt)||!validDate(d.from)||!validDate(d.to)||from>=to||to<=Date.now()||!Array.isArray(d.events)||typeof d.source!=='string'||!d.source.trim())throw new Error('Calendar archive expired or invalid.');
       return d;
-    });
-    const events=data.events.filter(e=>e&&typeof e.name==='string'&&validDate(e.time)&&Date.parse(e.time)>=Math.max(Date.now(),Date.parse(from))&&Date.parse(e.time)<Date.parse(to)&&e.impact==='high'&&currencies.includes(e.currency));
-    return {...data,events,scheduled:true};
+    },undefined,true);
+    const upcomingStart=Math.max(Date.now(),requestedStart);
+    const start=Math.max(upcomingStart,Date.parse(data.from)),end=Math.min(requestedEnd,Date.parse(data.to));
+    if(start>=end)throw new Error('The requested dates do not overlap the available schedule.');
+    const events=data.events.filter(e=>e&&typeof e.name==='string'&&validDate(e.time)&&Date.parse(e.time)>=start&&Date.parse(e.time)<end&&e.impact==='high'&&currencies.includes(e.currency));
+    return {...data,events,from:new Date(start).toISOString(),to:new Date(end).toISOString(),scheduled:true,
+      coverageLimited:start>upcomingStart||end<requestedEnd};
   }
   window.FynxQuantArchive=Object.freeze({bars,summary,upcoming});
 })();
