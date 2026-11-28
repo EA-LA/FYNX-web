@@ -23,8 +23,9 @@ function boot() {
           addEventListener(eventName, handler) {
             (this.listeners[eventName] ||= []).push(handler);
           },
-          focus() {},
-          blur() {}
+          focus() { document.activeElement = this; },
+          blur() { if (document.activeElement === this) document.activeElement = null; },
+          closest() { return null; }
         });
       }
       return nodes.get(id);
@@ -39,13 +40,14 @@ function boot() {
     clearTimeout: () => {},
     html2canvas: async () => { throw new Error('not exercised'); }
   }, { timeout: 1000 });
-  function fire(id, eventName) {
+  function fire(id, eventName, event = {}) {
     const listeners = document.getElementById(id).listeners[eventName] || [];
     assert.ok(listeners.length, id + ' must listen for ' + eventName);
     listeners.forEach(handler => handler({
       key: 'Enter',
       preventDefault() {},
-      target: document.getElementById(id)
+      target: document.getElementById(id),
+      ...event
     }));
   }
   const el = id => document.getElementById(id);
@@ -55,7 +57,7 @@ function boot() {
     el('tp').value = target;
     fire('calcBtn', 'click');
   }
-  return { el, fire, calculate };
+  return { document, el, fire, calculate };
 }
 
 test('initial result is empty and does not show stale share controls', () => {
@@ -226,4 +228,37 @@ test('losing streak to plan for matches an exact run-length calculation over 100
   fire('calcBtn', 'click');
   assert.equal(el('streakOut').textContent, '—');
   assert.equal(el('streakNote').textContent, '');
+});
+
+test('Enter retains focus and a later unchanged change event does not discard the result', () => {
+  const { document, el, fire } = boot();
+  el('entry').value = '100';
+  el('sl').value = '98';
+  el('tp').focus();
+  el('tp').value = '106';
+  fire('tp', 'input');
+  fire('tp', 'keydown', { isComposing: true });
+  assert.equal(el('rrOut').textContent, '—', 'do not calculate while selecting text with an IME');
+  fire('tp', 'keydown');
+  assert.equal(el('rrOut').textContent, '3.00');
+  assert.equal(document.activeElement, el('tp'));
+  fire('tp', 'change');
+  assert.equal(el('rrOut').textContent, '3.00');
+  el('tp').value = '108';
+  fire('tp', 'change');
+  assert.equal(el('rrOut').textContent, '—', 'a genuine edit still clears the result');
+});
+
+test('control clicks keep focus, while a tap on blank space can dismiss a text input', () => {
+  const { document, el, fire, calculate } = boot();
+  calculate();
+  el('calcBtn').focus();
+  fire('calcBtn', 'click');
+  fire('tapDismiss', 'click', { target: el('calcBtn'), detail: 0 });
+  assert.equal(document.activeElement, el('calcBtn'));
+  fire('clearBtn', 'click');
+  fire('tapDismiss', 'click', { target: { closest: () => el('clearBtn') }, detail: 1 });
+  assert.equal(document.activeElement, el('entry'), 'Clear still returns focus to the first field');
+  fire('tapDismiss', 'click', { detail: 1 });
+  assert.equal(document.activeElement, null);
 });

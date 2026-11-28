@@ -797,11 +797,15 @@
       if (parts.length > 2) s = parts[0] + "." + parts.slice(1).join("");
       return s;
     }
-    ["entry","sl","tp","winRate"].forEach(id => {
-      const input = document.getElementById(id);
+    const tradeInputs = [el.entry, el.sl, el.tp, el.winRate];
+    let evaluatedValues = null;
+    tradeInputs.forEach(input => {
       const invalidate = () => {
         const c = clampNumber(input.value);
         if (c !== input.value) input.value = c;
+        // Tabbing out after Enter commits the edit but doesn't change the values.
+        if (evaluatedValues && tradeInputs.every((field, i) => field.value === evaluatedValues[i])) return;
+        evaluatedValues = null;
         setError("");
         resetResults("Inputs changed. Calculate again to update the risk/reward estimate.");
       };
@@ -811,6 +815,7 @@
 
     /* ===== Calculate (matches Swift logic) ===== */
     function calculate(){
+      evaluatedValues = tradeInputs.map(input => input.value);
       setError("");
 
       const entry = toDouble(el.entry.value);
@@ -906,6 +911,7 @@
     }
 
     function clearAll(){
+      evaluatedValues = null;
       el.entry.value = "";
       el.sl.value = "";
       el.tp.value = "";
@@ -959,12 +965,11 @@
       }
     }
 
-    /* ===== Keyboard dismiss behavior (tap outside inputs) ===== */
+    /* ===== Dismiss text input on a tap away, not on control activation ===== */
     el.tapDismiss.addEventListener("click", (e) => {
-      const t = e.target;
-      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
-      if (!isInput){
-        document.activeElement && document.activeElement.blur && document.activeElement.blur();
+      const active = document.activeElement;
+      if (e.detail > 0 && tradeInputs.includes(active) && !e.target.closest("input, textarea, button, a, label")){
+        active.blur();
       }
     });
 
@@ -975,12 +980,11 @@
     el.shareBtn.addEventListener("click", shareResult);
     el.downloadBtn.addEventListener("click", downloadPNG);
 
-    [el.entry, el.sl, el.tp, el.winRate].forEach(inp => {
-      inp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter"){
+    tradeInputs.forEach(input => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.isComposing){
           e.preventDefault();
           calculate();
-          document.activeElement.blur();
         }
       });
     });
