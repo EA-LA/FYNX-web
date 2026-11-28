@@ -364,3 +364,22 @@ test('watchlist keeps its existing validation limit and skips no entries for an 
  assert.throws(()=>run('watchlist',{symbols:Array(31).fill('META')}),/Add 1–30 symbols/);
  assert.throws(()=>run('watchlist',{symbols:['AAPL','  ']}),/Enter a valid name/);
 });
+
+test('paid Risk Planner shows signed price moves and side separately from account-currency risk',()=>{
+ const model={balance:10000,riskPct:1,entry:'100',stop:'98',target:'104',multiplier:1,rate:1};
+ const long=run('risk',model),short=run('risk',{...model,stop:'102',target:'96',rate:2});
+ assert.deepEqual([long.tradeDirection,long.stopMoveFromEntry,long.targetMoveFromEntry],['Long','-2%','+4%']);
+ assert.deepEqual([short.tradeDirection,short.stopMoveFromEntry,short.targetMoveFromEntry],['Short','+2%','-4%']);
+ assert.equal(long.lossAtStop,100);assert.equal(short.lossAtStop,100);
+ assert.match(long.notice,/not changes in account equity/);
+ assert.throws(()=>run('risk',{...model,stop:102,target:104}),/opposite sides/);
+ const compare=run('scenarios',model);
+ assert.equal(Object.hasOwn(compare,'tradeDirection'),false);
+ assert.ok(compare.scenarios.every(row=>!Object.hasOwn(row,'targetMoveFromEntry')));
+});
+
+test('paid Risk Planner retains up or down for moves below displayed precision',()=>{
+ const gross=run('risk',{balance:10000,riskPct:1,entry:100,stop:99.99995,target:100.0001,multiplier:1,rate:1});
+ assert.equal(gross.stopMoveFromEntry,'<0.001% down');
+ assert.equal(gross.targetMoveFromEntry,'<0.001% up');
+});
