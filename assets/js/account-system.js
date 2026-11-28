@@ -35,7 +35,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js?v=20261114-consistency-2";
+} from "./notifications/engine.js?v=20261127-terminal-alerts-1";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
