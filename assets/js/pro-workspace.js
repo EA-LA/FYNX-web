@@ -5,6 +5,7 @@ const riskFields=[['balance','Account balance','10000'],['riskPct','Risk per tra
 const definitions={analytics:[],export:[],risk:riskFields,scenarios:riskFields,review:[['notes','Trade thesis and review','','textarea'],['plan','Entry plan defined',false,'checkbox'],['risk','Risk budget checked',false,'checkbox'],['event','Scheduled events checked',false,'checkbox'],['execution','Execution followed the plan',false,'checkbox'],['review','Outcome and lesson recorded',false,'checkbox']],watchlist:[['symbols','Symbols, separated by commas','AAPL, MSFT, BTCUSD','text'],['notes','Research notes (up to 2,000 characters)','','textarea']],portfolio:[['balance','Account equity','10000'],['shock','Price shock (%)','-5'],['positions','Positions: SYMBOL, signed value in account currency (one per line)','AAPL, 6000\nMSFT, 4000\nSPY, -2000','textarea']],simulation:[['balance','Starting equity','10000'],['riskPct','Risk per trade (%)','1'],['winRate','Assumed win rate (%)','45'],['rewardRisk','Assumed reward/risk','2'],['trades','Trades per path (1–500)','100']]};
 let state={tier:null,plans:{}},selected='analytics',busy=false,user=null,authEpoch=0;
 let inputRevision=0,hasCurrentResult=false,exportUrl=null,saveAttempt=null;
+let simulationBaseline=null;
 const checkoutToolKey='fynxProCheckoutTool';
 // Keep unsaved inputs in this page only; never carry them across account changes.
 const toolDrafts=new Map();
@@ -56,7 +57,7 @@ function updateNewsDraftLink(){
 }
 function updateAccess(){const plan=state.plans[state.tier];$('membershipTitle').textContent=plan?(state.accessProvider==='owner'?(state.membershipLabel||'FYNX Owner — Lifetime Unlimited Access'):state.accessProvider==='apple'?'FYNX Pro · App Store':plan.name+' membership'):state.billingUnavailable?'Membership unavailable':user?'Free account':'Free to explore';$('membershipText').textContent=plan&&state.accessProvider==='owner'?'Complimentary lifetime access to every FYNX product and every future premium feature. No subscription, no payment, no daily limits.':plan&&state.accessProvider==='apple'?'Verified App Store access. Manage renewal through Apple.':plan?`${plan.products.length} advanced tools · ${plan.saved} saved workspaces. ${state.subscription?.cancelAtPeriodEnd?'Cancels at period end.':'Monthly subscription active.'}`:state.billingUnavailable?(state.hasBillingAccount?'We could not verify your membership. Refresh to try again; Manage subscription remains available for payment details and cancellation.':'We could not verify your membership. Refresh to try again.'):'Free dashboard, news, learning and standard tools. Pro remains optional.';$('manageBilling').hidden=!state.hasBillingAccount;$('signIn').textContent=user?'Profile':'Sign in';$('signIn').href=user?'/profile.html':signInPath();$('accessMessage').replaceChildren();if(!user){$('accessMessage').append(node('span','Browsing is free. '));const a=node('a','Sign in to save work or choose a membership.');a.href=signInPath();$('accessMessage').append(a);}else if(state.billingUnavailable){$('accessMessage').textContent='Membership verification is temporarily unavailable. Refresh before using a paid tool.';}else if(!entitled()){$('accessMessage').textContent=`${catalog[selected][1]} or higher unlocks this tool. Choose a monthly membership above.`;}else $('accessMessage').textContent='Included in your membership.';updateNewsDraftLink();}
 function selectTool(key,input,{reset=false}={}){if(!Object.hasOwn(catalog,key))return;
- if(reset)toolDrafts.clear();
+ if(reset){toolDrafts.clear();simulationBaseline=null;}
  else if($('fields')?.querySelector('[name]')){
   const draft={};
   for(const [name,,,type='number'] of definitions[selected]){
@@ -130,8 +131,60 @@ function renderPortfolioDrivers(area,rows){
  if(flatCount)details.append(node('p',`${flatCount} ${flatCount===1?'symbol has':'symbols have'} no net change.`));
  area.append(details);
 }
-function render(result){clearExportUrl();hasCurrentResult=true;const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));exportUrl=url;a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>{expireExport(url);},60000),{once:true});area.append(a);return;}
+// Compare only successful runs in this page, never a saved snapshot with an unknown model version.
+function renderSimulationComparison(area,result,input){
+ const keys=['endingEquityMedian','drawdownP90','lossFrequency'];
+ if(!keys.every(key=>Number.isFinite(result[key])))return;
+ const latest={
+  metrics:Object.fromEntries(keys.map(key=>[key,result[key]])),
+  assumptions:Object.fromEntries(['balance','riskPct','winRate','rewardRisk','trades'].map(key=>[key,Number(input[key])]))
+ };
+ if(!Object.values(latest.assumptions).every(Number.isFinite))return;
+ const panel=node('section',undefined,'simulation-compare');
+ area.append(panel);
+ const assumptions=({balance,riskPct,winRate,rewardRisk,trades})=>
+  `${fmt(balance)} starting equity · ${fmt(riskPct)}% risk/trade · ${fmt(winRate)}% win rate · ${fmt(rewardRisk)} reward/risk · ${fmt(trades)} trades/path`;
+ function draw(restoreFocus=false){
+  panel.replaceChildren(node('h4','Compare simulations'));
+  const baseline=simulationBaseline;
+  panel.append(node('p',baseline?'Baseline is pinned in this page only.':'Pin this run, change your assumptions, then run again to compare.'));
+  const pin=node('button',baseline?'Replace baseline with this run':'Pin as baseline');
+  pin.type='button';pin.disabled=baseline===latest;
+  pin.onclick=()=>{if(!panel.isConnected)return;simulationBaseline=latest;draw(true);status('Simulation baseline pinned.');};
+  panel.append(pin);
+  let remove;
+  if(baseline){
+   remove=node('button','Clear baseline');remove.type='button';
+   remove.onclick=()=>{if(!panel.isConnected)return;simulationBaseline=null;draw(true);status('Simulation baseline cleared.');};
+   panel.append(remove);
+   if(baseline===latest)panel.append(node('p','Change your assumptions and run again to compare.'));
+  }
+  if(baseline&&baseline!==latest){
+   panel.append(node('p','Baseline: '+assumptions(baseline.assumptions)),node('p','Latest: '+assumptions(latest.assumptions)));
+   if(baseline.assumptions.balance!==latest.assumptions.balance||baseline.assumptions.trades!==latest.assumptions.trades)
+    panel.append(node('p','Starting equity or trade count differs. The change reflects different assumptions, not a like-for-like improvement.'));
+   const wrap=node('div',undefined,'table-wrap'),table=node('table'),thead=node('thead'),header=node('tr'),body=node('tbody');
+   wrap.tabIndex=0;wrap.setAttribute('role','region');wrap.setAttribute('aria-label','Scrollable simulation comparison');
+   table.append(node('caption','Simulated outcomes: baseline versus latest'));
+   for(const label of ['Metric','Baseline','Latest','Change']){const cell=node('th',label);cell.scope='col';header.append(cell);}
+   thead.append(header);table.append(thead);
+   const labels=['Median ending equity (account currency)','P90 maximum drawdown','Paths ending below starting equity'];
+   keys.forEach((key,i)=>{
+    const before=baseline.metrics[key],after=latest.metrics[key],delta=after-before;
+    const row=node('tr'),header=node('th',labels[i]);header.scope='row';
+    const percent=i>0,difference=Math.abs(delta)<0.0005?0:delta,change=fmt(difference);
+    row.append(header,node('td',fmt(before)+(percent?'%':'')),node('td',fmt(after)+(percent?'%':'')),node('td',(difference>0?'+':'')+change+(percent?' pp':'')));
+    body.append(row);
+   });
+   table.append(body);wrap.append(table);panel.append(wrap,node('p','pp = percentage points. Simulated outcomes are not forecasts.'));
+  }
+  if(restoreFocus)(pin.disabled?remove:pin).focus({preventScroll:true});
+ }
+ draw();
+}
+function render(result,simulationInput=null){clearExportUrl();hasCurrentResult=true;const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));exportUrl=url;a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>{expireExport(url);},60000),{once:true});area.append(a);return;}
  const metrics=node('div',undefined,'metric-grid');for(const [key,value] of Object.entries(result)){if(['notice','notes','curve'].includes(key)||(value!==null&&typeof value==='object'))continue;const card=node('div',undefined,'metric');card.append(node('small',title(key)),node('strong',fmt(value,key)));metrics.append(card);}if(metrics.children.length)area.append(metrics);
+ if(simulationInput)renderSimulationComparison(area,result,simulationInput);
  const values=chartValues(selected,result.curve);
  if(values.length){const min=Math.min(...values),max=Math.max(...values),span=max-min||1;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 600 170');svg.setAttribute('role','img');svg.setAttribute('aria-label',selected==='simulation'?'One illustrative simulated equity path':'Cumulative realized Journal profit and loss, starting at zero');const line=document.createElementNS(svg.namespaceURI,'polyline');line.setAttribute('points',values.map((v,i)=>`${10+i/Math.max(1,values.length-1)*580},${150-(v-min)/span*130}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','currentColor');line.setAttribute('stroke-width','2');svg.append(line);area.append(svg);area.append(node('p',`${selected==='simulation'?'One illustrative path':'Cumulative P/L from zero'} · range ${fmt(min)} to ${fmt(max)} · account currency`));}
  renderPathInspector(area,result.curve);
@@ -162,6 +215,7 @@ async function refresh(){
   requestFailed=true;
   next={tier:null,plans:state.plans,hasBillingAccount:state.hasBillingAccount===true,billingUnavailable:true};
  }
+ if(!next.plans?.[next.tier]?.products?.includes('simulation'))simulationBaseline=null;
  const stillEntitled=next.plans?.[next.tier]?.products?.includes(selected);
  if(!stillEntitled&&hasCurrentResult){
   clearExportUrl();hasCurrentResult=false;
@@ -203,7 +257,7 @@ for(const b of $('productCards').querySelectorAll('button[data-key]')){b.onclick
 $('savedSearch').addEventListener('input',filterSaved);
 window.addEventListener('popstate',()=>selectTool(requestedTool()));
 window.addEventListener('pagehide',()=>expireExport(exportUrl));
-$('toolForm').onsubmit=e=>{e.preventDefault();perform(async()=>{if(!user)throw Error('Sign in to use an advanced tool. You can continue browsing for free.');if(!entitled())throw Error('Choose the required plan above to unlock this tool.');const product=selected,revision=inputRevision,input=inputs();const d=(await call({action:'run',product,input})).data;if(revision!==inputRevision||product!==selected){status('Inputs or selected tool changed while the analysis ran. Run again.');return;}render(d.result);status('Analysis complete.');});};
+$('toolForm').onsubmit=e=>{e.preventDefault();perform(async()=>{if(!user)throw Error('Sign in to use an advanced tool. You can continue browsing for free.');if(!entitled())throw Error('Choose the required plan above to unlock this tool.');const product=selected,revision=inputRevision,input=inputs();const d=(await call({action:'run',product,input})).data;if(revision!==inputRevision||product!==selected){status('Inputs or selected tool changed while the analysis ran. Run again.');return;}render(d.result,product==='simulation'?input:null);status('Analysis complete.');});};
 $('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in and choose the required plan first.');if(!$('toolForm').reportValidity())throw Error('Complete the required inputs.');
  const product=selected,revision=inputRevision,input=inputs(),name=$('workspaceName').value,accountUid=user.uid,epoch=authEpoch;
  const key=JSON.stringify({accountUid,product,revision,name:name.trim(),input});
