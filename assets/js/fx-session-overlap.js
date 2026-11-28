@@ -12,6 +12,8 @@
   const result = get('fx-overlap-result');
   const calendar = get('fx-overlap-calendar');
   const calendarStatus = get('fx-overlap-calendar-status');
+  // Cached planner HTML can load this newer script without the calendar markup.
+  const hasCalendar = !!(calendar && calendarStatus);
   const dayMs = 86_400_000;
   const minuteMs = 60_000;
   const formatters = new Map();
@@ -78,8 +80,8 @@
 
   function clearCalendar() {
     calendarResult = null;
-    calendar.disabled = true;
-    calendarStatus.textContent = '';
+    if (calendar) calendar.disabled = true;
+    if (calendarStatus) calendarStatus.textContent = '';
   }
 
   const selectionKey = () => [first.value, second.value, date.value, displayZone.value].join('|');
@@ -87,7 +89,7 @@
     return new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
   }
 
-  calendar.addEventListener('click', () => {
+  if (hasCalendar) calendar.addEventListener('click', () => {
     if (!calendarResult || calendarResult.key !== selectionKey()) {
       clearCalendar();
       return;
@@ -165,6 +167,7 @@
         return `${timeRange(start, end, 'UTC')} UTC${local} (${duration})`;
       });
       result.textContent = `${label}: ${times.join(' | ')}.`;
+      if (!hasCalendar) return;
       // Sort the pair for stable event IDs when the two dropdowns are reversed.
       const order = [a, b].sort((x, y) => x.id.localeCompare(y.id));
       calendarResult = { key: selectionKey(), pair: order.map(s => s.id).join('-'),

@@ -8,8 +8,8 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const html = read('tools/market-hours.html');
 const feature = read('assets/js/fx-session-overlap.js');
 
-function open(t) {
-  const env = new JSDOM(html, { runScripts: 'outside-only', url: 'https://www.fynxfinanceworld.com/tools/market-hours.html' });
+function open(t, sourceHtml = html) {
+  const env = new JSDOM(sourceHtml, { runScripts: 'outside-only', url: 'https://www.fynxfinanceworld.com/tools/market-hours.html' });
   t.after(() => env.window.close());
   const { document } = env.window;
   const downloads = [];
@@ -150,3 +150,34 @@ test('download service unavailable recovers without implying the event was impor
   assert.equal(p.downloads.length, 0);
   assert.match(p.id('fx-overlap-calendar-status').textContent, /Could not prepare the calendar file/);
 });
+
+
+test('mixed-version fixture: prior planner HTML computes an overlap with the current script', t => {
+  // Restore the prior page's planner markup and script URL. open() deliberately
+  // evaluates the current script anyway, as an uncached request to the old URL can.
+  const priorHtml = html.split('\n').filter(line =>
+    !['fx-overlap-calendar', 'fx-overlap-calendar-note', 'fx-overlap-calendar-status']
+      .some(id => line.includes(`id="${id}"`)))
+    .join('\n').replace('fx-session-overlap.js?v=20261128-calendar-1', 'fx-session-overlap.js?v=20261125');
+  const p = open(t, priorHtml);
+  assert.equal(p.id('fx-overlap-calendar'), null);
+  assert.equal(p.id('fx-overlap-calendar-status'), null);
+  assert.ok(p.id('fx-overlap').ownerDocument.querySelector('script[src="/assets/js/fx-session-overlap.js?v=20261125"]'));
+  assert.equal(p.id('fx-overlap-run').disabled, false);
+  assert.match(p.compare('london', 'newyork', '2026-03-11', 'Asia/Tokyo'), /12:00 to .*17:00 UTC;.*12 Mar.*02:00 Asia\/Tokyo \(5 hr\)/);
+  p.select('fx-overlap-date', '2026-03-14');
+  assert.match(p.id('fx-overlap-result').textContent, /Selection changed/);
+  p.id('fx-overlap-run').click();
+  assert.match(p.id('fx-overlap-result').textContent, /no scheduled overlap/);
+});
+
+for (const absent of ['fx-overlap-calendar', 'fx-overlap-calendar-status']) {
+  test(`a missing ${absent} disables only the calendar enhancement`, t => {
+    const partial = html.split('\n').filter(line => !line.includes(`id="${absent}"`)).join('\n');
+    const p = open(t, partial);
+    assert.match(p.compare('london', 'newyork', '2026-03-11'), /12:00 to .*17:00 UTC \(5 hr\)/);
+    p.id('fx-overlap-calendar')?.click();
+    assert.equal(p.downloads.length, 0);
+    assert.notEqual(p.id('fx-overlap-calendar')?.disabled, false);
+  });
+}
