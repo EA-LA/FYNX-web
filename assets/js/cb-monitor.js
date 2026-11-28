@@ -94,10 +94,13 @@
         ['hike', 'hold', 'cut'].every(key => typeof odds[key] === 'number' &&
           Number.isFinite(odds[key]) && odds[key] >= 0 && odds[key] <= 100);
       cards = available.map(([a, name, code, reg, url]) => {
-      const h = policy.areas[a].history, v = h[h.length - 1][1], mv = lastMove(h), yr = h[h.length - 13]?.[1];
+      const h = policy.areas[a].history, [asOf, v] = h[h.length - 1], mv = lastMove(h);
+      // A valid monthly series can skip observations. Compare the same calendar month last year.
+      const referenceMonth = String(Number(asOf.slice(0, 4)) - 1).padStart(4, '0') + asOf.slice(4);
+      const yr = h.find(([ym]) => ym === referenceMonth)?.[1];
       const ch12 = Number.isFinite(yr) ? Math.round((v - yr) * 100) : null;
       const trend = mv ? (mv.bp > 0 ? 'up' : 'down') : 'flat';
-      const olderCoverage = monthsOld(h[h.length - 1][0]) >= 3;
+      const olderCoverage = monthsOld(asOf) >= 3;
       let next = '';
       if (a === 'US' && validOdds) {
         const lead = [['hike', odds.hike], ['hold', odds.hold], ['cut', odds.cut]].sort((x, y) => (y[1] || 0) - (x[1] || 0))[0];
@@ -109,7 +112,7 @@
         <span class="cb-rate">${v.toFixed(2)}<small>%</small></span>
         <span class="cb-move">${mv ? `${mv.bp > 0 ? '▲' : '▼'} ${mv.bp > 0 ? '+' : ''}${mv.bp} bp · ${esc(month(mv.at))}` : 'No change in available history'}${effr}</span>
         ${spark(h)}
-        <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h[h.length - 1][0]))}${olderCoverage ? ' · Older published coverage — verify current rate' : ''}</span>${next}</a>`};
+        <span class="cb-meta">12 months: ${ch12 == null ? 'Unavailable' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(asOf))}${olderCoverage ? ' · Older published coverage — verify current rate' : ''}</span>${next}</a>`};
     });
       const partial = available.length < BANKS.length ? ` ${BANKS.length - available.length} banks omitted because their records could not be verified.` : '';
       const olderCount = available.filter(([area]) => monthsOld(policy.areas[area].history[policy.areas[area].history.length - 1][0]) >= 3).length;
