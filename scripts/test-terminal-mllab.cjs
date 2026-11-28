@@ -70,6 +70,12 @@ let fail = 0; const ok = (c, m) => { if (!c || process.env.VERBOSE) console.log(
   ok(pc.P.N === 50 && pc.P.signal <= 2 && pc.roll.length > 30, `PCA: independent walks give ${pc.P.signal} factor(s) above the noise edge`);
   const pr = await L.pairsRun(['KO', 'PEP', 'XOM', 'CVX', 'JPM', 'BAC', 'HD', 'LOW', 'V', 'MA']);
   ok(pr.m === 45 && pr.sig.some(x => (x.a === 'KO' && x.b === 'PEP') || (x.a === 'PEP' && x.b === 'KO')), `PAIRS: planted KO/PEP pair found among ${pr.sig.length} significant of ${pr.m} (chance ${pr.expected.toFixed(2)})`);
+  const spread = L.pairSpreadSeries({z: [5, 7, -.5, -9, Infinity]}, 3);
+  ok(spread.formation[0] === 6 && spread.formation[1] === -.5 && Number.isNaN(spread.formation[2]) &&
+    Number.isNaN(spread.later[0]) && spread.later[1] === -.5 && spread.later[2] === -6 && Number.isNaN(spread.later[3]),
+    'PAIRS: chart aligns close-indexed spreads with the shorter date series and clips finite display values');
+  ok(pr.cutDay === pr.A.dates[pr.cut - 2] && pr.sig.every(pair => L.pairSpreadSeries(pair, pr.cut).later.length === pr.A.dates.length),
+    'PAIRS: formation end date and every selectable spread align with the chart axis');
   const kp = pr.sig.find(x => x.a === 'KO' || x.b === 'KO'); ok(kp && kp.pTest < 0.05 && kp.half < 30, 'PAIRS: planted pair still cointegrated out of sample, half-life ' + kp?.half.toFixed(1));
   const an = await L.anomalyRun('CRASH', 1);
   ok(an.list[0] && Math.abs(an.list.findIndex(a => an.B.day[a.i] === days[2400])) < 3, 'ANOMALY: injected crash is among the top 3 (' + an.list.slice(0, 3).map(a => an.B.day[a.i] + ' ' + a.why).join('; ') + ')');
