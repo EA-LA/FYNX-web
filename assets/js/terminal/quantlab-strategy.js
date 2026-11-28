@@ -39,6 +39,13 @@
 .fx-sl-chip b{color:var(--am);font-weight:700;margin-right:4px}
 .fx-sl-err{padding:8px 10px;border-left:3px solid #ff5a4f;background:#1a0b0b;color:#ffb4ad;font-size:12px;line-height:1.5}
 .fx-sl-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px}
+.fx-fcast-evidence{min-width:0;max-width:100%;overflow-x:auto}
+.fx-fcast-evidence table{width:100%;min-width:300px;border-collapse:collapse;font-size:12px}
+.fx-fcast-evidence th,.fx-fcast-evidence td{padding:7px 4px;border-bottom:1px solid var(--ln2);text-align:left}
+.fx-fcast-evidence td{font-variant-numeric:tabular-nums}
+.fx-fcast-evidence td:last-child,.fx-fcast-evidence td:nth-last-child(2){white-space:nowrap}
+.fx-fcast-evidence time{display:block;white-space:nowrap}
+.fx-fcast-evidence time span{display:block}
 .fx-sl-wt td{font:500 11.5px 'IBM Plex Mono',monospace}
 .fx-sl-cell{display:inline-block;min-width:44px;padding:1px 4px;text-align:right}
 .fx-sl-help{margin:0;padding-left:16px;color:var(--mu);font-size:11.5px;line-height:1.6}
@@ -643,8 +650,9 @@
     return {paths, analogs: cand.map(x => x[1]), q10: qs(0.1), q25: qs(0.25), q50: qs(0.5), q75: qs(0.75), q90: qs(0.9), pUp: paths.filter(x => x[H - 1] > 0).length / paths.length};
   }
   async function fCompute() {
-    const B = await loadBars(FV.sym, FV.tf); if (!B?.o || B.c.length < 300) throw new Error(`Not enough ${FV.tf === '1h' ? 'hourly' : 'daily'} candles for ${FV.sym}.`);
-    const W = FV.W, H = FV.H, K = FV.K, N = B.c.length, FE = features(B, W), now = forecastAt(B, FE, N - 1, W, H, K); if (!now) throw new Error('Not enough history to find similar patterns.');
+    const {sym, tf, W, H, K} = FV;
+    const B = await loadBars(sym, tf); if (!B?.o || B.c.length < 300) throw new Error(`Not enough ${tf === '1h' ? 'hourly' : 'daily'} candles for ${sym}.`);
+    const N = B.c.length, FE = features(B, W), now = forecastAt(B, FE, N - 1, W, H, K); if (!now) throw new Error('Not enough history to find similar patterns.');
     // Out-of-sample scoring: at each test point use only windows whose futures were already known, step H (no overlap).
     const tests = []; const firstT = Math.max(W + 250, N - 1 - H - Math.min(600, Math.floor(N * 0.4)));
     for (let t = firstT; t <= N - 1 - H; t += H) { const f = forecastAt(B, FE, t, W, H, K); if (!f) continue; const actual = Math.log(B.c[t + H] / B.c[t]); tests.push({t, pUp: f.pUp, med: f.q50[H - 1], lo: f.q10[H - 1], hi: f.q90[H - 1], actual}); }
@@ -657,7 +665,7 @@
     const c0 = B.c[N - 1], toPx = arr => arr.map(v => c0 * Math.exp(v));
     const g = now.analogs[0], gk = c0 / B.c[g];
     const ghost = Array.from({length: H}, (_, j) => { const i = g + 1 + j; return {o: B.o[i] * gk, h: B.h[i] * gk, l: B.l[i] * gk, c: B.c[i] * gk}; });
-    return {B, N, W, H, K, now, fan: {q10: toPx(now.q10), q25: toPx(now.q25), q50: toPx(now.q50), q75: toPx(now.q75), q90: toPx(now.q90)}, ghost, tests, ev: {n, base, hit, brier, brierBase, cover, ic, p, best}, nearest: now.analogs.slice(0, 5).map(e => B.day[e])};
+    return {B, N, W, H, K, now, fan: {q10: toPx(now.q10), q25: toPx(now.q25), q50: toPx(now.q50), q75: toPx(now.q75), q90: toPx(now.q90)}, ghost, tests, ev: {n, base, hit, brier, brierBase, cover, ic, p, best}, tf};
   }
   const fCache = new Map();
   async function fGet() { const k = [FV.sym, FV.tf, FV.W, FV.H, FV.K].join('|'); if (!fCache.has(k)) fCache.set(k, fCompute().catch(e => { fCache.delete(k); throw e; })); return fCache.get(k); }
@@ -670,6 +678,47 @@
     kpis(w, [['P(UP IN ' + r.H + ')', pct(r.now.pUp, 0), `${r.K} closest patterns`, r.now.pUp >= 0.6 ? '#3ecf8e' : r.now.pUp <= 0.4 ? '#ff5a4f' : '#ffb000'], ['MEDIAN PATH', spct(Math.exp(r.now.q50[r.H - 1]) - 1), `80% range ${spct(Math.exp(r.now.q10[r.H - 1]) - 1, 0)} to ${spct(Math.exp(r.now.q90[r.H - 1]) - 1, 0)}`], ['PAST ACCURACY', pct(r.ev.hit, 0), edge ? 'beat the base rate' : `no edge vs ${pct(r.ev.best, 0)} base`, edge ? '#3ecf8e' : '#7d8a83']]);
     const cb = el('div', 'fx-ql-chart'); w.append(cb);
     requestAnimationFrame(() => candleChart(cb, r.B, r.N - 60, r.N - 1, {fan: r.fan, aria: 'Recent candles with pattern forecast'}));
+  }
+  function fcastAnalogRows(B, now, H) {
+    return now.analogs.slice(0, 5).map((e, i) => ({
+      rank: i + 1, match: e, outcome: e + H,
+      actual: B.c[e + H] / B.c[e] - 1,
+      scaled: Math.expm1(now.paths[i][H - 1])
+    }));
+  }
+  function fcastAnalogCard(r) {
+    const title = 'Closest historical patterns';
+    const scroller = el('div', 'fx-fcast-evidence');
+    scroller.tabIndex = 0;
+    scroller.setAttribute('role', 'region');
+    scroller.setAttribute('aria-label', title);
+    const table = el('table'), head = el('thead'), row = el('tr'), body = el('tbody');
+    table.setAttribute('aria-label', title);
+    for (const name of ['Rank', 'Pattern end', 'Outcome end', 'Actual return', 'Fan input']) {
+      const th = el('th', '', name); th.scope = 'col'; row.append(th);
+    }
+    const when = i => {
+      const t = r.B.t[i];
+      if (r.tf === '1h' && finite(t)) {
+        const dt = new Date(t * 1000).toISOString();
+        const date = el('time', '', dt.slice(0, 10)); date.dateTime = dt;
+        date.append(el('span', '', ' ' + dt.slice(11, 16)));
+        return date;
+      }
+      if (!r.B.day[i]) return el('span', '', '—');
+      const date = el('time', '', r.B.day[i]); date.dateTime = r.B.day[i];
+      return date;
+    };
+    for (const analog of fcastAnalogRows(r.B, r.now, r.H)) {
+      const tr = el('tr'), rank = el('th', '', String(analog.rank));
+      rank.scope = 'row';
+      const match = el('td'), outcome = el('td');
+      match.append(when(analog.match)); outcome.append(when(analog.outcome));
+      tr.append(rank, match, outcome, el('td', '', spct(analog.actual, 2)), el('td', '', spct(analog.scaled, 2)));
+      body.append(tr);
+    }
+    head.append(row); table.append(head, body); scroller.append(table);
+    return card(title, scroller, note(`Showing up to five of the closest matches by candle shape. Actual return is the close-to-close move after each match over ${r.H} candles. Fan input rescales that move to the latest window’s volatility.${r.tf === '1h' ? ' Times are UTC.' : ''} Matches can overlap and are not independent.`));
   }
   async function renderFcastPage(host, arg) {
     if (arg && SYM_RE.test(String(arg).toUpperCase())) { FV.sym = String(arg).toUpperCase(); saveF(); }
@@ -696,7 +745,8 @@
     const v = el('div', 'fx-ql-verdict'); v.style.borderColor = edge ? '#3ecf8e' : '#ffb000';
     v.textContent = edge ? `Out of sample this method called the ${r.H}-${unit.replace(/s$/, '')} direction right ${pct(r.ev.hit, 1)} of the time, better than always guessing the more common outcome (${pct(r.ev.best, 0)}), with p = ${num(r.ev.p, 3)}, and its probabilities beat the base rate. Treat it as a weak signal: patterns change.` : `Honest result: out of sample this method was right ${pct(r.ev.hit, 1)} of the time against ${pct(r.ev.best, 0)} for always guessing the more common outcome (p = ${num(r.ev.p, 2)}). That is not a reliable edge, which is normal for price-pattern forecasts. Use the fan as a picture of what similar setups did, not as a prediction.`;
     out.append(v);
-    const cb = chartBox(360); out.append(card(`LAST 120 CANDLES + ${r.H}-CANDLE FORECAST FAN (80% AND 50% BANDS) · HOLLOW = CLOSEST PAST MATCH`, cb, note(`Closest past matches: ${r.nearest.join(', ')}. The hollow candles replay what followed the single closest match, rescaled to today’s price.`)));
+    const cb = chartBox(360); out.append(card(`LAST 120 CANDLES + ${r.H}-CANDLE FORECAST FAN (80% AND 50% BANDS) · HOLLOW = CLOSEST PAST MATCH`, cb, note('The hollow candles replay what followed the single closest match, rebased to the current price. The fan separately scales returns by volatility.')));
+    out.append(fcastAnalogCard(r));
     const two = el('div', 'fx-sl-grid'), pc = chartBox(260), cc = chartBox(260);
     two.append(card(`OUT-OF-SAMPLE TEST · PREDICTED MEDIAN VS WHAT HAPPENED (${r.ev.n} NON-OVERLAPPING TESTS)`, pc, note(`Each dot is one test made with data available at the time. Dots in the top-right and bottom-left quadrants were right about direction. Correlation (IC) ${num(r.ev.ic, 2)}.`)), card('CALIBRATION · PREDICTED P(UP) VS ACTUAL SHARE UP', cc, note('If the probabilities are honest, the bars sit on the diagonal.')));
     out.append(two);
@@ -737,5 +787,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s3 s4 s4 s4']}};
     const qi = T.DESK_ORDER.indexOf('quant'); T.DESK_ORDER.splice(qi >= 0 ? qi + 1 : 1, 0, 'strategy');
   }
-  T.StrategyLab = {optimizerConcentration, tradeCsv, significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
+  T.StrategyLab = {optimizerConcentration, tradeCsv, significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, fcastAnalogRows, smaArr, emaArr, rsiArr, atrArr, candleChart};
 });
