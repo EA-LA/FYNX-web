@@ -16,3 +16,37 @@
 
 /* Long position names must not push numeric columns out of the paid results viewport. */
 #workbench #result .table-wrap > table > tbody > tr > td:first-child{overflow-wrap:anywhere}
+
+/* Browser Print / Save as PDF: output the completed paid analysis, not the account UI. */
+@media print{
+  html:has(#workbench #result > .metric-grid){
+    --bg:#fff;--panel:#fff;--ink:#111;--muted:#444;--line:#bbb;--soft:#fff;
+  }
+  body:has(#workbench #result > .metric-grid) > :not(main),
+  main:has(#workbench #result > .metric-grid) > :not(#workbench),
+  #workbench:has(#result > .metric-grid) > :not(.work-main),
+  #workbench:has(#result > .metric-grid) .work-main > :not(.work-title):not(#result),
+  #workbench:has(#result > .metric-grid) .work-title > :not(#toolTitle),
+  #workbench #result:has(> .metric-grid) button{display:none!important}
+  main:has(#workbench #result > .metric-grid),
+  #workbench:has(#result > .metric-grid),
+  #workbench:has(#result > .metric-grid) .work-main{
+    display:block;max-width:none;overflow:visible;margin:0;padding:0;border:0;background:#fff;color:#111;
+  }
+  #workbench:has(#result > .metric-grid) #toolTitle{
+    margin:0 0 10pt;font-size:18pt;break-after:avoid-page;
+  }
+  #workbench:has(#result > .metric-grid) #toolTitle::before{content:"FYNX Pro · "}
+  #workbench #result:has(> .metric-grid){font-size:10pt}
+  #workbench #result:has(> .metric-grid) .metric-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));gap:5pt;
+  }
+  #workbench #result:has(> .metric-grid) .metric{
+    break-inside:avoid;padding:5pt;overflow-wrap:anywhere;
+  }
+  #workbench #result:has(> .metric-grid) .table-wrap{overflow:visible}
+  #workbench #result:has(> .metric-grid) table{font-size:8pt;overflow-wrap:anywhere}
+  #workbench #result:has(> .metric-grid) thead{display:table-header-group}
+  #workbench #result:has(> .metric-grid) :is(th,td){padding:4pt}
+  #workbench #result:has(> .metric-grid) :is(tr,svg){break-inside:avoid}
+}
