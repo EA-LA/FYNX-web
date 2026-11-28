@@ -32,7 +32,7 @@
   // Owner access is decided only by the server (consumerLiveWorkspace status → owner: true); never by email or storage here.
   const OWNER_NAME = 'FYNX Owner', OWNER_LABEL = 'FYNX Owner — Lifetime Unlimited Access';
   const nameOf = () => state.owner ? OWNER_NAME : NAMES[state.tier];
-  let readyPromise = null, services = null;
+  let readyPromise = null, services = null, verificationRevision = 0;
   const listeners = new Set();
 
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -58,28 +58,37 @@
     return services;
   }
   async function verify(user) {
+    const revision = ++verificationRevision;
     if (!user) { state = {tier: 'guest', uid: null, signedIn: false, verified: true, owner: false}; emit(); return; }
     // The session cache only avoids a second round trip on the same tab; it can never raise the plan above what the
     // server verified, and the server re-checks the plan on every metered call regardless.
     let cached = null; try { cached = JSON.parse(root.sessionStorage.getItem(CACHE)); } catch (_) {}
     // Owner status is never taken from this cache: it is re-verified with the server on every page load.
     if (cached && cached.uid === user.uid && !cached.owner && Date.now() - cached.at < 10 * 60 * 1000 && ORDER.includes(cached.tier)) { state = {tier: cached.tier, uid: user.uid, signedIn: true, verified: true, owner: false}; emit(); return; }
+    const accountChanged = state.uid !== user.uid;
     state = {tier: 'free', uid: user.uid, signedIn: true, verified: false, owner: false};
+    // Hide the previous account's paid benefits while the new account is being verified.
+    if (accountChanged) emit();
     try {
       const s = await services.call({action: 'status'});
+      if (revision !== verificationRevision) return;
       const owner = !!(s && s.mode === 'live' && s.owner === true && s.tier === 'pro');
       const tier = owner ? 'pro' : s && s.mode === 'live' && !s.billingUnavailable && ['starter', 'plus', 'pro'].includes(s.tier) ? s.tier : 'free';
       state = {tier, uid: user.uid, signedIn: true, verified: true, owner};
       try { root.sessionStorage.setItem(CACHE, JSON.stringify({uid: user.uid, tier, owner, at: Date.now()})); } catch (_) {}
-    } catch (_) { state = {tier: 'free', uid: user.uid, signedIn: true, verified: false, owner: false}; }
-    emit(); syncUsage();
+    } catch (_) {
+      if (revision !== verificationRevision) return;
+      state = {tier: 'free', uid: user.uid, signedIn: true, verified: false, owner: false};
+    }
+    emit(); syncUsage(revision, user.uid);
   }
   // Today's counts from the server, so the meter is right on every device (best effort, never blocks a tool).
-  async function syncUsage() {
-    if (!state.signedIn || !services) return;
+  async function syncUsage(revision, uid) {
+    if (revision !== verificationRevision || state.uid !== uid || !state.signedIn || !services) return;
     try {
       const r = await services.call({action: 'usage', op: 'read', cat: 'all'});
-      if (!r || !r.counts) return;
+      // A response for an earlier account or verification must not update the active meter.
+      if (revision !== verificationRevision || state.uid !== uid || !r || !r.counts) return;
       const v = readUsage(); for (const c of Object.keys(LIMITS)) v.counts[c] = Number(r.counts[c]) || 0;
       if (Number.isFinite(r.resetAt)) v.resetAt = r.resetAt; v.server = true; writeUsage(v); emit();
     } catch (_) {}
