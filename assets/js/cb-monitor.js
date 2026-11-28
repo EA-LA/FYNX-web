@@ -68,7 +68,7 @@
     host.querySelector('[data-cb-source]').textContent = 'The latest published policy-rate feed could not be verified. Retry or consult each central bank’s official calendar.';
   }
 
-  function lastMove(h) { const v = h.at(-1)[1]; for (let i = h.length - 2; i >= 0; i--) if (h[i][1] !== v) return {bp: Math.round((v - h[i][1]) * 100), at: h[i + 1][0]}; return null; }
+  function lastMove(h) { const v = h[h.length - 1][1]; for (let i = h.length - 2; i >= 0; i--) if (h[i][1] !== v) return {bp: Math.round((v - h[i][1]) * 100), at: h[i + 1][0]}; return null; }
   function spark(h) {
     const pts = h.filter(p => p[0] >= '2022-01'); if (pts.length < 2) return '';
     const W = 160, H = 40, vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), x = i => i / (pts.length - 1) * W, y = v => H - 3 - (v - lo) / ((hi - lo) || 1) * (H - 6);
@@ -94,10 +94,10 @@
         ['hike', 'hold', 'cut'].every(key => typeof odds[key] === 'number' &&
           Number.isFinite(odds[key]) && odds[key] >= 0 && odds[key] <= 100);
       cards = available.map(([a, name, code, reg, url]) => {
-      const h = policy.areas[a].history, v = h.at(-1)[1], mv = lastMove(h), yr = h.at(-13)?.[1];
+      const h = policy.areas[a].history, v = h[h.length - 1][1], mv = lastMove(h), yr = h[h.length - 13]?.[1];
       const ch12 = Number.isFinite(yr) ? Math.round((v - yr) * 100) : null;
       const trend = mv ? (mv.bp > 0 ? 'up' : 'down') : 'flat';
-      const olderCoverage = monthsOld(h.at(-1)[0]) >= 3;
+      const olderCoverage = monthsOld(h[h.length - 1][0]) >= 3;
       let next = '';
       if (a === 'US' && validOdds) {
         const lead = [['hike', odds.hike], ['hold', odds.hold], ['cut', odds.cut]].sort((x, y) => (y[1] || 0) - (x[1] || 0))[0];
@@ -109,10 +109,10 @@
         <span class="cb-rate">${v.toFixed(2)}<small>%</small></span>
         <span class="cb-move">${mv ? `${mv.bp > 0 ? '▲' : '▼'} ${mv.bp > 0 ? '+' : ''}${mv.bp} bp · ${esc(month(mv.at))}` : 'No change in available history'}${effr}</span>
         ${spark(h)}
-        <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h.at(-1)[0]))}${olderCoverage ? ' · Older published coverage — verify current rate' : ''}</span>${next}</a>`};
+        <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h[h.length - 1][0]))}${olderCoverage ? ' · Older published coverage — verify current rate' : ''}</span>${next}</a>`};
     });
       const partial = available.length < BANKS.length ? ` ${BANKS.length - available.length} banks omitted because their records could not be verified.` : '';
-      const olderCount = available.filter(([area]) => monthsOld(policy.areas[area].history.at(-1)[0]) >= 3).length;
+      const olderCount = available.filter(([area]) => monthsOld(policy.areas[area].history[policy.areas[area].history.length - 1][0]) >= 3).length;
       const ageNote = olderCount ? ` ${olderCount} bank${olderCount === 1 ? '' : 's'} ha${olderCount === 1 ? 's' : 've'} older published coverage; verify its current rate with the institution.` : '';
       host.querySelector('[data-cb-source]').textContent = `Policy rates: ${policy.source || 'BIS monthly policy-rate series'}. ${validOdds ? 'Fed odds: ' + (fed?.source || 'fed funds futures') + '. ' : ''}Cards open each bank's official meeting calendar.${partial}${ageNote}`;
       render();

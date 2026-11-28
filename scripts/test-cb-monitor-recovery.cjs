@@ -204,4 +204,22 @@ async function settle() {
   assert.match(optionalStall.grid.innerHTML, /Federal Reserve/);
   assert.doesNotMatch(optionalStall.grid.innerHTML, /Next FOMC/);
   console.log('ok 14 - stalled optional odds feed does not hide verified rates');
+
+  // Older WebViews can support the rest of this module but lack Array.prototype.at.
+  const legacyHistory = Array.from({length: 13}, (_, i) =>
+    [monthFromNow(i - 12), i === 12 ? 4 : 3]);
+  const shortHistory = [[monthFromNow(0), 2]];
+  legacyHistory.at = undefined;
+  shortHistory.at = undefined;
+  const legacy = harness(async kind => json(kind === 'policy' ? {
+    source: 'BIS monthly series',
+    areas: {US: {history: legacyHistory}, GB: {history: shortHistory}}
+  } : validDesk()));
+  await settle();
+  assert.match(legacy.grid.innerHTML, /Federal Reserve/);
+  assert.match(legacy.grid.innerHTML, /Bank of England/);
+  assert.match(legacy.grid.innerHTML, /12 months: \+100 bp/);
+  assert.match(legacy.grid.innerHTML, /12 months: —/);
+  assert.doesNotMatch(legacy.grid.innerHTML, /Retry policy data/);
+  console.log('ok 15 - legacy arrays preserve verified rates and short-series behavior');
 })().catch(error => {console.error(error);process.exitCode = 1;});
