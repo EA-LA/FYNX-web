@@ -9,7 +9,9 @@ function harness(t,response,options={}){
  const dom=new JSDOM(html,{url:'https://www.fynxfinanceworld.com/intelligence/story.html?id='+id,runScripts:'outside-only',virtualConsole:new VirtualConsole()});t.after(()=>dom.window.close());
  const w=dom.window,intervals=[],saved=[];w.Date.now=()=>now;w.setInterval=fn=>{intervals.push(fn);return 1;};
  const rows=new Map(options.rows||[]);w.accountStub={sync:{uid:'qa-user',rows},storyID:async()=> 'source-hash',accountData:(_,key)=>rows.get(key)?.data,subscribe:fn=>fn(),save:async(domain,key,data)=>saved.push({domain,key,data})};
- w.fetch=async()=>({ok:true,text:async()=>JSON.stringify(response)});w.eval(script);
+ w.fetch=options.fetch|| (async()=>({ok:true,text:async()=>JSON.stringify(response)}));
+ if(options.setup)options.setup(w);
+ w.eval(script);
  return {w,q:id=>w.document.getElementById(id),intervals,saved};
 }
 test('public story renders attributed facts and preserves exact internal links',async t=>{
@@ -47,4 +49,28 @@ test('a malformed related item cannot prevent a valid related link from renderin
  assert.equal(h.q('story').hidden,false);assert.equal(h.q('related-section').hidden,false);
  assert.equal(h.q('related').children.length,1);
  assert.equal(h.q('related').querySelector('a').getAttribute('href'),'/intelligence/story.html?id='+relatedID);
+});
+
+test('missing AbortController cannot strand a public story and retry recovers',async t=>{
+ let timer,requests=0,resolveOld;
+ const h=harness(t,{story:story()},{
+  setup:w=>{w.AbortController=undefined;w.setTimeout=fn=>{timer=fn;return 1;};w.clearTimeout=()=>{};},
+  fetch:()=>++requests===1?new Promise(r=>{resolveOld=r;}):Promise.resolve({ok:true,text:async()=>JSON.stringify({story:story()})})
+ });
+ await tick();assert.equal(h.q('retry').disabled,true);timer();await tick();
+ assert.equal(h.q('retry').disabled,false);assert.equal(h.q('retry').hidden,false);assert.match(h.q('status').textContent,/timed out/);
+ h.q('retry').click();await tick();assert.equal(h.q('story').hidden,false);
+ resolveOld({ok:true,text:async()=>JSON.stringify({story:story({title:'Late old response'})})});await tick();
+ assert.equal(h.q('headline').textContent,story().title);assert.equal(h.q('retry').hidden,true);
+});
+test('the deadline covers a stalled response body even if abort is ignored',async t=>{
+ let timer,requests=0,resolveBody,aborts=0;
+ const h=harness(t,{story:story()},{
+  setup:w=>{w.AbortController=class{signal={};abort(){aborts++;}};w.setTimeout=fn=>{timer=fn;return 1;};w.clearTimeout=()=>{};},
+  fetch:async()=>({ok:true,text:()=>++requests===1?new Promise(r=>{resolveBody=r;}):Promise.resolve(JSON.stringify({story:story()}))})
+ });
+ await tick();timer();await tick();assert.equal(aborts,1);assert.equal(h.q('retry').disabled,false);
+ h.q('retry').click();await tick();assert.equal(h.q('story').hidden,false);
+ resolveBody(JSON.stringify({story:story({title:'Stale body'})}));await tick();
+ assert.equal(h.q('headline').textContent,story().title);
 });
