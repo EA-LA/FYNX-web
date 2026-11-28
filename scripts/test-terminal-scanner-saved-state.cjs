@@ -32,10 +32,20 @@ function fixture(savedState, savedScans = [], scannerFeed = snapshot) {
     b.addEventListener('click', action); return b;
   };
   const pages = {};
+  let currentView;
   const PG = {
     add: (key, title, render) => { pages[key] = render; },
     setHead: () => {}, rerender: () => {},
-    pageTabs: () => el('div'),
+    pageState: name => name === 'scan' ? currentView : undefined,
+    pageTabs: (tabs, active, onTab) => {
+      const box = el('div');
+      for (const [key, label] of tabs) {
+        const tab = btn(label, '', () => onTab(key));
+        tab.setAttribute('aria-pressed', String(key === active));
+        box.append(tab);
+      }
+      return box;
+    },
     chips: buttons => { const box = el('div'); buttons.forEach(b => box.append(b)); return box; },
     sourceNote: value => el('p', 'source', value)
   };
@@ -61,9 +71,10 @@ function fixture(savedState, savedScans = [], scannerFeed = snapshot) {
   dom.window.FynxTerminalPlugins[0](T, PG);
   return {
     doc, pages, T, raw,
-    renderPage: async () => {
+    renderPage: async (arg = null, view) => {
+      currentView = view;
       const host = el('main'); doc.body.append(host);
-      await pages.scan(host, null, () => true); return host;
+      await pages.scan(host, arg, () => true); return host;
     }
   };
 }
@@ -153,4 +164,37 @@ test('cross-asset group text sorts without changing magnitude-based presets', as
   host.querySelector('[aria-label="Sort by group"]').click();
   host = await renderPage();
   assert.deepEqual(ordered(), ['EN1', 'FX1', 'RATE1']);
+});
+
+test('an explicit scanner command seeds a visit once; sort, filter, and asset changes survive redraw', async () => {
+  const feed = {...snapshot, crypto:{rows:[
+    ['zulu','ZZZ','Zulu Coin',1,0,10,10,1e8,1e7,1,-1,[]],
+    ['alpha','AAA','Alpha Coin',2,0,9,10,1e8,1e7,2,-2,[]]
+  ]}, etfs:{rows:[['SPY','Synthetic ETF',250,2,5,[]]]}};
+  const {doc, raw, renderPage} = fixture({asset:'stocks', preset:'gainers', f:{}, sort:['chg',-1]}, [], feed);
+  const visit = {};
+  let host = await renderPage('CRYPTO', visit);
+  const symbols = node => [...node.querySelectorAll('.sc-sym')].map(cell => cell.textContent);
+  const redraw = async () => { host = await renderPage('CRYPTO', visit); };
+  assert.deepEqual(symbols(host), ['ZZZ','AAA']);
+  // A background redraw also keeps the initial explicit asset, without writing a preset.
+  await redraw();
+  assert.deepEqual(symbols(host), ['ZZZ','AAA']);
+  assert.equal(JSON.parse(raw.get('scan-state')).asset, 'stocks');
+
+  host.querySelector('[aria-label="Sort by name"]').click();
+  await redraw();
+  assert.deepEqual(symbols(host), ['AAA','ZZZ']);
+  const search = host.querySelector('input[type=search]');
+  search.value = 'Zulu';
+  search.dispatchEvent(new doc.defaultView.Event('change'));
+  await redraw();
+  assert.deepEqual(symbols(host), ['ZZZ']);
+
+  [...host.querySelectorAll('button')].find(button => button.textContent === 'ETFs').click();
+  await redraw();
+  assert.deepEqual(symbols(host), ['SPY']);
+  assert.equal(JSON.parse(raw.get('scan-state')).asset, 'etfs');
+  const newVisit = await renderPage('CRYPTO', {});
+  assert.deepEqual(symbols(newVisit), ['ZZZ','AAA'], 'a new command still applies its initial preset');
 });

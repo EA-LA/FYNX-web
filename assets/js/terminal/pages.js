@@ -13,8 +13,15 @@ window.FynxTerminalPages = T => {
     body.addEventListener('keydown', e => { const tr = e.target; if (tr?.dataset?.kbRow !== '1' || (e.key !== 'Enter' && e.key !== ' ')) return; e.preventDefault(); tr.click(); });
   }
   if (!root || !body) return null;
-  const stack = [];
+  const stack = [], viewStates = new WeakMap();
   let token = 0;
+  // Private, in-memory state for a visit, not added to URLs, browser history or account settings.
+  function pageState(name) {
+    const entry = stack.at(-1);
+    if (!entry || entry.name !== name) return;
+    if (!viewStates.has(entry)) viewStates.set(entry, Object.create(null));
+    return viewStates.get(entry);
+  }
 
   /* --- page chrome ----------------------------------------------------------- */
   const section = (title, cls) => { const s = el('section', 'pg-sec' + (cls ? ' ' + cls : '')); if (title) s.append(el('h2', 'pg-h2', title)); return s; };
@@ -723,5 +730,5 @@ window.FynxTerminalPages = T => {
 
   // Plugins add pages: add(name, label, render(body, arg, alive)).
   const add = (name, label, render) => { NAMES[name] = label; PAGES[name] = render; };
-  return {open, back, closeAll, fromLocation, add, setHead, section, cards, chips, go, pageTabs, sourceNote, quoteTable, newsList, matchNews, grid, rerender: () => { if (stack.length) redraw(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) redraw(); }};
+  return {open, back, closeAll, fromLocation, add, pageState, setHead, section, cards, chips, go, pageTabs, sourceNote, quoteTable, newsList, matchNews, grid, rerender: () => { if (stack.length) redraw(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) redraw(); }};
 };
