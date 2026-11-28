@@ -21,7 +21,7 @@ const validDesk = () => ({
     odds: {meeting: '2026-12-09', hike: 35, hold: 60, cut: 5}
   }
 });
-function harness(provider, timer = setTimeout) {
+function harness(provider, timer = setTimeout, controller = AbortController) {
   const grid = {innerHTML: ''}, note = {textContent: ''}, listeners = {};
   const host = {
     innerHTML: '',
@@ -47,7 +47,7 @@ function harness(provider, timer = setTimeout) {
     calls += 1;
     return provider(String(url).includes('/policy.json') ? 'policy' : 'desk', options);
   };
-  const sandbox = {document, fetch, AbortController, setTimeout: timer, clearTimeout, console};
+  const sandbox = {document, fetch, AbortController: controller, setTimeout: timer, clearTimeout, console};
   vm.runInNewContext(source, sandbox, {filename: 'cb-monitor.js'});
   return {
     grid, note, get calls() {return calls;},
@@ -164,4 +164,44 @@ async function settle() {
   await settle();
   assert.match(stalled.grid.innerHTML, /Retry policy data/);
   console.log('ok 10 - timed-out fetch resolves to recoverable state');
+
+  const noAbort = harness(async kind => json(kind === 'policy' ? valid() : validDesk()), setTimeout, null);
+  await settle();
+  assert.match(noAbort.grid.innerHTML, /Federal Reserve/);
+  assert.equal(noAbort.calls, 2);
+  console.log('ok 11 - browsers without AbortController can load policy rates');
+
+  let recoveredAfterTimeout = false, finishLate;
+  const controlledTimers = [];
+  const manualTimer = callback => { controlledTimers.push(callback); };
+  const ignoredAbort = harness(async kind => {
+    if (kind === 'desk') return json(validDesk());
+    if (recoveredAfterTimeout) return json(valid());
+    return new Promise(resolve => { finishLate = resolve; });
+  }, manualTimer);
+  controlledTimers.splice(0).forEach(callback => callback());
+  await settle();
+  assert.match(ignoredAbort.grid.innerHTML, /Retry policy data/);
+  recoveredAfterTimeout = true;
+  ignoredAbort.retry();
+  await settle();
+  assert.match(ignoredAbort.grid.innerHTML, /Federal Reserve/);
+  finishLate(missing);
+  await settle();
+  assert.match(ignoredAbort.grid.innerHTML, /Federal Reserve/);
+  console.log('ok 12 - ignored abort reaches retry; late response cannot overwrite recovery');
+
+  const stalledBody = harness(async kind => kind === 'policy'
+    ? {ok: true, json: () => new Promise(() => {})} : missing,
+    callback => setImmediate(callback), null);
+  await settle();
+  assert.match(stalledBody.grid.innerHTML, /Retry policy data/);
+  console.log('ok 13 - body decoding is bounded even without AbortController');
+
+  const optionalStall = harness(async kind => kind === 'policy' ? json(valid()) : new Promise(() => {}),
+    callback => setImmediate(callback));
+  await settle();
+  assert.match(optionalStall.grid.innerHTML, /Federal Reserve/);
+  assert.doesNotMatch(optionalStall.grid.innerHTML, /Next FOMC/);
+  console.log('ok 14 - stalled optional odds feed does not hide verified rates');
 })().catch(error => {console.error(error);process.exitCode = 1;});
