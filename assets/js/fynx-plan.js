@@ -153,11 +153,20 @@
     await ready();
     if (state.owner) throw new Error('Owner access is lifetime and complimentary. No checkout is needed.');
     const back = root.location.pathname + root.location.search + root.location.hash;
-    try { root.sessionStorage.setItem('fynx.plan.return', JSON.stringify({path: back, at: Date.now()})); } catch (_) {}
-    if (!state.signedIn) { root.location.href = '/auth/signup.html?returnTo=' + encodeURIComponent('/pro.html?plan=' + tier + '#plans'); return; }
+    const rememberReturn = () => { try { root.sessionStorage.setItem('fynx.plan.return', JSON.stringify({path: back, at: Date.now()})); } catch (_) {} };
+    if (!state.signedIn) { rememberReturn(); root.location.href = '/auth/signup.html?returnTo=' + encodeURIComponent('/pro.html?plan=' + tier + '#plans'); return; }
+    // A checkout belongs to the account and verification that requested it. Firebase's
+    // currentUser can change before the auth listener updates our membership state.
+    const uid = state.uid, revision = verificationRevision;
+    const current = () => !!uid && revision === verificationRevision && state.signedIn && state.uid === uid
+      && services?.config?.auth?.currentUser?.uid === uid;
+    const accountChanged = () => new Error('Your account or membership changed. Choose your plan again to continue securely.');
+    if (!current()) throw accountChanged();
     const d = await services.call({action: 'checkout', tier, tool: 'analytics'});
+    if (!current()) throw accountChanged();
     const url = new URL(d.url);
     if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout destination.');
+    rememberReturn();
     root.location.href = url.href;
   }
 
