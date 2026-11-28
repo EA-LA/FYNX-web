@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {spawnSync} = require('node:child_process');
 const core = require('../assets/js/terminal/builder-core.js');
+const {ASSETS, ASSET_VERSIONS, VERSION} = require('./build-release-assets.cjs');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -161,13 +162,36 @@ test('an unknown private slot blanks one cell and a bad slot drops only a corrup
   }
 });
 
+function expectTerminalPin(html, asset, expected = ASSET_VERSIONS[asset]) {
+  const label = asset + ': Terminal must use its explicit release pin';
+  assert.match(expected || '', /^\d{8}-[a-z0-9-]+$/, label);
+  assert.notEqual(expected, VERSION, label);
+  assert.ok(ASSETS.includes(asset), label);
+  const origin = 'https://www.fynxfinanceworld.com';
+  const scripts = [...html.matchAll(/<script\b[^>]*\ssrc="([^"]+)"/g)]
+    .map(([, src]) => new URL(src, origin + '/terminal.html'))
+    .filter(url => url.origin === origin && url.pathname === '/' + asset);
+  assert.equal(scripts.length, 1, label);
+  assert.deepEqual(scripts[0].searchParams.getAll('v'), [expected], label);
+}
+
+test('Terminal release pins reject stale, unpinned, or duplicate script references', () => {
+  const asset = 'assets/js/terminal/app.js';
+  const pin = ASSET_VERSIONS[asset];
+  const ref = version => '<script src="/' + asset + version + '"></script>';
+  assert.doesNotThrow(() => expectTerminalPin(ref('?v=' + pin), asset));
+  for (const html of [ref('?v=older'), ref(''), ref('?v=' + pin + '&v=older'), ref('?v=' + pin).repeat(2)]) {
+    assert.throws(() => expectTerminalPin(html, asset), /explicit release pin/);
+  }
+  assert.throws(() => expectTerminalPin(ref('?v=' + VERSION), asset, VERSION), /explicit release pin/);
+});
+
 test('terminal page wires the builder without replacing desks, panels, or shortcuts', () => {
   const html = read('terminal.html');
   const app = read('assets/js/terminal/app.js');
   const pages = read('assets/js/terminal/pages.js');
   const builder = read('assets/js/terminal/builder.js');
   const rules = read('backend/rules/firestore.rules');
-  const release = read('scripts/build-release-assets.cjs');
   assert.match(html, /id="fx-build"/);
   assert.match(html, /assets\/vendor\/codemirror\/codemirror\.js\?v=20261117-builder-4/);
   assert.match(html, /assets\/vendor\/codemirror\/javascript\.js\?v=20261117-builder-4/);
@@ -178,10 +202,8 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.doesNotMatch(html, /cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net\/npm\/codemirror|unpkg\.com\/codemirror/);
   assert.ok(html.indexOf('codemirror.js') < html.indexOf('builder-core.js'));
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
-  assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261127-focus-1/);
-  assert.match(html, /assets\/js\/terminal\/pages\.js\?v=20261127-focus-1/);
-  assert.match(release, /'assets\/js\/terminal\/app\.js':'20261127-focus-1'/);
-  assert.match(release, /'assets\/js\/terminal\/pages\.js':'20261127-focus-1'/);
+  expectTerminalPin(html, 'assets/js/terminal/app.js');
+  expectTerminalPin(html, 'assets/js/terminal/pages.js');
   const buildAt = app.indexOf("verb === 'BUILD'");
   const symbolAt = app.indexOf('if (/^[A-Za-z0-9.\\-=^&]{1,24}$/.test(cmd.trim()))');
   assert.ok(buildAt > 0 && symbolAt > buildAt);
