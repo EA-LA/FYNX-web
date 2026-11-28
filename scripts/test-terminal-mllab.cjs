@@ -49,6 +49,23 @@ let fail = 0; const ok = (c, m) => { if (!c || process.env.VERBOSE) console.log(
   const agree = rg.state.filter((st, i) => st === Math.floor(rg.idx[i] / 400) % 2).length / rg.state.length;
   ok(bear.vol > bull.vol * 1.3 && agree > 0.75, `REGIME: stressed vol ${(bear.vol * 100).toFixed(0)}% > calm ${(bull.vol * 100).toFixed(0)}%; matches the planted regimes on ${(agree * 100).toFixed(0)}% of days`);
   ok(rg.trans.every((row, i) => row[i] > 0.85) && Math.abs(rg.nowP.reduce((a, b) => a + b, 0) - 1) < 1e-9, 'REGIME: sticky transitions, probabilities sum to 1');
+  ok(rg.oos.reduce((n, row) => n + row.days, 0) === rg.idx.length - Math.floor(rg.idx.length * .7) &&
+    rg.oos.reduce((n, row) => n + row.n, 0) === rg.oos.reduce((n, row) => n + row.days, 0) - 1,
+    'REGIME: held-out counts reconcile; last labeled day is not counted as having a future return');
+  const sparse = L.regimeForwardStats([0, 1, 1], [.03, NaN, undefined], 2);
+  ok(sparse[0].n === 1 && sparse[1].days === 2 && sparse[1].n === 0 && sparse.every(x => !Number.isFinite(x.nextVol)),
+    'REGIME: sparse or missing returns never look like zero volatility');
+  const holdRows = Array.from({length: 80}, (_, i) => [Math.sin(i), i < 40 ? -1 + .02 * Math.cos(i) : 1 + .02 * Math.cos(i)]);
+  const holdIdx = holdRows.map((_, i) => i), holdReturns = holdIdx.map(i => Math.sin(i) / 100);
+  const originalStandardizer = M.standardizer, originalGmm = M.gmmFit;
+  let scaled, fitted;
+  M.standardizer = rows => { scaled = rows; return originalStandardizer(rows); };
+  M.gmmFit = (rows, ...args) => { fitted = rows; return originalGmm(rows, ...args); };
+  let holdout;
+  try { holdout = L.regimeHoldout(holdRows, holdIdx, holdReturns, 2); }
+  finally { M.standardizer = originalStandardizer; M.gmmFit = originalGmm; }
+  ok(holdout.cut === 56 && scaled.length === 56 && scaled.every((row, i) => row === holdRows[i]) && fitted.length === 56,
+    'REGIME: neither standardization nor mixture fitting sees held-out observations');
   const pc = await L.pcaRun('2y');
   ok(pc.P.N === 50 && pc.P.signal <= 2 && pc.roll.length > 30, `PCA: independent walks give ${pc.P.signal} factor(s) above the noise edge`);
   const pr = await L.pairsRun(['KO', 'PEP', 'XOM', 'CVX', 'JPM', 'BAC', 'HD', 'LOW', 'V', 'MA']);
