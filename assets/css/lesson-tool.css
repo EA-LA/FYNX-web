@@ -57,3 +57,14 @@ body.dark-mode .lesson-tool-table.fm-table td.fm-gone{color:#f97066}
 @media(max-width:400px){.lesson-tool-table.cst-table th:nth-child(4),.lesson-tool-table.cst-table td:nth-child(4){display:table-cell}}
 @media(max-width:520px){.lesson-tool-table.cst-table th:nth-child(2),.lesson-tool-table.cst-table td:nth-child(2){display:none}.lesson-tool-table.cst-table tbody th{white-space:normal}}
 @media(max-width:360px){.lesson-tool-table.cst-table{font-size:12px}.lesson-tool-table.cst-table th,.lesson-tool-table.cst-table td{padding:8px 3px}}
+/* Currency exposure table (site-qa run 125): one fieldset per position. */
+.lesson-tool fieldset.bx-pos{margin:0 0 12px;padding:12px;border:1px solid var(--fynx-line,#ddd);border-radius:6px;min-width:0}
+.lesson-tool fieldset.bx-pos legend{padding:0 6px;font-size:13px;font-weight:700}
+.lesson-tool fieldset.bx-pos .lesson-tool-fields{grid-template-columns:repeat(4,minmax(0,1fr))}
+.lesson-tool-table.bx-table thead th{white-space:normal;vertical-align:bottom}
+.lesson-tool-table.bx-table td:nth-child(2){white-space:normal;text-align:left;min-width:8em}
+@media(max-width:520px){.lesson-tool-table.bx-table td:nth-child(2){min-width:5em}.lesson-tool-table.bx-table th,.lesson-tool-table.bx-table td{padding:8px 5px}}
+@media(max-width:600px){.lesson-tool fieldset.bx-pos{padding:10px 8px}.lesson-tool fieldset.bx-pos .lesson-tool-fields{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.lesson-tool-table.bx-table th:nth-child(4),.lesson-tool-table.bx-table td:nth-child(4){display:table-cell}.lesson-tool-table.bx-table th:nth-child(2),.lesson-tool-table.bx-table td:nth-child(2){display:none}}
+@media(max-width:360px){.lesson-tool fieldset.bx-pos .lesson-tool-fields{grid-template-columns:1fr 1fr}.lesson-tool-table.bx-table{font-size:12px}.lesson-tool-table.bx-table th,.lesson-tool-table.bx-table td{padding:8px 3px}}
+@media(max-width:400px){.lesson-tool fieldset.bx-pos{padding:8px 6px}.lesson-tool fieldset.bx-pos .lesson-tool-fields{gap:10px 8px}.lesson-tool fieldset.bx-pos select{padding:10px 2px 10px 8px}}
