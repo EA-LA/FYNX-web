@@ -22,6 +22,9 @@ function boot() {
       nodes.set(id, {
         value: Object.hasOwn(defaults, id) ? defaults[id] : '',
         textContent: '', innerHTML: '', className: '', listeners: {},
+        attributes: new Map(),
+        setAttribute(name, value) { this.attributes.set(name, value); },
+        removeAttribute(name) { this.attributes.delete(name); },
         addEventListener(name, handler) { (this.listeners[name] ||= []).push(handler); }
       });
     }
@@ -113,4 +116,87 @@ test('Reset restores defaults and clears calculated output', () => {
 
 test('projection updates are communicated to assistive technology', () => {
   assert.match(html, /id="summaryText"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+});
+
+
+test('delaying deposits uses the same month-by-month model without modifying the current projection', () => {
+  const { el, fire } = boot();
+  const originalRows = el('scheduleBody').innerHTML;
+  assert.equal(el('endingBalance').textContent, '$49,308.12');
+  el('depositDelayMonths').value = '12';
+  fire('depositDelayMonths', 'input');
+  assert.match(el('depositDelayResult').textContent, /\$49,308\.12 with no delay; \$41,878\.90 after skipping 12 months \(\$2,400\.00 not deposited\).*\$7,429\.22 lower/);
+  assert.equal(el('scheduleBody').innerHTML, originalRows);
+  assert.equal(el('endingBalance').textContent, '$49,308.12');
+  assert.match(html, /id="depositDelayResult"[^>]*role="status"/);
+  assert.doesNotMatch(html.match(/data-scenario-fields="[^"]+"/)[0], /depositDelayMonths/);
+});
+
+test('opening balance compounds during a delay, including a full-plan skip, and honors deposit timing', () => {
+  const { el, fire } = boot();
+  el('depositDelayMonths').value = '120';
+  fire('depositDelayMonths', 'input');
+  assert.match(el('depositDelayResult').textContent, /\$3,300\.39 after skipping 120 months \(\$24,000\.00 not deposited\)/);
+  el('depositDelayMonths').value = '12';
+  el('depositTiming').value = 'beginning';
+  fire('depositTiming', 'change');
+  assert.match(el('depositDelayResult').textContent, /Calculate a valid projection/);
+  fire('calculateBtn', 'click');
+  assert.match(el('depositDelayResult').textContent, /\$49,768\.20.*\$42,264\.69.*\$7,503\.51 lower/);
+});
+
+test('shorter projections reject out-of-range months without clearing the standard result', () => {
+  const { el, fire } = boot();
+  el('years').value = '1';
+  fire('calculateBtn', 'click');
+  for (const value of ['13','1.5','0','-2']) {
+    el('depositDelayMonths').value = value;
+    fire('depositDelayMonths', 'input');
+    assert.match(el('depositDelayResult').textContent, /1 to 12 months/);
+    assert.equal(el('depositDelayMonths').attributes.get('aria-invalid'), 'true');
+    assert.notEqual(el('endingBalance').textContent, '$0.00');
+  }
+  el('depositDelayMonths').value = '1';
+  fire('depositDelayMonths', 'input');
+  assert.equal(el('depositDelayMonths').attributes.has('aria-invalid'), false);
+  assert.match(el('depositDelayResult').textContent, /after skipping 1 month/);
+});
+
+test('0% return keeps the modeled gap equal to skipped principal; no deposits gives no comparison', () => {
+  const { el, fire } = boot();
+  el('annualRate').value = '0';
+  el('depositDelayMonths').value = '12';
+  fire('calculateBtn', 'click');
+  assert.match(el('depositDelayResult').textContent, /\$25,000\.00 with no delay; \$22,600\.00.*\$2,400\.00 lower/);
+  el('monthlyDeposit').value = '0';
+  fire('calculateBtn', 'click');
+  assert.match(el('depositDelayResult').textContent, /Set a monthly deposit above \$0/);
+});
+
+test('base validation, overflow and reset do not leave stale amounts', () => {
+  const { el, fire } = boot();
+  el('depositDelayMonths').value = '12';
+  fire('depositDelayMonths', 'input');
+  el('years').value = '0';
+  fire('calculateBtn', 'click');
+  assert.match(el('depositDelayResult').textContent, /Calculate a valid projection/);
+  el('years').value = '100';
+  el('annualRate').value = '1e100';
+  fire('calculateBtn', 'click');
+  assert.match(el('depositDelayResult').textContent, /Calculate a valid projection/);
+  fire('resetBtn', 'click');
+  assert.equal(el('depositDelayMonths').value, '');
+  assert.match(el('depositDelayResult').textContent, /Enter how many months/);
+});
+
+
+test('a negative monthly return still applies to the starting balance while deposits are skipped', () => {
+  const { el, fire } = boot();
+  el('years').value = '1';
+  el('annualRate').value = '-12'; // Monthly rate -1%; 12 months.
+  el('depositDelayMonths').value = '6';
+  fire('calculateBtn', 'click');
+  const partialEnd = 1000 * 0.99 ** 12 + 200 * (1 - 0.99 ** 6) / 0.01;
+  const us = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  assert.ok(el('depositDelayResult').textContent.includes(us.format(partialEnd) + ' after skipping 6 months'));
 });

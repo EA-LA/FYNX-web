@@ -532,6 +532,15 @@
             <ul id="goalList" class="goal-list"></ul>
             <div class="goal-note">Uses the same fixed return, compounding and deposit timing as above. Real returns and inflation vary from year to year; this is a projection, not a promise.</div>
           </div>
+          <section class="goal-box" aria-labelledby="depositDelayTitle">
+            <h3 id="depositDelayTitle">What if you start deposits later?</h3>
+            <p class="goal-note" id="depositDelayNote">Skip the first few monthly deposits, then resume the same amount for the rest of the original time frame. The starting balance follows the same assumed return throughout. This comparison is not included in the yearly schedule or scenario link.</p>
+            <div class="field">
+              <label for="depositDelayMonths">Months to skip at the start</label>
+              <input id="depositDelayMonths" type="number" min="1" max="1200" step="1" inputmode="numeric" placeholder="e.g. 12" aria-describedby="depositDelayNote">
+            </div>
+            <p id="depositDelayResult" role="status" aria-atomic="true"></p>
+          </section>
         </div>
       </div>
 
@@ -604,6 +613,8 @@
     function formatMultiple(value){
       return `${value.toFixed(2)}x`;
     }
+
+    let delayProjection = null;
 
     function calculateCompound(){
       // Invalid inputs are rejected with a message instead of being silently changed
@@ -693,7 +704,9 @@
         `Starting with ${formatCurrency(startingBalance)} and adding ${formatCurrency(monthlyDeposit)} per month at ${(annualRate * 100).toFixed(2)}% annually for ${plural(years, "year")} could grow to ${formatCurrency(endingBalance)}.`;
 
       document.getElementById("scheduleBody").innerHTML = yearRows;
-      renderGoalCheck({ startingBalance, monthlyDeposit, monthlyRateEquivalent, years, depositTiming, endingBalance, totalContributions });
+      delayProjection = { startingBalance, monthlyDeposit, monthlyRateEquivalent, years, depositTiming, endingBalance, totalContributions };
+      renderGoalCheck(delayProjection);
+      renderDepositDelay();
     }
 
     // Balance after `months` months with the same deposit timing and monthly-equivalent rate
@@ -779,7 +792,53 @@
       box.hidden = items.length === 0;
     }
 
+    function renderDepositDelay(){
+      const input = document.getElementById("depositDelayMonths");
+      const output = document.getElementById("depositDelayResult");
+      if (!input || !output) return;
+      const update = text => { if (output.textContent !== text) output.textContent = text; };
+      const raw = input.value.trim();
+      input.removeAttribute?.("aria-invalid");
+      if (raw === "" && !input.validity?.badInput) {
+        update("Enter how many months to skip to compare ending balances.");
+        return;
+      }
+      const projection = delayProjection;
+      if (!projection || ![projection.endingBalance, projection.monthlyRateEquivalent].every(Number.isFinite)) {
+        update("Calculate a valid projection before comparing delayed deposits.");
+        return;
+      }
+      const { startingBalance, monthlyDeposit, monthlyRateEquivalent, years, depositTiming, endingBalance } = projection;
+      const months = years * 12;
+      const skip = Number(raw);
+      if (!Number.isInteger(skip) || skip < 1 || skip > months) {
+        input.setAttribute?.("aria-invalid", "true");
+        update(`Enter a whole number from 1 to ${months} months for this projection.`);
+        return;
+      }
+      if (!(monthlyDeposit > 0)) {
+        update("Set a monthly deposit above $0 and calculate to compare.");
+        return;
+      }
+      const balanceBeforeDeposits = simulateBalance(startingBalance, 0, monthlyRateEquivalent, skip, depositTiming);
+      const delayedBalance = simulateBalance(balanceBeforeDeposits, monthlyDeposit, monthlyRateEquivalent, months - skip, depositTiming);
+      const skippedValue = monthlyDeposit * skip;
+      if (![delayedBalance, skippedValue].every(Number.isFinite)) {
+        update("These amounts are too large to compare.");
+        return;
+      }
+
+      const gap = Math.max(0, endingBalance - delayedBalance);
+      const difference = gap >= 0.005
+        ? `The ending balance is ${formatCurrency(gap)} lower in this model.`
+        : "The modeled difference is less than $0.01.";
+      update(`After ${plural(years, "year")}: ${formatCurrency(endingBalance)} with no delay; ${formatCurrency(delayedBalance)} after skipping ${plural(skip, "month")} (${formatCurrency(skippedValue)} not deposited). ${difference}`);
+    }
+
     document.getElementById("calculateBtn").addEventListener("click", calculateCompound);
+    const depositDelayInput = document.getElementById("depositDelayMonths");
+    depositDelayInput?.addEventListener("input", renderDepositDelay);
+    depositDelayInput?.addEventListener("change", renderDepositDelay);
 
     // Results belong to the inputs that produced them, never to edited assumptions.
     // Keep the schedule, all four metrics, and accessible summary in sync.
@@ -798,6 +857,8 @@
       document.getElementById("summaryText").textContent = message ||
         "Fill in the numbers and calculate to see the full compounding projection.";
       document.getElementById("goalBox").hidden = true;
+      delayProjection = null;
+      renderDepositDelay();
       document.getElementById("scheduleBody").innerHTML = `
         <tr>
           <td colspan="6" style="text-align:center;color:var(--muted);padding:1.4rem;">
@@ -825,6 +886,7 @@
       document.getElementById("depositTiming").value = "end";
       document.getElementById("goalAmount").value = "";
       document.getElementById("inflationRate").value = "";
+      if (depositDelayInput) depositDelayInput.value = "";
       clearCompoundResults();
     });
 
