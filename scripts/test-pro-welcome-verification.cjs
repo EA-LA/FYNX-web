@@ -12,7 +12,7 @@ async function setup({initial = {signedIn: true}, response} = {}) {
     runScripts: 'outside-only'
   });
   const w = dom.window;
-  let calls = 0;
+  let calls = 0, meter = {limit: 15, left: 12}, listener;
   w.setTimeout = fn => { fn(); return 0; };
   w.FYNXPlan = {
     ready: async () => initial,
@@ -20,11 +20,12 @@ async function setup({initial = {signedIn: true}, response} = {}) {
     NAMES: {starter: 'Essential', plus: 'Plus', pro: 'Professional'},
     PRICES: {starter: '$5.99', plus: '$10.99', pro: '$30.99'},
     PERKS: {starter: ['Six Pro tools'], plus: ['Seven Pro tools'], pro: ['Eight Pro tools']},
-    meter: () => ({limit: 15, left: 12})
+    meter: () => meter,
+    onChange: fn => { listener = fn; }
   };
   w.eval(source);
   await new Promise(resolve => setImmediate(resolve));
-  return {dom, document: w.document, calls};
+  return {dom, document: w.document, calls, emit: (state, nextMeter = meter) => { meter = nextMeter; listener(state); }};
 }
 
 test('verified existing membership shows actual tier and published rate, not a new payment receipt', async () => {
@@ -62,4 +63,36 @@ test('sign-out during verification returns to sign-in instead of polling for pay
     assert.equal(h.document.getElementById('wlWelcome').hidden, true);
     assert.equal(h.calls, 1);
   } finally { h.dom.window.close(); }
+});
+
+test('paid welcome refreshes the allowance when server usage arrives without restarting the tour', async () => {
+  const membership = {uid: 'paid-a', signedIn: true, verified: true, tier: 'starter'};
+  const h = await setup({response: membership});
+  try {
+    const d = h.document;
+    d.getElementById('wlNext').click();
+    assert.equal(d.querySelector('#wlSteps h3').textContent, 'More room in the Terminal');
+    h.emit(membership, {limit: 15, left: 4});
+    assert.equal(d.getElementById('wlToday').textContent, '4 of 15 analyses left');
+    assert.equal(d.querySelector('#wlSteps h3').textContent, 'More room in the Terminal');
+    assert.match(d.querySelector('#wlWelcome > .wl-fine').textContent, /00:00 UTC/);
+    assert.match(d.querySelector('#wlWelcome > .wl-fine').textContent, /local allowance/);
+  } finally { h.dom.window.close(); }
+});
+
+test('paid welcome hides the previous membership after account, tier, or verification changes', async () => {
+  const membership = {uid: 'paid-a', signedIn: true, verified: true, tier: 'starter'};
+  for (const next of [
+    {...membership, uid: 'paid-b'},
+    {...membership, tier: 'plus'},
+    {...membership, verified: false},
+    {uid: null, signedIn: false, verified: true, tier: 'guest'}
+  ]) {
+    const h = await setup({response: membership});
+    try {
+      h.emit(next);
+      assert.equal(h.document.getElementById('wlWelcome').hidden, true);
+      assert.equal(h.document.getElementById(next.signedIn ? 'wlPending' : 'wlGuest').hidden, false);
+    } finally { h.dom.window.close(); }
+  }
 });
