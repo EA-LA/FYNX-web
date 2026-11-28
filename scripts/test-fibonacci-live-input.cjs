@@ -9,6 +9,10 @@ function element(initialValue = '') {
   const callbacks = new Map();
   return {
     value: initialValue, textContent: '', hidden: false, children: [],
+    validity: {},
+    attributes: new Map(),
+    setAttribute(name, value) { this.attributes.set(name, value); },
+    removeAttribute(name) { this.attributes.delete(name); },
     get valueAsNumber() { return this.value.trim() === '' ? NaN : Number(this.value); },
     addEventListener(event, callback) {
       if (!callbacks.has(event)) callbacks.set(event, []);
@@ -77,4 +81,43 @@ equals(get('fibLevels').children[0].children[2].textContent, '1.10708', 'Precisi
 get('resetBtn').fire('click');
 equals(get('rangeValue').textContent, '0.0200', 'Reset computes original sample');
 equals(get('entryPrice').value, '1.1124', 'Reset restores original entry');
+
+// The optional custom ratio is independent of the base table and optional entry/stop.
+const custom = get('customPullback');
+const customResult = get('customPullbackResult');
+const baseRows = get('fibLevels').children;
+equals(customResult.textContent, '', 'Blank custom ratio has no result');
+custom.value = '70.5';
+custom.fire('input');
+equals(customResult.textContent, '70.5% pullback: 1.1059', 'Custom ratio updates without Calculate');
+equals(get('fibLevels').children, baseRows, 'Custom ratio does not rebuild the standard rows');
+custom.value = '100.001';
+custom.fire('input');
+equals(custom.attributes.get('aria-invalid'), 'true', 'Out of range custom input is called out');
+equals(get('fibError').hidden, true, 'Invalid custom field does not invalidate standard values');
+custom.value = '50.0001';
+custom.fire('input');
+equals(custom.attributes.get('aria-invalid'), 'true', 'Over-precise custom input is called out');
+custom.value = '80.125';
+custom.fire('input');
+equals(custom.attributes.has('aria-invalid'), false, 'Valid custom input clears the error');
+equals(customResult.textContent, '80.125% pullback: 1.1040', 'Custom result recovers');
+get('trendDirection').value = 'down';
+get('trendDirection').fire('change');
+equals(customResult.textContent, '80.125% pullback: 1.1160', 'Custom uses a downtrend');
+get('pricePrecision').value = '5';
+get('pricePrecision').fire('change');
+equals(customResult.textContent, '80.125% pullback: 1.11603', 'Custom follows price precision');
+get('entryPrice').value = '-1';
+get('entryPrice').fire('input');
+equals(customResult.textContent, '80.125% pullback: 1.11603', 'Custom remains independent of entry');
+get('swingLow').value = '1.12';
+get('swingLow').fire('input');
+equals(customResult.textContent, 'Enter a positive swing low and a swing high greater than the low.', 'Bad swing clears stale custom price');
+get('resetBtn').fire('click');
+equals(custom.value, '', 'Reset clears custom input');
+equals(customResult.textContent, '', 'Reset clears custom price');
+const html = fs.readFileSync(path.join(__dirname, '../tools/fibonacci.html'), 'utf8');
+assert.match(html, /fibonacci-calculator\.js\?v=20261128-custom-pullback-1/);
+assert.doesNotMatch(html.match(/data-scenario-fields="[^"]+"/)[0], /customPullback/);
 console.log('Fibonacci live input: ' + checks + ' browser-controller assertions passed.');

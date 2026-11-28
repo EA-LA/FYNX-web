@@ -1,14 +1,29 @@
 /* Two-point Fibonacci levels. All calculations run locally. */
 (function () {
-  function calculate({ high, low, direction = 'up', entry = null }) {
+  function checkSwing(high, low, direction) {
     if (!Number.isFinite(high) || !Number.isFinite(low) || low <= 0 || high <= low) {
       throw new Error('Enter a positive swing low and a swing high greater than the low.');
     }
     if (!['up', 'down'].includes(direction)) throw new Error('Choose an uptrend or downtrend.');
+  }
+  function retracementPrice(high, low, direction, ratio) {
+    const end = direction === 'up' ? high : low;
+    const start = direction === 'up' ? low : high;
+    if (ratio === 0) return end;
+    if (ratio === 1) return start;
+    return end + (start - end) * ratio;
+  }
+  function customPullbackPrice({ high, low, direction = 'up', percent }) {
+    checkSwing(high, low, direction);
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new Error('Choose a percentage from 0 to 100.');
+    return retracementPrice(high, low, direction, percent / 100);
+  }
+  function calculate({ high, low, direction = 'up', entry = null }) {
+    checkSwing(high, low, direction);
     if (entry !== null && (!Number.isFinite(entry) || entry <= 0)) throw new Error('Enter a positive entry price, or leave it blank.');
     const range = high - low;
     const retracements = [0.236, 0.382, 0.5, 0.618, 0.786].map(ratio => ({
-      ratio, price: direction === 'up' ? high - range * ratio : low + range * ratio,
+      ratio, price: retracementPrice(high, low, direction, ratio),
     }));
     const extensions = [1.272, 1.618, 2].map(ratio => ({
       ratio, price: direction === 'up' ? low + range * ratio : high - range * ratio,
@@ -64,10 +79,35 @@
     if (zone.kind === 'between') for (const level of [zone.shallow, zone.deep]) if (inTable(level)) marks.set(level.ratio, 'Entry zone');
     return marks;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { calculate, plan, entryMarks };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { calculate, plan, entryMarks, customPullbackPrice };
   if (typeof document === 'undefined') return;
   const el = id => document.getElementById(id);
+  function renderCustom() {
+    const input = el('customPullback');
+    const output = el('customPullbackResult');
+    if (!input || !output) return;
+    const percent = input.valueAsNumber;
+    let text = '';
+    let invalid = false;
+    if (input.value !== '' || input.validity?.badInput) {
+      invalid = !Number.isFinite(percent) || percent < 0 || percent > 100 || percent !== Number(percent.toFixed(3));
+      if (invalid) {
+        text = 'Enter a pullback from 0 to 100%, with up to 3 decimal places.';
+      } else {
+        try {
+          const price = customPullbackPrice({ high: el('swingHigh').valueAsNumber, low: el('swingLow').valueAsNumber, direction: el('trendDirection').value, percent });
+          text = `${percent}% pullback: ${price.toFixed(Number(el('pricePrecision').value))}`;
+        } catch (error) {
+          text = error.message;
+        }
+      }
+    }
+    if (invalid) input.setAttribute('aria-invalid', 'true');
+    else input.removeAttribute('aria-invalid');
+    if (output.textContent !== text) output.textContent = text;
+  }
   function render() {
+    renderCustom();
     try {
       const rawEntry = el('entryPrice').value.trim();
       const result = calculate({ high: el('swingHigh').valueAsNumber, low: el('swingLow').valueAsNumber, direction: el('trendDirection').value, entry: rawEntry === '' ? null : el('entryPrice').valueAsNumber });
@@ -160,8 +200,11 @@
   el('calculateBtn').addEventListener('click', render);
   el('resetBtn').addEventListener('click', () => {
     for (const [id, value] of Object.entries({ swingHigh: '1.1200', swingLow: '1.1000', entryPrice: '1.1124', stopPrice: '', trendDirection: 'up', pricePrecision: '4' })) el(id).value = value;
+    const custom = el('customPullback');
+    if (custom) custom.value = '';
     render();
   });
+  for (const event of ['input', 'change']) el('customPullback')?.addEventListener(event, renderCustom);
   // Number inputs emit `input` before blur (including on iPhone); keep visible levels in sync.
   // `change` is retained for dropdowns and keyboard behavior.
   for (const id of ['swingHigh', 'swingLow', 'entryPrice', 'stopPrice']) el(id).addEventListener('input', render);
