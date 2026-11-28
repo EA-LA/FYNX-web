@@ -77,3 +77,12 @@ body.dark-mode .lesson-tool-table.fm-table td.fm-gone{color:#f97066}
 @media(max-width:360px){.lesson-tool-table.vs-table{font-size:12px}.lesson-tool-table.vs-table th,.lesson-tool-table.vs-table td{padding:8px 3px}}
 #vsBox label[for="vsKind"]{grid-column:span 2}
 @media(max-width:380px){#vsBox label[for="vsKind"]{grid-column:auto}}
+/* Core-satellite drift and overlap check (site-qa run 127): one fieldset per fund; keep Drift and To rebalance on SE. */
+.lesson-tool fieldset.cs-fund{margin:12px 0 0;padding:12px;border:1px solid var(--fynx-line,#ddd);border-radius:6px;min-width:0}
+.lesson-tool fieldset.cs-fund legend{padding:0 6px;font-size:14px;font-weight:700}
+.lesson-tool .cs-band{grid-template-columns:minmax(0,320px)}
+.lesson-tool-table.cs-table thead th{white-space:normal;vertical-align:bottom}
+.lesson-tool-table.cs-table tbody th{white-space:normal;min-width:6em}
+@media(max-width:400px){.lesson-tool-table.cs-table th:nth-child(4),.lesson-tool-table.cs-table td:nth-child(4){display:table-cell}.lesson-tool fieldset.cs-fund{padding:8px 6px}}
+@media(max-width:520px){.lesson-tool-table.cs-table th:nth-child(2),.lesson-tool-table.cs-table td:nth-child(2){display:none}.lesson-tool-table.cs-table td:last-child{white-space:normal;min-width:5.5em}}
+@media(max-width:360px){.lesson-tool-table.cs-table{font-size:12px}.lesson-tool-table.cs-table th,.lesson-tool-table.cs-table td{padding:8px 3px}.lesson-tool-table.cs-table tbody th{min-width:4.5em}.lesson-tool-table.cs-table td:last-child{min-width:0}.lesson-tool-table.cs-table td:nth-child(4){white-space:normal}}
