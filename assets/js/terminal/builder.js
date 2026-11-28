@@ -371,10 +371,18 @@
       const root = document.createElement('div');
       root.className = 'fxb';
       host.append(root);
+      const paneWidths = {
+        side: {variable: '--fxb-side', fallback: 260, min: 200, max: 520, legacyMin: 180, id: 'fxb-projects-pane'},
+        preview: {variable: '--fxb-preview', fallback: 380, min: 260, max: 700, legacyMin: 220, id: 'fxb-preview-pane'}
+      };
+      const clampWidth = (spec, width) => Math.max(spec.min, Math.min(spec.max, Math.round(width)));
+      const paneWidth = spec => parseInt(root.style.getPropertyValue(spec.variable), 10) || spec.fallback;
       try {
         const panes = JSON.parse(localStorage.getItem('fx-term-builder-panes') || 'null');
-        if (panes && Number(panes.side) >= 180) root.style.setProperty('--fxb-side', Math.min(520, Number(panes.side)) + 'px');
-        if (panes && Number(panes.preview) >= 220) root.style.setProperty('--fxb-preview', Math.min(640, Number(panes.preview)) + 'px');
+        for (const [name, spec] of Object.entries(paneWidths)) {
+          const saved = Number(panes?.[name]);
+          if (Number.isFinite(saved) && saved >= spec.legacyMin) root.style.setProperty(spec.variable, clampWidth(spec, saved) + 'px');
+        }
       } catch (e) {}
 
       let currentId = null;
@@ -571,32 +579,60 @@
         paragraph.textContent = text;
         preview.append(paragraph);
       }
-      function bindSplit(handle, variable, fallback, invert, min, max) {
+      function bindSplit(handle, name) {
         if (!handle) return;
+        const spec = paneWidths[name], direction = name === 'preview' ? -1 : 1;
+        const compact = () => window.matchMedia?.('(max-width: 1100px)')?.matches ?? (window.innerWidth <= 1100);
+        const announceWidth = width => {
+          handle.setAttribute('aria-valuenow', String(width));
+          handle.setAttribute('aria-valuetext', width + ' pixels');
+        };
+        const setWidth = value => {
+          const width = clampWidth(spec, value);
+          root.style.setProperty(spec.variable, width + 'px');
+          announceWidth(width);
+        };
+        function finishResize() {
+          if (cm) cm.refresh();
+          try {
+            localStorage.setItem('fx-term-builder-panes', JSON.stringify({side: paneWidth(paneWidths.side), preview: paneWidth(paneWidths.preview)}));
+          } catch (e) {}
+        }
+        handle.setAttribute('aria-controls', spec.id);
+        handle.setAttribute('aria-valuemin', String(spec.min));
+        handle.setAttribute('aria-valuemax', String(spec.max));
+        announceWidth(paneWidth(spec));
+        handle.addEventListener('keydown', event => {
+          if (compact() || event.altKey || event.ctrlKey || event.metaKey) return;
+          let width = paneWidth(spec);
+          if (event.key === 'ArrowLeft') width -= 20 * direction;
+          else if (event.key === 'ArrowRight') width += 20 * direction;
+          else if (event.key === 'Home') width = spec.min;
+          else if (event.key === 'End') width = spec.max;
+          else return;
+          event.preventDefault();
+          setWidth(width);
+          finishResize();
+        });
         handle.addEventListener('pointerdown', event => {
-          if (window.matchMedia('(max-width: 1100px)').matches) return;
+          if (compact() || event.button !== 0) return;
           event.preventDefault();
           try { handle.setPointerCapture(event.pointerId); } catch (e) {}
-          const startX = event.clientX;
-          const current = parseInt(root.style.getPropertyValue(variable), 10) || fallback;
+          const startX = event.clientX, current = paneWidth(spec);
           function move(ev) {
-            const dx = ev.clientX - startX;
-            const next = Math.max(min, Math.min(max, current + (invert ? -dx : dx)));
-            root.style.setProperty(variable, next + 'px');
+            if (ev.pointerId === event.pointerId) setWidth(current + direction * (ev.clientX - startX));
           }
           function up(ev) {
+            if (ev.pointerId !== event.pointerId) return;
             handle.removeEventListener('pointermove', move);
             handle.removeEventListener('pointerup', up);
+            handle.removeEventListener('pointercancel', up);
             try { handle.releasePointerCapture(ev.pointerId); } catch (e) {}
-            if (cm) cm.refresh();
-            try {
-              const side = parseInt(root.style.getPropertyValue('--fxb-side'), 10) || 260;
-              const preview = parseInt(root.style.getPropertyValue('--fxb-preview'), 10) || 380;
-              localStorage.setItem('fx-term-builder-panes', JSON.stringify({side, preview}));
-            } catch (e) {}
+            finishResize();
           }
           handle.addEventListener('pointermove', move);
           handle.addEventListener('pointerup', up);
+          handle.addEventListener('pointercancel', up);
         });
       }
 
@@ -1219,6 +1255,7 @@
       function fillSide(side) {
         side.replaceChildren();
         const scroll = el('div', 'fxb-side-scroll');
+        scroll.id = paneWidths.side.id;
         const head = el('div', 'fxb-side-head');
         head.append(el('h2', '', 'Projects'));
         const count = el('span', 'fxb-count', '');
@@ -1275,7 +1312,7 @@
         split.setAttribute('aria-label', 'Resize projects');
         split.tabIndex = 0;
         side.append(split);
-        bindSplit(split, '--fxb-side', 260, false, 200, 520);
+        bindSplit(split, 'side');
         rebuildList();
       }
       let paneTab = pageMemory.uid === state.uid ? pageMemory.tab : 'preview';
@@ -1403,6 +1440,7 @@
         editor.append(log);
 
         const preview = el('section', 'fxb-preview');
+        preview.id = paneWidths.preview.id;
         const split = el('div', 'fxb-split');
         split.setAttribute('data-fxb-split', 'preview');
         split.setAttribute('role', 'separator');
@@ -1509,7 +1547,7 @@
         gPane.append(el('h2', '', 'Shortcuts'));
         gPane.append(el('p', 'fxb-note', 'Ctrl/Cmd+Enter run · Ctrl/Cmd+S save · Ctrl/Cmd+F find · Ctrl/Cmd+H replace · Tab indent'));
         preview.append(pPane, vPane, gPane);
-        bindSplit(split, '--fxb-preview', 380, true, 260, 700);
+        bindSplit(split, 'preview');
 
         root.append(bar, side, editor, preview);
         if (onboardingOpen) {
