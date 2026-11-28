@@ -51,7 +51,17 @@ function csv(trades){
 function run(product,d={},trades=[]){
  if(product==='analytics')return analytics(trades);
  if(product==='export')return csv(trades);
- if(product==='risk'){const result=risk(d);return {...result,breakEvenWinRate:breakEvenWinRate(result.rewardRisk),notice:result.notice+' '+breakEvenNotice};}
+ if(product==='risk'){
+  const result=risk(d);
+  // The risk calculation above validates these exact inputs and their orientation.
+  const entry=Number(d.entry),stop=Number(d.stop),target=Number(d.target);
+  const move=price=>{
+   const percent=(price-entry)/entry*100,rounded=Number(percent.toFixed(3));
+   if(!rounded)return '<0.001% '+(percent<0?'down':'up');
+   return (rounded>0?'+':'')+rounded+'%';
+  };
+  return {...result,tradeDirection:target>entry?'Long':'Short',stopMoveFromEntry:move(stop),targetMoveFromEntry:move(target),breakEvenWinRate:breakEvenWinRate(result.rewardRisk),notice:result.notice+' '+breakEvenNotice+' Stop and target moves are signed price changes from entry, not changes in account equity.'};
+ }
  if(product==='scenarios'){
   const base=risk(d),multipliers=[0.5,1,1.5,2];
   // base validates the decimal input before checking which requested multipliers exceed the cap.
