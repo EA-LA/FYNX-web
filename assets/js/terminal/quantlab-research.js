@@ -574,6 +574,44 @@
     r.fdefs.forEach((f, i) => { const tr = el('tr'), c = el('td'); c.append(betaBar(r.b[i])); const name = el('td', '', f[0]); if (r.flags[i]) name.style.color = '#ff5a4f'; tr.append(name, el('td', '', num(r.b[i])), c, el('td', '', num(r.fit.t[i + 1], 1))); t.append(tr); });
     w.append(t);
   }
+  function rollingBetaSummary(windows, index) {
+    let low = null, high = null, latest = null, n = 0, pos = 0, neg = 0;
+    for (const row of windows) {
+      const value = row.b?.[index];
+      if (!finite(value)) continue;
+      const point = {value, date: row.date};
+      latest = point; n++;
+      if (value > 0) pos++;
+      else if (value < 0) neg++;
+      if (!low || value < low.value) low = point;
+      if (!high || value > high.value) high = point;
+    }
+    return n ? {low, high, latest, n, bothSigns: Boolean(pos && neg)} : null;
+  }
+  function rollingBetaCard(r) {
+    const scroll = el('div'); scroll.style.overflowX = 'auto';
+    const t = el('table', 'fx-ql-tbl'), head = el('thead'), h = el('tr'), body = el('tbody');
+    t.setAttribute('aria-label', 'Rolling factor beta ranges');
+    for (const caption of ['Factor', 'Latest window', 'Lowest window', 'Highest window', 'Sign coverage', 'Windows']) {
+      const th = el('th', '', caption); th.scope = 'col'; h.append(th);
+    }
+    head.append(h); t.append(head, body); scroll.append(t);
+    const fmt = p => `${num(p.value, 3)} · ${p.date || '—'}`;
+    for (const [i, f] of r.fdefs.entries()) {
+      const item = rollingBetaSummary(r.roll, i);
+      const tr = el('tr'), key = el('th', '', `${f[0]} · ${f[1]}`); key.scope = 'row'; tr.append(key);
+      if (item) {
+        const sign = item.bothSigns ? 'Both signs' : item.low.value === 0 && item.high.value === 0 ? 'Zero only' : item.high.value > 0 ? 'Nonnegative' : 'Nonpositive';
+        tr.append(el('td', '', fmt(item.latest)), el('td', '', fmt(item.low)), el('td', '', fmt(item.high)),
+          el('td', '', sign), el('td', '', String(item.n)));
+      } else {
+        const td = el('td', '', 'No usable rolling windows'); td.colSpan = 5; tr.append(td);
+      }
+      body.append(tr);
+    }
+    return card('ROLLING EXPOSURE RANGE · ALL FACTORS', scroll,
+      note('Each date is the end of a 63-trading-day window. The lowest and highest estimates show how exposure varied. Windows overlap, and both signs do not imply a statistically significant reversal.'));
+  }
   async function renderFactorPage(host) {
     PG.setHead('FACTOR', 'Factor neutrality check', 'Is this portfolio secretly a market, size, value, rates or credit bet? Fama–French style regression on real daily returns');
     const wrap = el('div', 'fx-ql fx-ql-page'); host.append(wrap);
@@ -609,7 +647,7 @@
     out.append(tc);
     const rb = chartBox(260), hb = chartBox(Math.max(140, 30 * r.per.length + 30));
     two.append(card('ROLLING 63-DAY BETAS', rb, note('How the exposures drifted. A strategy that is neutral on average can still swing between bets.')), card('EXPOSURE OF EACH HOLDING', hb, note('Betas of each holding on the same factors. Green = positive, red = negative. Hover for values.')));
-    out.append(two);
+    out.append(two, rollingBetaCard(r));
     out.append(card('METHOD', ...['Daily simple returns on S&P 500 trading days (Yahoo Finance adjusted closes). The portfolio return is the weighted sum of holdings, rebalanced daily. Shorts use negative weights.', 'Factors are long–short ETF proxies for the academic factors: ' + r.fdefs.map(f => `${f[0]} = ${f[2][0]} − ${f[2][1]}`).join(', ') + '. They track, but are not identical to, the Fama–French data library series.', 'Regression: r(p) = α + Σ β·factor + ε, ordinary least squares with Newey–West standard errors (5 lags) to allow for autocorrelation and changing volatility. Share of variance = β·Cov(factors)·β / Var(portfolio) for each factor.', 'Reference: Fama & French, “Common risk factors in the returns on stocks and bonds”, Journal of Financial Economics (1993).'].map(note)));
     requestAnimationFrame(() => {
       const order = r.fdefs.map((f, i) => i).sort((a, b) => Math.abs(r.b[b]) - Math.abs(r.b[a])).slice(0, 4), colors = ['#ffb000', '#5b8def', '#3ecf8e', '#c77dff'];
@@ -736,5 +774,5 @@
     T.PAGE_NAMES.push('VCLUST', 'GARCH', 'ISEAS', 'SEASONALITY', 'FACTOR', 'RMOM', 'MOMENTUM');
   }
   if (T.DESK_DEFS?.quant) Object.assign(T.DESK_DEFS.quant, {slots: ['oflow', 'panic', 'mcvar', 'vclust', 'iseas', 'factor', 'rmom'], grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s4 s5 s5', 's6 s6 s6 s7 s7 s7']}});
-  T.QuantResearch = {acf, garch, weekdayHourRows, fittedBandCoverage, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
+  T.QuantResearch = {acf, garch, rollingBetaSummary, weekdayHourRows, fittedBandCoverage, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
 });
