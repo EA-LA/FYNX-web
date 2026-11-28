@@ -202,3 +202,22 @@ test('search accepts mixed case and extra spaces within a platform name', () => 
   assert.equal(app.location.hash, '#brokers');
   assert.equal(app.elements.partnerResultCount.textContent, '1 platform');
 });
+
+test('multiword searches match across platform name, category and description in any order', () => {
+  const app = setup();
+  for (const query of ['forex broker', 'broker forex', 'IC Markets CFD', 'journal Tradezella', 'FTMO evaluation']) {
+    app.elements.partnerSearch.value = query;
+    app.elements.partnerSearch.dispatch('input');
+    const expected = query.includes('Tradezella') ? 2 : query.includes('FTMO') ? 0 : 1;
+    assert.deepEqual(app.cards.map(card => !card.hidden), app.cards.map((_, i) => i === expected));
+  }
+});
+test('multiword search still requires every word, respects category and excludes disclosures', () => {
+  const app = setup({ hash: '#funded' });
+  for (const query of ['forex broker', 'FTMO commission', 'FTMO nonexistent']) {
+    app.elements.partnerSearch.value = query;
+    app.elements.partnerSearch.dispatch('input');
+    assert.equal(app.elements.partnerEmpty.hidden, false);
+    assert.equal(app.elements.partnerResultCount.textContent, '0 platforms found');
+  }
+});
