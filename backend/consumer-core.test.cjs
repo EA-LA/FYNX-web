@@ -361,7 +361,7 @@ test('watchlist keeps its existing validation limit and skips no entries for an 
  assert.doesNotMatch(result.notice,/Repeated symbols/);
  const max=run('watchlist',{symbols:Array(30).fill('META')});
  assert.equal(max.duplicateEntriesSkipped,29);
- assert.throws(()=>run('watchlist',{symbols:Array(31).fill('META')}),/Add 1–30 symbols/);
+ assert.throws(()=>run('watchlist',{symbols:Array(31).fill('META')}),/at most 30 symbol entries before duplicates are removed/);
  assert.throws(()=>run('watchlist',{symbols:['AAPL','  ']}),/Enter a valid name/);
 });
 
@@ -382,4 +382,15 @@ test('paid Risk Planner retains up or down for moves below displayed precision',
  const gross=run('risk',{balance:10000,riskPct:1,entry:100,stop:99.99995,target:100.0001,multiplier:1,rate:1});
  assert.equal(gross.stopMoveFromEntry,'<0.001% down');
  assert.equal(gross.targetMoveFromEntry,'<0.001% up');
+});
+
+test('paid Watchlist explains that repeated pasted entries count toward the existing limit',()=>{
+ const note='Keep these research notes';
+ const entries=Array.from({length:29},(_,i)=>'Q'+i).concat(' q0 ','Q1');
+ assert.throws(()=>run('watchlist',{symbols:entries,notes:note}),/at most 30 symbol entries before duplicates are removed/);
+ const result=run('watchlist',{symbols:entries.slice(0,-1),notes:note});
+ assert.equal(result.uniqueSymbols,29);
+ assert.equal(result.duplicateEntriesSkipped,1);
+ assert.equal(result.notes,note);
+ assert.throws(()=>run('watchlist',{symbols:[]}),/Add 1–30 symbols/);
 });
