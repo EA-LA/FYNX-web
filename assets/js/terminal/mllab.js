@@ -198,6 +198,22 @@
   /* ======================================== VOLML: volatility forecast ======================================== */
   const VV = loadState('volml', {sym: 'SPY', H: 5}, (k, v) => k === 'sym' ? SYM_RE.test(v) : [5, 10, 22].includes(v));
   const saveV = saver('volml', VV);
+  function gbmHeldoutBias(X, y, idx, H, end, options) {
+    const hold = Math.max(0, end - 252), firstOrigin = idx[hold];
+    let fitEnd = hold;
+    // The label at origin i needs returns i+1 through i+H. At the first
+    // calibration close, only train on labels ending at or before that close.
+    // idx is the original bar position, not the row number after feature filtering.
+    while (fitEnd > 0 && idx[fitEnd - 1] + H > firstOrigin) fitEnd--;
+    if (fitEnd < 2 * options.minLeaf || end - hold <= 30) return 0;
+    const fit = ML.gbmFit(X.slice(0, fitEnd), y.slice(0, fitEnd), options);
+    const residuals = [];
+    for (let k = hold; k < end; k++) {
+      const error = y[k] - fit.predict(X[k]);
+      if (finite(error)) residuals.push(error);
+    }
+    return residuals.length > 30 ? mean(residuals) + sd(residuals) ** 2 : 0;
+  }
   async function volmlRun(sym, H) {
     const B = await dailyBars(sym, 1300), r = returns(B.c), N = r.length, ann = Math.sqrt(252), eps = 1e-4;
     const rv = n => rollRms(r, n), rv5 = rv(5), rv22 = rv(22), rv66 = rv(66), park = B.h.map((h, i) => Math.log(h / B.l[i]) / (2 * Math.sqrt(Math.log(2)))), park5 = smaA(park, 5);
@@ -208,6 +224,7 @@
       if (!f.every(finite) || !finite(target)) continue; X.push(f); Xh.push(f.slice(0, 3)); y.push(target); naive.push(f[2]); idx.push(i);
     }
     const n = y.length, start = Math.max(750, Math.floor(n * 0.4)), step = 252, P = {naive: new Float64Array(n).fill(NaN), garch: new Float64Array(n).fill(NaN), har: new Float64Array(n).fill(NaN), gbm: new Float64Array(n).fill(NaN)};
+    if (n <= start) throw new Error('Not enough complete observations for a walk-forward volatility test.');
     // A model of log volatility forecasts its median. Variance is what QLIKE and risk need, so shift each forecast by
     // the mean error plus the error variance measured on the training years (Jensen's inequality for a log-normal).
     const GBP = {rounds: 60, depth: 3, lr: 0.06, minLeaf: 50, seed: 3};
@@ -221,10 +238,10 @@
       const G = garchPath({...fit, mean: fit.mean}, N - 1);
       const har = ols(y.slice(0, t0 - H), [0, 1, 2].map(j => Xh.slice(0, t0 - H).map(row => row[j])), 0);
       const gb = ML.gbmFit(X.slice(0, t0 - H), y.slice(0, t0 - H), GBP);
-      // boosting fits its training data closely, so its bias is measured on the last training year held out
-      const hold = t0 - H - 252, gbv = ML.gbmFit(X.slice(0, hold), y.slice(0, hold), GBP), eV = []; for (let k = hold; k < t0 - H; k++) eV.push(y[k] - gbv.predict(X[k]));
+      // Estimate the correction on a held-out year without overlapping its first target.
+      const bG = gbmHeldoutBias(X, y, idx, H, t0 - H, GBP);
       const harF = row => har.beta[0] + har.beta[1] * row[0] + har.beta[2] * row[1] + har.beta[3] * row[2];
-      const bH = har ? biasOf(y, Xh, harF, t0 - H) : 0, bG = mean(eV) + sd(eV) ** 2, bN = biasOf(y, naive.map(v => [v]), row => row[0], t0 - H);
+      const bH = har ? biasOf(y, Xh, harF, t0 - H) : 0, bN = biasOf(y, naive.map(v => [v]), row => row[0], t0 - H);
       for (let k = t0; k < end; k++) { P.garch[k] = garchFc(G, idx[k]); P.har[k] = har ? harF(Xh[k]) + bH : naive[k] + bN; P.gbm[k] = gb.predict(X[k]) + bG; P.naive[k] = naive[k] + bN; }
       await tick();
     }
@@ -234,8 +251,8 @@
     const dm = (a, b) => { const d = M[a].sq.map((v, i) => v - M[b].sq[i]), o = ols(d, [], H); return o ? {t: o.t[0], p: 2 * (1 - ML.ncdf(Math.abs(o.t[0])))} : {t: NaN, p: NaN}; };
     // forecasts for the next H days, fitted on everything
     const fitAll = garch(Array.from(r.slice(1))), Gall = garchPath(fitAll, N - 1), lastRow = [L(park[N - 1]), L(rv5[N - 1]), L(rv22[N - 1]), L(rv66[N - 1]), L(park5[N - 1]), Math.log(B.c[N - 1] / B.c[N - 6]), Math.log(B.c[N - 1] / B.c[N - 23])];
-    const harAll = ols(y, [0, 1, 2].map(j => Xh.map(row => row[j])), 0), gbAll = ML.gbmFit(X, y, GBP), gbHold = ML.gbmFit(X.slice(0, n - 252), y.slice(0, n - 252), GBP), eAll = y.slice(n - 252).map((v, k) => v - gbHold.predict(X[n - 252 + k])), harF = row => harAll.beta[0] + harAll.beta[1] * row[0] + harAll.beta[2] * row[1] + harAll.beta[3] * row[2];
-    const now = {naive: Math.exp(lastRow[2] + biasOf(y, naive.map(v => [v]), row => row[0], n)), garch: Math.exp(garchFc(Gall, N - 1)), har: Math.exp(harAll ? harF(lastRow) + biasOf(y, Xh, harF, n) : lastRow[2]), gbm: Math.exp(gbAll.predict(lastRow) + mean(eAll) + sd(eAll) ** 2)};
+    const harAll = ols(y, [0, 1, 2].map(j => Xh.map(row => row[j])), 0), gbAll = ML.gbmFit(X, y, GBP), harF = row => harAll.beta[0] + harAll.beta[1] * row[0] + harAll.beta[2] * row[1] + harAll.beta[3] * row[2];
+    const now = {naive: Math.exp(lastRow[2] + biasOf(y, naive.map(v => [v]), row => row[0], n)), garch: Math.exp(garchFc(Gall, N - 1)), har: Math.exp(harAll ? harF(lastRow) + biasOf(y, Xh, harF, n) : lastRow[2]), gbm: Math.exp(gbAll.predict(lastRow) + gbmHeldoutBias(X, y, idx, H, n, GBP))};
     return {B, H, n, start, test, y, naive, P, M, dm: {gbmNaive: dm('gbm', 'naive'), gbmHar: dm('gbm', 'har'), garchNaive: dm('garch', 'naive')}, now, idx, garchFit: lastFit, longRun: Math.sqrt(fitAll.omega / (1 - fitAll.alpha - fitAll.beta)) / 100 * ann};
   }
   const volmlGet = () => cached(['volml', VV.sym, VV.H].join('|'), () => volmlRun(VV.sym, VV.H));
@@ -265,7 +282,7 @@
     out.append(card(`LAST 500 TEST DAYS · REALISED ${r.H}-DAY VOLATILITY (WHITE) VS FORECASTS`, cb));
     two.append(card('OUT-OF-SAMPLE QLIKE BY MODEL (LOWER IS BETTER)', bb), card('SCORECARD', table(['Model', 'QLIKE', 'RMSE (log vol)', 'Forecast now'], order.map(k => [VNAMES[k][0], num(r.M[k].qlike, 3), num(r.M[k].rmse, 3), pct(r.now[k], 1)]), (i, j) => i === 0 && j === 1 ? GREEN : null), note('QLIKE punishes under-forecasting volatility more than over-forecasting, which matches how risk managers are hurt.')));
     out.append(two);
-    out.append(card('HOW IT WORKS', ...[`Target: realised volatility over the next ${r.H} trading days (root mean square of daily returns, annualised), in logs.`, 'Naive: the last 22 days’ volatility. GARCH(1,1): fitted by maximum likelihood on data before each test year, then filtered forward. HAR: a regression on 1-, 5- and 22-day volatility (Corsi 2009). Gradient boosting: 60 depth-3 trees on 1/5/22/66-day volatility, the Parkinson high-low range and 5/22-day returns (the leverage effect).', 'Walk-forward: every model is refitted once a year using only data available then. Models of log volatility are shifted by their error variance (measured on held-out training data for boosting) so they forecast variance, not its median. Diebold–Mariano tests compare squared errors with overlap-robust (Newey–West) standard errors; a negative t means the first model was more accurate.', 'Delayed Yahoo Finance data. Not advice.'].map(note)));
+    out.append(card('HOW IT WORKS', ...[`Target: realised volatility over the next ${r.H} trading days (root mean square of daily returns, annualised), in logs.`, 'Naive: the last 22 days’ volatility. GARCH(1,1): fitted by maximum likelihood on data before each test year, then filtered forward. HAR: a regression on 1-, 5- and 22-day volatility (Corsi 2009). Gradient boosting: 60 depth-3 trees on 1/5/22/66-day volatility, the Parkinson high-low range and 5/22-day returns (the leverage effect).', 'Walk-forward: every model is refitted once a year using only data available then. The boosting adjustment uses a held-out year whose forward returns do not overlap the helper model’s training labels. Without enough complete observations, the adjustment is omitted. Models of log volatility are shifted by their errors to target variance rather than its median. Diebold–Mariano tests compare squared errors with overlap-robust (Newey–West) standard errors; a negative t means the first model was more accurate.', 'Delayed Yahoo Finance data. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       const last = r.test.slice(-500), ex = v => Math.exp(v);
       lineChart(cb, {series: [{v: last.map(k => ex(r.y[k])), color: '#e8ecea', width: 1, name: 'Realised'}, ...['naive', 'garch', 'har', 'gbm'].map(m => ({v: last.map(k => ex(r.P[m][k])), color: VNAMES[m][1], width: 1.4, name: VNAMES[m][0].split(' (')[0]}))], xs: last.map(k => r.B.day[r.idx[k]]), yfmt: v => (v * 100).toFixed(0) + '%', aria: 'Realised volatility vs forecasts'});
@@ -646,5 +663,5 @@
       grid: {cols: '1fr 1fr 1fr', areas: ['s1 s2 s3', 's4 s5 s6']}};
     const si = T.DESK_ORDER.indexOf('strategy'), qi = T.DESK_ORDER.indexOf('quant'), at = si >= 0 ? si + 1 : qi >= 0 ? qi + 1 : 1; T.DESK_ORDER.splice(at, 0, 'ailab');
   }
-  T.MLLab = {pairSpreadSeries, regimeForwardStats, regimeHoldout, probabilityCalibration, dirFeatures, mlpredRun, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
+  T.MLLab = {pairSpreadSeries, regimeForwardStats, regimeHoldout, probabilityCalibration, dirFeatures, mlpredRun, gbmHeldoutBias, volmlRun, regimeRun, pcaRun, pairsRun, anomalyRun, rlRun};
 });
