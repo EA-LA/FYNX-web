@@ -781,3 +781,60 @@ test('portfolio breakdown works when opening an entitled saved result, but is ab
   }finally{h.close();}
  }
 });
+
+test('Professional compares fresh runs against a page-only baseline and can replace or clear it',async()=>{
+ const {run}=require('../backend/consumer-core.cjs');
+ const h=await load({user:true,tier:'pro',query:'?tool=simulation',handler:d=>d.action==='run'?{result:run(d.product,d.input)}:undefined});
+ const $=id=>h.document.getElementById(id);
+ const panel=()=>h.document.querySelector('.simulation-compare');
+ const submit=async()=>{$('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));};
+ const edit=(key,value)=>{const e=$('tool-'+key);e.value=String(value);e.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));};
+ try{
+  await submit();
+  let pin=panel().querySelector('button');
+  assert.equal(pin.textContent,'Pin as baseline');assert.equal(pin.type,'button');
+  pin.click();assert.equal(panel().querySelector('table'),null);
+  assert.match(h.document.activeElement.textContent,/Clear baseline/);
+  assert.equal(h.calls.filter(d=>d.action==='run').length,1);
+  edit('riskPct',2);assert.equal(panel(),null);
+  await submit();
+  const rows=[...panel().querySelectorAll('tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent));
+  assert.equal(rows.length,3);
+  assert.equal(panel().querySelector('.table-wrap').tabIndex,0);
+  assert.match(rows[0][0],/Median ending equity/);
+  assert.match(rows[0][3],/^\+5,201/);
+  assert.equal(rows[1][3],'+10.3 pp');
+  assert.equal(rows[2][3],'0 pp');
+  assert.match(panel().textContent,/1% risk\/trade/);assert.match(panel().textContent,/2% risk\/trade/);
+  assert.doesNotMatch(panel().textContent,/Starting equity or trade count differs/);
+  edit('trades',50);await submit();
+  assert.match(panel().textContent,/Starting equity or trade count differs/);
+  panel().querySelector('button').click();assert.equal(panel().querySelector('table'),null);
+  [...panel().querySelectorAll('button')].find(e=>e.textContent==='Clear baseline').click();
+  assert.equal(panel().querySelector('button').textContent,'Pin as baseline');
+ }finally{h.close();}
+});
+
+test('comparison never loads saved runs and clears a pinned run on access loss or account change',async()=>{
+ const {run}=require('../backend/consumer-core.cjs');
+ const input={balance:10000,riskPct:1,winRate:45,rewardRisk:2,trades:100};
+ const item={id:'old-sim',name:'Saved simulator',product:'simulation',input,result:run('simulation',input)};
+ let tier='pro';
+ const h=await load({user:true,query:'?tool=simulation',statusTier:()=>tier,handler:d=>{
+  if(d.action==='run')return {result:run(d.product,d.input)};
+  if(d.action==='list')return {items:[item],limit:25};
+ }});
+ const panel=()=>h.document.querySelector('.simulation-compare');
+ const submit=async()=>{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));};
+ try{
+  h.document.querySelector('#savedItems article button').click();assert.equal(panel(),null);
+  await submit();panel().querySelector('button').click();
+  tier='plus';await h.document.getElementById('loadSaved').onclick();
+  assert.equal(panel(),null);await submit();assert.equal(h.calls.filter(d=>d.action==='run').length,1);
+  tier='pro';await h.document.getElementById('loadSaved').onclick();await submit();
+  assert.equal(panel().querySelector('button').textContent,'Pin as baseline');
+  panel().querySelector('button').click();
+  await h.changeUser({uid:'different-fixture-account'});await submit();
+  assert.equal(panel().querySelector('button').textContent,'Pin as baseline');
+ }finally{h.close();}
+});
