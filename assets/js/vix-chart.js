@@ -8,6 +8,9 @@
   const table = document.getElementById('vixObservationTable');
   const tableBody = document.getElementById('vixObservationRows');
   const tableCaption = document.getElementById('vixObservationCaption');
+  const comparison = document.getElementById('vixComparison');
+  const reference = document.getElementById('vixReferenceDate');
+  const comparisonResult = document.getElementById('vixComparisonResult');
   if (!root || !button) return;
 
   const endpoint = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics?kind=vix';
@@ -55,6 +58,42 @@
     element.className = kind;
     element.textContent = message;
     return element;
+  }
+
+  let comparisonRows = [];
+
+  function updateComparison() {
+    if (!reference || !comparisonResult) return;
+    const latest = comparisonRows[comparisonRows.length - 1];
+    const earlier = comparisonRows.slice(0, -1).find(row => row.date === reference.value);
+    if (!latest || !earlier) {
+      comparisonResult.textContent = 'Choose an earlier published close to compare with the latest displayed close.';
+      return;
+    }
+    const change = Number((latest.close - earlier.close).toFixed(2));
+    const delta = (change > 0 ? '+' : '') + change.toFixed(2);
+    comparisonResult.textContent = `${earlier.date}: ${earlier.close.toFixed(2)} → ${latest.date}: ${latest.close.toFixed(2)} · ${delta} VIX points` +
+      (refreshFailed ? ' · Last sourced observations; update failed.' : '');
+  }
+
+  function renderComparison(rows) {
+    if (!comparison || !reference || !comparisonResult) return;
+    const previous = reference.value;
+    comparisonRows = rows;
+    const choices = rows.slice(0, -1).reverse();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose a reference date';
+    const options = choices.map(row => {
+      const option = document.createElement('option');
+      option.value = row.date;
+      option.textContent = row.date + ' · ' + row.close.toFixed(2);
+      return option;
+    });
+    reference.replaceChildren(placeholder, ...options);
+    reference.value = choices.some(row => row.date === previous) ? previous : '';
+    comparison.hidden = false;
+    updateComparison();
   }
 
   function render(data, availableRows) {
@@ -106,6 +145,7 @@
     const details = note(`${period} · Low ${low.close.toFixed(2)} (${low.date}) · High ${high.close.toFixed(2)} (${high.date}) · First-to-last change ${change > 0 ? '+' : ''}${change.toFixed(2)} VIX points`);
     details.dataset.vixRangeSummary = 'true';
     root.replaceChildren(headline, chart, details, status);
+    renderComparison(rows);
     // The exact same validated slice backs the chart and the accessible data table.
     // Keep the disclosure outside the live region so refreshes do not announce 90 rows.
     if (table && tableBody && tableCaption) {
@@ -167,14 +207,15 @@
     try {
       const data = await fetchDailyObservations();
       const valid = verifiedRows(data?.rows, data?.observationDate);
+      refreshFailed = false;
       render(data, valid);
       snapshot = {data, rows: valid};
-      refreshFailed = false;
       if (rangeControl) rangeControl.hidden = false;
     } catch {
       if (snapshot) {
         refreshFailed = true;
         showRefreshWarning();
+        updateComparison();
       } else {
         root.textContent = 'Cboe VIX observations are unavailable. Retry or open the official source below. No values are estimated.';
       }
@@ -187,6 +228,7 @@
 
   window.FynxVix = {load};
   button.addEventListener('click', load);
+  reference?.addEventListener('change', updateComparison);
   range?.addEventListener('change', () => {
     if (!snapshot) return;
     render(snapshot.data, snapshot.rows);

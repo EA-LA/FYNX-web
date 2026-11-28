@@ -60,10 +60,15 @@ function setup(initial = sample(), options = {}) {
   const tableCaption = new Element('caption');
   table.hidden = true;
   table.open = false;
+  const comparison = new Element('section');
+  const reference = new Element('select');
+  const comparisonResult = new Element('p');
+  comparison.hidden = true;
+  reference.value = '';
   let data = initial, requestCount = 0;
   const calls = [];
   const document = {
-    getElementById: id => ({volWidget:root,retryVix:button,vixRange:range,vixRangeControl:rangeControl,vixObservationTable:table,vixObservationRows:tableBody,vixObservationCaption:tableCaption})[id] ?? null,
+    getElementById: id => ({volWidget:root,retryVix:button,vixRange:range,vixRangeControl:rangeControl,vixObservationTable:table,vixObservationRows:tableBody,vixObservationCaption:tableCaption,vixComparison:comparison,vixReferenceDate:reference,vixComparisonResult:comparisonResult})[id] ?? null,
     createElement: tag => new Element(tag),
     createElementNS: (_ns, tag) => new Element(tag)
   };
@@ -80,7 +85,7 @@ function setup(initial = sample(), options = {}) {
     }
   };
   vm.runInNewContext(source, sandbox);
-  return {root, button, range, rangeControl, table, tableBody, tableCaption, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
+  return {root, button, range, rangeControl, table, tableBody, tableCaption, comparison, reference, comparisonResult, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
 }
 
 test('renders sorted, source-verified Cboe dates and a monochrome chart', async () => {
@@ -324,5 +329,54 @@ test('public page provides a native disclosure and labeled table outside the cha
   assert.match(html,/<caption id="vixObservationCaption">/);
   assert.match(html,/<th scope="col">Date \(UTC\)<\/th><th scope="col">VIX close<\/th>/);
   assert.match(html,/<tbody id="vixObservationRows"><\/tbody>/);
-  assert.match(html,/vix-chart\.js\?v=20261127-observation-table/);
+  assert.match(html,/vix-chart\.js\?v=20261128-reference-date/);
+});
+
+test('reference comparison uses an actual earlier close, no new request, and no default claim', async () => {
+  const app=setup();
+  assert.equal(app.comparison.hidden,true);
+  await settle();
+  assert.equal(app.comparison.hidden,false);
+  assert.equal(app.reference.value,'');
+  assert.deepEqual(app.reference.children.map(o=>o.value),['','2026-11-13','2026-11-12']);
+  app.reference.value='2026-11-13';app.reference.listeners.change();
+  assert.match(app.comparisonResult.textContent,/2026-11-13: 19\.10 → 2026-11-14: 20\.25 · \+1\.15 VIX points/);
+  app.reference.value='2026-11-14';app.reference.listeners.change();
+  assert.match(app.comparisonResult.textContent,/Choose an earlier/);
+  assert.equal(app.requests,1);
+});
+
+test('reference comparison clears out-of-range dates, retains valid dates and labels failed refresh', async () => {
+  const rows=Array.from({length:90},(_,i)=>({
+    date:new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10),close:100-i*.5
+  }));
+  const payload={rows,observationDate:rows[89].date,fetchedAt:'2026-04-01T00:00:00Z'};
+  const app=setup(payload);
+  await settle();
+  app.reference.value=rows[10].date;app.reference.listeners.change();
+  assert.match(app.comparisonResult.textContent,/-39\.50 VIX points/);
+  app.range.value='20';app.range.listeners.change();
+  assert.equal(app.reference.value,'');
+  assert.match(app.comparisonResult.textContent,/Choose an earlier/);
+  app.reference.value=rows[80].date;app.reference.listeners.change();
+  app.setData(new Error('offline'));app.button.click();await settle();
+  assert.match(app.comparisonResult.textContent,/-4\.50 VIX points.*update failed/);
+  app.range.value='60';app.range.listeners.change();
+  assert.equal(app.reference.value,rows[80].date);
+  assert.match(app.comparisonResult.textContent,/update failed/);
+  app.setData(payload);app.button.click();await settle();
+  assert.equal(app.reference.value,rows[80].date);
+  assert.doesNotMatch(app.comparisonResult.textContent,/update failed/);
+  assert.equal(app.requests,3);
+});
+
+test('reference comparison remains hidden on invalid source and page exposes labeled native select', async () => {
+  const app=setup({rows:[]});
+  await settle();
+  assert.equal(app.comparison.hidden,true);
+  const html=fs.readFileSync(require('node:path').join(__dirname,'../markets/volatility.html'),'utf8');
+  assert.match(html,/<section[^>]+id="vixComparison"[^>]+hidden>/);
+  assert.match(html,/<label for="vixReferenceDate">/);
+  assert.match(html,/<select id="vixReferenceDate"[^>]+aria-describedby="vixComparisonHelp"/);
+  assert.match(html,/<p[^>]+id="vixComparisonResult" role="status"/);
 });
